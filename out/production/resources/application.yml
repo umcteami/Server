@@ -7,7 +7,7 @@ spring:
 
   datasource:
     platform: mysql
-    url: jdbc:mysql://rising-test.cnqjm0ka59ku.ap-northeast-2.rds.amazonaws.com/umc_pre_rds?autoReconnect=true # 변경해주세요
+    url: jdbc:mysql://rising-test.cnqjm0ka59ku.ap-northeast-2.rds.amazonaws.com/rising-test?autoReconnect=true # 변경해주세요
     username: admin # 변경해주세요
     password: DBcodus1206^^ # 변경해주세요
     driver-class-name: com.mysql.cj.jdbc.Driver # mysql 8버전
