@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="aa905b9e-4320-4e61-81b2-a61baaea51df" name="spring_pre" url="http://3.34.125.109">
+        <fileTransfer rootFolder="/var/www/Start_Spring" accessType="SFTP" host="3.34.125.109" port="22" sshConfigId="ef61ca65-b6d8-4b99-a69d-8091a7fbdd1a" sshConfig="ubuntu@3.34.125.109:22 key" keyPair="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
