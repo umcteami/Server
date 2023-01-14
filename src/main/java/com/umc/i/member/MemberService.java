@@ -11,7 +11,12 @@ public class MemberService {
 
     public Member login(String loginEmail, String password) {
         return memberRepository.findByLoginEmail(loginEmail)
-                .filter(m -> m.getPassword().equals(password))
+                .filter(m -> m.getPassword().equals(passwordCrypto(password)))
                 .orElse(null);
+    }
+
+    public String passwordCrypto(String password) {
+        System.out.println("UserSha256.encrypt(password) = " + UserSha256.encrypt(password));
+        return UserSha256.encrypt(password);
     }
 }
