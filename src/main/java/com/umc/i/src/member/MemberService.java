@@ -77,6 +77,9 @@ public class MemberService {
 
     @SuppressWarnings("unchecked")
 	public String send_msg(String tel) {
+        // 인증코드 생성
+        createCode();
+
         String hostNameUrl = "https://sens.apigw.ntruss.com";     		// 호스트 URL
         String requestUrl= "/sms/v2/services/";                   		// 요청 URL
         String requestUrlType = "/messages";                      		// 요청 URL
@@ -89,12 +92,10 @@ public class MemberService {
         String apiUrl = hostNameUrl + requestUrl;
 
         // JSON 을 활용한 body data 생성
-
         JSONObject bodyJson = new JSONObject();
         JSONObject toJson = new JSONObject();
 	    JSONArray  toArr = new JSONArray();
 
-	    toJson.put("content","아이 - 아름답게 이별하는 법 본인인증 ["+authCode+"]");		// 난수와 함께 전송
 	    toJson.put("to",tel);
 	    toArr.add(toJson);
 	    
@@ -102,12 +103,10 @@ public class MemberService {
 	    bodyJson.put("contentType","COMM");
 	    bodyJson.put("countryCode","82");
 	    bodyJson.put("from","");	// 발신번호 * 사전에 인증/등록된 번호만 사용할 수 있습니다.		
-	    bodyJson.put("messages", toArr);		
+	    bodyJson.put("messages", toArr);
+        bodyJson.put("content", "아이 - 아름답게 이별하는 법\n본인인증 코드는 [" + authCode + "] 입니다.");
 	    
-
 	    String body = bodyJson.toJSONString();
-	    
-	    System.out.println(body);
 	    
         try {
             URL url = new URL(apiUrl);
@@ -124,7 +123,7 @@ public class MemberService {
             con.setDoOutput(true);
             DataOutputStream wr = new DataOutputStream(con.getOutputStream());
             
-            wr.write(body.getBytes());
+            wr.write(body.getBytes("UTF-8"));
             wr.flush();
             wr.close();
 
@@ -132,9 +131,9 @@ public class MemberService {
             BufferedReader br;
             System.out.println("responseCode" +" " + responseCode);
             if(responseCode==202) { // 정상 호출
-                br = new BufferedReader(new InputStreamReader(con.getInputStream()));
+                br = new BufferedReader(new InputStreamReader(con.getInputStream(), "UTF-8"));
             } else {  // 에러 발생
-                br = new BufferedReader(new InputStreamReader(con.getErrorStream()));
+                br = new BufferedReader(new InputStreamReader(con.getErrorStream(), "UTF-8"));
             }
 
             String inputLine;
@@ -156,7 +155,6 @@ public class MemberService {
 	public static String makeSignature(String url, String timestamp, String method, String accessKey, String secretKey) throws NoSuchAlgorithmException, InvalidKeyException {
 	    String space = " "; 
 	    String newLine = "\n"; 
-	    
 
 	    String message = new StringBuilder()
 	        .append(method)
@@ -179,7 +177,6 @@ public class MemberService {
 		} catch (UnsupportedEncodingException e) {
 			encodeBase64String = e.toString();
 		}
-	    
 
 	  return encodeBase64String;
 	}
