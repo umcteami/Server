@@ -21,7 +21,11 @@ public class AuthDao {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
-    //인증 코드 발송
+    //핸드폰번호 중복 확인
+
+    //이메일 중복 확인
+
+    //인증 코드 발송(인증테이블에 저장)
     public String createAuth(PostJoinReq postJoinReq, String key) {
         LocalDateTime time = LocalDateTime.now();
         DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");

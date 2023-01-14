@@ -18,7 +18,8 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/member/join/auth")
 @RequiredArgsConstructor
 public class AuthController {
-    private final AuthService mailService;
+    private final MailAuthService mailService;
+    private final PhoneAuthService phoneService;
     private final AuthDao authDao;
 
     @ResponseBody
@@ -27,13 +28,19 @@ public class AuthController {
         switch(postJoinReq.getType()) {
             case 1: 
                 return authDao.createAuth(postJoinReq, mailConfirm(postJoinReq.getAuth()));
-            // 2: phoneConfirm(postJoinReq.getAuth());
+            case 2: 
+                return authDao.createAuth(postJoinReq, phoneConfirm(postJoinReq.getAuth()));
         }
         return "type error";
     }
 
     public String mailConfirm(String email) throws MessagingException, UnsupportedEncodingException {
         String authCode = mailService.sendEmail(email);
+        return authCode;
+    }
+
+    public String phoneConfirm(String tel) {
+        String authCode = phoneService.send_msg(tel);
         return authCode;
     }
 }
