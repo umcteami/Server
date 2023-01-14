@@ -22,8 +22,18 @@ public class MemberDao {
     }
 
     //핸드폰번호 중복 확인
+    public int checkPhone(String tel) {
+        String checkPhoneQuery = "select * from Member where mem_phone = ?";
+        // 있으면 1 없으면 0
+        return this.jdbcTemplate.queryForObject(checkPhoneQuery, int.class, tel);
+    }
 
     //이메일 중복 확인
+    public int checkEmail(String email) {
+        String checkEmailQuery = "select * from Member where mem_email = ?";
+        // 있으면 1 없으면 0
+        return this.jdbcTemplate.queryForObject(checkEmailQuery, int.class, email);
+    }
 
     //인증 코드 발송(인증테이블에 저장)
     public String createAuth(PostJoinAuthReq postJoinAuthReq, String key) {

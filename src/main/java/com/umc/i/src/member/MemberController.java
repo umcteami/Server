@@ -25,10 +25,12 @@ public class MemberController {
     @PostMapping("")
     public String checkType(@RequestBody PostJoinAuthReq postJoinAuthReq) throws MessagingException, UnsupportedEncodingException {
         switch(postJoinAuthReq.getType()) {
-            case 1: 
-                return memberDao.createAuth(postJoinAuthReq, mailConfirm(postJoinAuthReq.getAuth()));
-            case 2: 
-                return memberDao.createAuth(postJoinAuthReq, phoneConfirm(postJoinAuthReq.getAuth()));
+            case 1: //메일 인증
+                if(memberDao.checkEmail(postJoinAuthReq.getAuth()) == 1) return "이미 가입한 회원입니다.";
+                else return memberDao.createAuth(postJoinAuthReq, mailConfirm(postJoinAuthReq.getAuth()));
+            case 2: //핸드폰 인증
+                if(memberDao.checkPhone(postJoinAuthReq.getAuth()) == 1) return "이미 가입한 회원입니다.";
+                else return memberDao.createAuth(postJoinAuthReq, phoneConfirm(postJoinAuthReq.getAuth()));
         }
         return "type error";
     }
