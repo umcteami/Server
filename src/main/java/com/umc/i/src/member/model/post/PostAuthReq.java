@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class PostJoinAuthReq {
+public class PostAuthReq {
     private int type;   // 1: mail, 2: phone
     private String auth;    // 메일주소, 핸드폰 번호
 }

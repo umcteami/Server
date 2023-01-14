@@ -18,10 +18,15 @@ import javax.mail.internet.MimeMessage;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring5.SpringTemplateEngine;
+
+import com.umc.i.config.BaseException;
+import com.umc.i.config.BaseResponseStatus;
+import com.umc.i.src.member.model.post.PostAuthRes;
 
 import lombok.RequiredArgsConstructor;
 
@@ -32,6 +37,9 @@ public class MemberService {
     private final JavaMailSender eMailSender;
     // 타임리프를 사용하기 위한 객체
     private final SpringTemplateEngine templateEngine;
+    
+    @Autowired
+    private MemberDao memberDao;
     private String authCode; //인증코드
 
     // 랜덤 인증코드 생성
@@ -43,29 +51,33 @@ public class MemberService {
     }
 
     // 메일 양식 작성
-    public MimeMessage createEmailForm(String email) throws MessagingException, UnsupportedEncodingException {
-        createCode();   // 인증코드 생성
+    public MimeMessage createEmailForm(String email, String authCode) throws BaseException {
         String setFrom = "amanda010926@gmail.com";  // 보내는 사람 이메일
         String toEmail = email; //받는 사람
         String title = "아이 - 아름답게 이별하는 법 본인 인증 코드";    // 메일 제목
 
-        MimeMessage message = eMailSender.createMimeMessage();
-        message.addRecipients(MimeMessage.RecipientType.TO, toEmail);     //보낼 이메일 설정
-        message.setSubject(title);      // 제목 설정   
-        message.setFrom(setFrom);       // 보내는 이메일
-        message.setText(setContext(authCode), "utf-8", "html");
-
-        return message;
+        try {
+            MimeMessage message = eMailSender.createMimeMessage();
+            message.addRecipients(MimeMessage.RecipientType.TO, toEmail);     //보낼 이메일 설정
+            message.setSubject(title);      // 제목 설정   
+            message.setFrom(setFrom);       // 보내는 이메일
+            message.setText(setContext(authCode), "utf-8", "html");
+            return message;
+        } catch (Exception e) {
+            throw new BaseException(BaseResponseStatus.POST_AUTH_SEND_FAIL);
+        }
     }
 
     // 메일 전송
-    public String sendEmail(String toEmail) throws MessagingException, UnsupportedEncodingException {
+    public PostAuthRes sendEmail(String toEmail) throws BaseException {
+        createCode();   // 인증코드 생성
         // 메일 전송에 필요한 정보 설정
-        MimeMessage emailForm = createEmailForm(toEmail);
+        MimeMessage emailForm = createEmailForm(toEmail, authCode);
         // 실제 메일 전송
         eMailSender.send(emailForm);
+        int autoIdx = memberDao.createAuth(1, authCode);
 
-        return authCode;
+        return new PostAuthRes(autoIdx);
     }
 
     // 타임리프를 이용한 context 설정
@@ -76,7 +88,7 @@ public class MemberService {
     }
 
     @SuppressWarnings("unchecked")
-	public String send_msg(String tel) {
+	public PostAuthRes send_msg(String tel) throws BaseException {
         // 인증코드 생성
         createCode();
 
@@ -146,13 +158,15 @@ public class MemberService {
             System.out.println(response.toString());
 
         } catch (Exception e) {
-            System.out.println(e);
+            throw new BaseException(BaseResponseStatus.POST_AUTH_SEND_FAIL);
         }
 
-        return authCode;
+        int autoIdx = memberDao.createAuth(2, authCode);
+
+        return new PostAuthRes(autoIdx);
     }
 	
-	public static String makeSignature(String url, String timestamp, String method, String accessKey, String secretKey) throws NoSuchAlgorithmException, InvalidKeyException {
+	public static String makeSignature(String url, String timestamp, String method, String accessKey, String secretKey) throws BaseException {
 	    String space = " "; 
 	    String newLine = "\n"; 
 
@@ -174,8 +188,8 @@ public class MemberService {
 			mac.init(signingKey);
 			byte[] rawHmac = mac.doFinal(message.getBytes("UTF-8"));
 		    encodeBase64String = Base64.getEncoder().encodeToString(rawHmac);
-		} catch (UnsupportedEncodingException e) {
-			encodeBase64String = e.toString();
+		} catch (Exception e) {
+			throw new BaseException(BaseResponseStatus.POST_AUTH_SEND_FAIL);
 		}
 
 	  return encodeBase64String;
