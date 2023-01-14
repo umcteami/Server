@@ -1,4 +1,4 @@
-package com.umc.i.src.member.join.auth;
+package com.umc.i.src.member;
 
 import java.io.UnsupportedEncodingException;
 
@@ -10,37 +10,36 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.umc.i.src.member.join.model.PostJoinReq;
+import com.umc.i.src.member.model.post.PostJoinAuthReq;
 
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/member/join/auth")
 @RequiredArgsConstructor
-public class AuthController {
-    private final MailAuthService mailService;
-    private final PhoneAuthService phoneService;
-    private final AuthDao authDao;
+public class MemberController {
+    private final MemberService memberService;
+    private final MemberDao memberDao;
 
     @ResponseBody
     @PostMapping("")
-    public String checkType(@RequestBody PostJoinReq postJoinReq) throws MessagingException, UnsupportedEncodingException {
-        switch(postJoinReq.getType()) {
+    public String checkType(@RequestBody PostJoinAuthReq postJoinAuthReq) throws MessagingException, UnsupportedEncodingException {
+        switch(postJoinAuthReq.getType()) {
             case 1: 
-                return authDao.createAuth(postJoinReq, mailConfirm(postJoinReq.getAuth()));
+                return memberDao.createAuth(postJoinAuthReq, mailConfirm(postJoinAuthReq.getAuth()));
             case 2: 
-                return authDao.createAuth(postJoinReq, phoneConfirm(postJoinReq.getAuth()));
+                return memberDao.createAuth(postJoinAuthReq, phoneConfirm(postJoinAuthReq.getAuth()));
         }
         return "type error";
     }
 
     public String mailConfirm(String email) throws MessagingException, UnsupportedEncodingException {
-        String authCode = mailService.sendEmail(email);
+        String authCode = memberService.sendEmail(email);
         return authCode;
     }
 
     public String phoneConfirm(String tel) {
-        String authCode = phoneService.send_msg(tel);
+        String authCode = memberService.send_msg(tel);
         return authCode;
     }
 }
