@@ -18,7 +18,6 @@ public class Image {
     // 업로드 파일 경로
     @NotEmpty
     private String uploadFilePath;
-    private int imgIdx;     // 이미지 인덱스
     private int category;   // 1: 이야기방, 2: 일기장, 3: 장터후기, 4: 나눔장터, 5: 채팅
     private int contentIdx; // 해당 카테고리의 인덱스
 }
