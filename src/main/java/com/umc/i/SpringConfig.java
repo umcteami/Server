@@ -1,8 +1,9 @@
 package com.umc.i;
 
-import com.umc.i.member.JdbcTemplateMemberRepository;
-import com.umc.i.member.MemberRepository;
-import com.umc.i.member.MemberService;
+import com.umc.i.member.jwt.JdbcTemplateJwtRepository;
+import com.umc.i.member.jwt.JwtRepository;
+import com.umc.i.member.login.JdbcTemplateMemberRepository;
+import com.umc.i.member.login.MemberRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -22,4 +23,11 @@ public class SpringConfig {
     public MemberRepository memberRepository() {
         return new JdbcTemplateMemberRepository(dataSource);
     }
+
+    @Bean
+    public JwtRepository jwtRepository() {
+        return new JdbcTemplateJwtRepository(dataSource);
+    }
+
+
 }
