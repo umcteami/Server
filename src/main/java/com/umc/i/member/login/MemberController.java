@@ -1,6 +1,5 @@
-package com.umc.i.member;
+package com.umc.i.member.login;
 
-import com.umc.i.session.SessionConst;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -20,7 +19,6 @@ public class MemberController {
 
     private final MemberService memberService;
 
-    @ResponseBody
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(@RequestBody Member member) {
         Member loginMember = memberService.login(member.getEmail(), member.getPassword());
@@ -38,7 +36,7 @@ public class MemberController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<> logout(HttpServletRequest request) {
-        sessionManager.
+    public ResponseEntity logout(HttpServletRequest request) {
+        return null;
     }
 }

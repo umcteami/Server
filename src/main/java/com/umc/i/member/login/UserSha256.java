@@ -1,4 +1,4 @@
-package com.umc.i.member;
+package com.umc.i.member.login;
 
 import java.security.MessageDigest;
 

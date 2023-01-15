@@ -1,4 +1,4 @@
-package com.umc.i.member;
+package com.umc.i.member.login;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
