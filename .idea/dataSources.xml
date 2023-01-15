@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="umc_pre_rds" uuid="f57e40db-1546-4b36-bc8b-175b0b71c2fc">
+    <data-source source="LOCAL" name="@umc-i.cxk4ypqvbrrw.ap-northeast-2.rds.amazonaws.com" uuid="2532a654-6605-40e0-862c-fc1cddc4af4a">
       <driver-ref>mysql.8</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
-      <jdbc-url>jdbc:mysql://rising-test.cnqjm0ka59ku.ap-northeast-2.rds.amazonaws.com:3306</jdbc-url>
+      <jdbc-url>jdbc:mysql://umc-i.cxk4ypqvbrrw.ap-northeast-2.rds.amazonaws.com:3306/</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
   </component>
