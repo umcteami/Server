@@ -13,10 +13,9 @@ public class PostJoinReq {
     private String phone;
     private String nick;
     private String intro;
-    private MultipartFile profileImg;
     private String birth;
-    private String adresCode;
-    private String adres;
-    private String adresPlus;
+    private String addresCode;
+    private String addres;
+    private String addresPlus;
 }
 

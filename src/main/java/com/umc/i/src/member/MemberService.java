@@ -5,6 +5,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import javax.crypto.Mac;
@@ -19,6 +21,8 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.umc.i.src.member.model.post.PostJoinReq;
 import com.umc.i.src.member.model.post.PostJoinRes;
+import com.umc.i.utils.S3Storage.UploadImageS3;
+
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,9 +46,8 @@ import static com.umc.i.config.BaseResponseStatus.*;
 @Service
 @RequiredArgsConstructor
 public class MemberService {
-    //이미지 관리
-    @Value("${cloud.aws.s3.bucket}")
-    private String bucket;
+    @Autowired
+    private final UploadImageS3 uploadImageS3;
 
     private final AmazonS3 amazonS3;
 
@@ -210,10 +213,24 @@ public class MemberService {
 	  return encodeBase64String;
 	}
 
+
     //회원가입
-    public PostJoinRes createMem(PostJoinReq postJoinReq) throws BaseException {
+    public PostJoinRes createMem(PostJoinReq postJoinReq, MultipartFile profile) throws BaseException {
         try {
-            int userIdx = memberDao.createMem(postJoinReq);
+            String saveFilePath = null;
+            if(!profile.getOriginalFilename().equals("basic.jpg")) {  //기본 프로필이 아니면 + 기본 프로필 사진 이름으로 변경하기
+                String fileName = "image" + File.separator + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMM"));
+                
+                // 저장할 새 이름
+                long time = System.currentTimeMillis();
+                String originalFilename = profile.getOriginalFilename();
+                String saveFileName = String.format("%d_%s", time, originalFilename.replaceAll(" ", ""));
+                
+                // 이미지 업로드
+                saveFilePath = File.separator + uploadImageS3.upload(profile, fileName, saveFileName);
+            }
+
+            int userIdx = memberDao.createMem(postJoinReq, saveFilePath);
             //jwt 발급.
             //String jwt = jwtService.createJwt(userIdx);
             return new PostJoinRes(userIdx);
@@ -221,40 +238,40 @@ public class MemberService {
             throw new BaseException(POST_MEMBER_JOIN);
         }
     }
-    //이미지 업로드 및 삭제
-    public String uploadFile(MultipartFile file) {
+    // //이미지 업로드 및 삭제
+    // public String uploadFile(MultipartFile file) {
 
-        // forEach 구문을 통해 multipartFile로 넘어온 파일들 하나씩 fileNameList에 추가
+    //     // forEach 구문을 통해 multipartFile로 넘어온 파일들 하나씩 fileNameList에 추가
 
-        String fileName = createFileName(file.getOriginalFilename());
-        ObjectMetadata objectMetadata = new ObjectMetadata();
-        objectMetadata.setContentLength(file.getSize());
-        objectMetadata.setContentType(file.getContentType());
+    //     String fileName = createFileName(file.getOriginalFilename());
+    //     ObjectMetadata objectMetadata = new ObjectMetadata();
+    //     objectMetadata.setContentLength(file.getSize());
+    //     objectMetadata.setContentType(file.getContentType());
 
-        try(InputStream inputStream = file.getInputStream()) {
-            amazonS3.putObject(new PutObjectRequest(bucket, fileName, inputStream, objectMetadata)
-                    .withCannedAcl(CannedAccessControlList.PublicRead));
-        } catch(IOException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다.");
-        }
+    //     try(InputStream inputStream = file.getInputStream()) {
+    //         amazonS3.putObject(new PutObjectRequest(bucket, fileName, inputStream, objectMetadata)
+    //                 .withCannedAcl(CannedAccessControlList.PublicRead));
+    //     } catch(IOException e) {
+    //         throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다.");
+    //     }
 
-        return fileName;
-    }
+    //     return fileName;
+    // }
 
-    public void deleteFile(String fileName) {
-        amazonS3.deleteObject(new DeleteObjectRequest(bucket, fileName));
-    }
+    // public void deleteFile(String fileName) {
+    //     amazonS3.deleteObject(new DeleteObjectRequest(bucket, fileName));
+    // }
 
-    private String createFileName(String fileName) { // 먼저 파일 업로드 시, 파일명을 난수화하기 위해 random으로 돌립니다.
-        return UUID.randomUUID().toString().concat(getFileExtension(fileName));
-    }
+    // private String createFileName(String fileName) { // 먼저 파일 업로드 시, 파일명을 난수화하기 위해 random으로 돌립니다.
+    //     return UUID.randomUUID().toString().concat(getFileExtension(fileName));
+    // }
 
-    private String getFileExtension(String fileName) { // file 형식이 잘못된 경우를 확인하기 위해 만들어진 로직이며, 파일 타입과 상관없이 업로드할 수 있게 하기 위해 .의 존재 유무만 판단하였습니다.
-        try {
-            return fileName.substring(fileName.lastIndexOf("."));
-        } catch (StringIndexOutOfBoundsException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "잘못된 형식의 파일(" + fileName + ") 입니다.");
-        }
-    }
+    // private String getFileExtension(String fileName) { // file 형식이 잘못된 경우를 확인하기 위해 만들어진 로직이며, 파일 타입과 상관없이 업로드할 수 있게 하기 위해 .의 존재 유무만 판단하였습니다.
+    //     try {
+    //         return fileName.substring(fileName.lastIndexOf("."));
+    //     } catch (StringIndexOutOfBoundsException e) {
+    //         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "잘못된 형식의 파일(" + fileName + ") 입니다.");
+    //     }
+    // }
 
 }

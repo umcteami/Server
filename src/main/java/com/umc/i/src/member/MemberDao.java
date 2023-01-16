@@ -21,10 +21,10 @@ public class MemberDao {
     }
 
     //회원가입
-    public int createMem(PostJoinReq postJoinReq) {
+    public int createMem(PostJoinReq postJoinReq, String profileUrl) {
         String createUserQuery = "insert into Member (mem_email, mem_password,mem_phone, mem_nickname,mem_profile_content,mem_profile_url,mem_birth,mem_address,mem_address_code,mem_address_detail) VALUES (?,?,?,?,?,?,?,?,?,?)";
-        Object[] createUserParams = new Object[]{postJoinReq.getEmail(), postJoinReq.getPw(),postJoinReq.getPhone(), postJoinReq.getNick(),postJoinReq.getIntro(),postJoinReq.getProfileImg(),
-                                                    postJoinReq.getBirth(),postJoinReq.getAdres(),postJoinReq.getAdresCode(),postJoinReq.getAdresPlus()};
+        Object[] createUserParams = new Object[]{postJoinReq.getEmail(), postJoinReq.getPw(),postJoinReq.getPhone(), postJoinReq.getNick(),postJoinReq.getIntro(),profileUrl,
+                                                    postJoinReq.getBirth(),postJoinReq.getAddres(),postJoinReq.getAddresCode(),postJoinReq.getAddresPlus()};
         this.jdbcTemplate.update(createUserQuery, createUserParams);
 
         String lastInsertIdQuery = "select last_insert_id()";

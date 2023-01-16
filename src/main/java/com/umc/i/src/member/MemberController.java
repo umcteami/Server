@@ -40,12 +40,11 @@ public class MemberController {
     }*/
     //회원가입
     @ResponseBody
-    @PostMapping("/join/")
-    public BaseResponse<PostJoinRes> createMem(@ModelAttribute PostJoinReq postJoinReq){
+    @PostMapping("/join")
+    public BaseResponse<PostJoinRes> createMem(@RequestPart("request") PostJoinReq postJoinReq, 
+                        @RequestPart("profile") MultipartFile profile){
         try {
-            memberService.uploadFile(postJoinReq.getProfileImg());
-            PostJoinRes postJoinRes = memberService.createMem(postJoinReq);
-            return new BaseResponse<>(postJoinRes);
+            return new BaseResponse<>(memberService.createMem(postJoinReq, profile));
         } catch (BaseException exception) {
             return new BaseResponse<>((exception.getStatus()));
         }
