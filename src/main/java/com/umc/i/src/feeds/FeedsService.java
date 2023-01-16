@@ -63,7 +63,7 @@ public class FeedsService {
         try {
             //파일 업로드
             String saveFilePath = uploadImageS3.upload(mf, filePath, saveFileName);
-            return new Image(originalFilename, File.separator + saveFilePath, category, order);
+            return new Image(originalFilename, saveFilePath, category, order);
         } catch (IOException e) {
             // 파일 업로드 오류
             e.printStackTrace();
@@ -74,9 +74,26 @@ public class FeedsService {
     // 이야기방, 일기장 게시글 수정
     public PatchFeedsRes editFeeds(int boardType, PatchFeedsReq patchFeedsReq, List<MultipartFile> file) throws BaseException {
         int feedsIdx = feedsDao.editFeeds(boardType, patchFeedsReq);
-        if(file != null) {  // 이미지 수정
 
-        } 
+        try {
+            if(file.get(0) != null) {  // 이미지 수정
+                List<Image> img = feedsDao.getFeedsImage(boardType, feedsIdx);
+                String fileName = "image" + File.separator + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMM"));
+                List<Image> newImg = new ArrayList<Image>();
+                for(int i = 0; i < img.size(); i++) {   
+                    uploadImageS3.remove(img.get(i).getUploadFilePath());       // s3에 있는 기존 이미지 삭제
+                }
+                for(int i = 0; i < file.size(); i++) {
+                    if(file.get(i).getOriginalFilename().equals("")) break;
+                    newImg.add(createAndUploadFile(file.get(i), fileName, boardType, i));      // s3에 새 이미지 업로드
+                }
+                feedsDao.editFeedsImage(newImg, boardType, feedsIdx);
+            } 
+        } catch(Exception e) {
+            e.printStackTrace();
+            throw new BaseException(BaseResponseStatus.PATCH_EDIT_FEEDS_FAIL);
+        }
+        
         
         return new PatchFeedsRes(feedsIdx);
     }

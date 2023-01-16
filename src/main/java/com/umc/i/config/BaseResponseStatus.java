@@ -34,7 +34,9 @@ public enum BaseResponseStatus {
     // 3000 : 서버 오류
 
     // image
-    POST_UPLOAD_IMAGE_FAIL(false, 3001, "파일 업로드에 실패했습니다");
+    POST_UPLOAD_IMAGE_FAIL(false, 3001, "파일 업로드에 실패했습니다"),
+
+    PATCH_EDIT_FEEDS_FAIL(false, 3010, "수정을 실패했습니다");
 
 
     private final boolean isSuccess;

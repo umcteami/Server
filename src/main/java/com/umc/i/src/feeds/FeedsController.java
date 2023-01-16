@@ -92,14 +92,18 @@ public class FeedsController {
     public BaseResponse<PatchFeedsRes> editFeedsWithImg(@PathVariable("boardType") int boardType,
                     @RequestPart("request") PatchFeedsReq patchFeedsReq,
                     @RequestPart("img") List<MultipartFile> img) throws BaseException {
-        switch(boardType) {
-            case 1:     // 이야기방
-                if(patchFeedsReq.getRoomType() > 3) break;
-                return new BaseResponse<>(feedsService.editFeeds(boardType, patchFeedsReq, img));
-            case 2:     // 일기장
-                if(patchFeedsReq.getRoomType() > 2) break;
-                return new BaseResponse<>(feedsService.editFeeds(boardType, patchFeedsReq, img));
-        }
+        try {
+            switch(boardType) {
+                case 1:     // 이야기방
+                    if(patchFeedsReq.getRoomType() > 3) break;
+                    return new BaseResponse<>(feedsService.editFeeds(boardType, patchFeedsReq, img));
+                case 2:     // 일기장
+                    if(patchFeedsReq.getRoomType() > 2) break;
+                    return new BaseResponse<>(feedsService.editFeeds(boardType, patchFeedsReq, img));
+            }
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        } 
 
         return new BaseResponse<>(BaseResponseStatus.POST_FEEDS_INVALID_TYPE);
     }

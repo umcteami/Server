@@ -1,5 +1,6 @@
 package com.umc.i.utils.S3Storage;
 
+import java.io.File;
 import java.io.IOException;
 
 import org.springframework.beans.factory.annotation.Autowired;
