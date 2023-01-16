@@ -1,28 +1,16 @@
 package com.umc.i.utils.S3Storage;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.core.env.Environment;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 
-import lombok.Getter;
-import lombok.Setter;
-
-@Getter
-@Setter
 @Configuration
-@PropertySource("classpath:application.yml")
-@ConfigurationProperties("aws")
 public class S3Config {
     // @Value("${cloud.aws.credentials.access-key}")
     // private String accessKey;
@@ -33,12 +21,12 @@ public class S3Config {
     // @Value("${cloud.aws.region.static}")
     // private String region;
 
-    @Autowired
-    private Environment env;
+    // @Autowired
+    // private Environment env;
 
     private String accessKey = "AKIA44FRIU24BINQZONF";
     private String secretKey= "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";
-    // private String regionStatic;
+    private String region = "ap-northeast-2";
    
     @Bean
     @Primary
@@ -50,20 +38,9 @@ public class S3Config {
     @Bean
     public AmazonS3 amazonS3() {
         AmazonS3 s3Builder = AmazonS3ClientBuilder.standard()
-                .withRegion("ap-northeast-2")
+                .withRegion(region)
                 .withCredentials(new AWSStaticCredentialsProvider(awsCredentialsProvider()))
                 .build();
         return s3Builder;
     }
-
-    // @Bean
-    // public AmazonS3 amazonS3() {
-    //     System.out.println(accessKey);
-    //     BasicAWSCredentials awsCreds = new BasicAWSCredentials(env.getProperty("cloud.aws.credentials.access-key"), env.getProperty("cloud.aws.credentials.secret-key"));
-    //     return AmazonS3ClientBuilder
-    //             .standard()
-    //             .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-    //             .withRegion(env.getProperty("cloud.aws.region.static"))
-    //             .build();
-    // }
 }

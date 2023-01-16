@@ -6,7 +6,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,14 +18,11 @@ import com.umc.i.src.feeds.model.post.PostFeedsRes;
 import com.umc.i.utils.S3Storage.Image;
 import com.umc.i.utils.S3Storage.UploadImageS3;
 
-import groovy.transform.Undefined.EXCEPTION;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class FeedsService {
-    @Autowired
-    private final com.umc.i.utils.S3Storage.FileManager fileManager;
     @Autowired
     private final UploadImageS3 uploadImageS3;
     @Autowired

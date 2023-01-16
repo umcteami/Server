@@ -3,7 +3,6 @@ package com.umc.i.src.feeds;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -51,7 +50,7 @@ public class FeedsController {
     @ResponseBody
     @PostMapping("/write/img/{boardType}")     // 이야기방, 일기장 게시글 작성
     public BaseResponse<PostFeedsRes> createFeedsWithImg(@PathVariable("boardType") int boardType, 
-                        @RequestPart("PostFeedsReq") PostFeedsReq postFeedsReq, 
+                        @RequestPart("request") PostFeedsReq postFeedsReq, 
                         @RequestPart("img") List<MultipartFile> file) throws BaseException {
         switch(boardType) {
             case 1: //이야기방
