@@ -108,5 +108,15 @@ public class FeedsController {
         return new BaseResponse<>(BaseResponseStatus.POST_FEEDS_INVALID_TYPE);
     }
 
+    @ResponseBody
+    @PatchMapping("/delete/{boardType}/{feedsIdx}") // 이야기방, 일기장 게시글 삭제
+    public BaseResponse deleteFeeds(@PathVariable("boardType") int boardType, @PathVariable("feedsIdx") int feedsIdx) throws BaseException {
+        try {
+            feedsService.deleteFeeds(boardType, feedsIdx);
+        } catch(BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+        return new BaseResponse<>("success!");
+    }
     
 }

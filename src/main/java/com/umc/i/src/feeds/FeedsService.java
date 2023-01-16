@@ -76,7 +76,7 @@ public class FeedsService {
         int feedsIdx = feedsDao.editFeeds(boardType, patchFeedsReq);
 
         try {
-            if(file.get(0) != null) {  // 이미지 수정
+            if(file != null) {  // 이미지 수정
                 List<Image> img = feedsDao.getFeedsImage(boardType, feedsIdx);
                 String fileName = "image" + File.separator + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMM"));
                 List<Image> newImg = new ArrayList<Image>();
@@ -97,4 +97,15 @@ public class FeedsService {
         
         return new PatchFeedsRes(feedsIdx);
     }
+
+    // 이야기방, 일기장 게시글 삭제
+    public void deleteFeeds(int boardType, int feedsIdx) throws BaseException{
+        try {
+            feedsDao.deleteFeeds(boardType, feedsIdx);
+        } catch (BaseException e) {
+            throw new BaseException(e.getStatus());
+        }
+        return;
+    }
+
 }

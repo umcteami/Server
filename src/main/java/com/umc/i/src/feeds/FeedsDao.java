@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import com.umc.i.config.BaseException;
+import com.umc.i.config.BaseResponseStatus;
 import com.umc.i.src.feeds.model.patch.PatchFeedsReq;
 import com.umc.i.src.feeds.model.post.PostFeedsReq;
 import com.umc.i.utils.S3Storage.Image;
@@ -132,4 +134,22 @@ public class FeedsDao {
     }
         
 
+    // 이야기방, 일기장 게시글 삭제
+    public void deleteFeeds(int boardType, int feedsIdx) throws BaseException {
+        String deleteFeedsQuery = null;
+
+        if(boardType == 1) {    // 이야기방
+            deleteFeedsQuery = "delete from Story_feed where story_idx = ?";
+        } else if(boardType == 2) {     // 일기장
+            deleteFeedsQuery = "delete from Diary_feed where diary_idx = ?";
+        }
+
+        try {
+            this.jdbcTemplate.update(deleteFeedsQuery, feedsIdx);
+        } catch (Exception e) {
+            e.printStackTrace();
+             throw new BaseException(BaseResponseStatus.PATCH_DELETE_FEEDS_FAIL);
+        }
+        return;
+    }
 }
