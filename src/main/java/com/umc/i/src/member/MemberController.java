@@ -48,12 +48,10 @@ public class MemberController {
     //회원 정보 수정
     @ResponseBody
     @PutMapping("/{memIdx}")
-    public BaseResponse<String> editMem(@PathVariable("memIdx") int memIdx, @ModelAttribute("request") Member member,
-                                        @ModelAttribute("profile") MultipartFile profile) {
+    public BaseResponse<String> editMem(@PathVariable("memIdx") int memIdx, @ModelAttribute PatchMemReq patchMemReq,
+                                        @ModelAttribute MultipartFile profile) {
         try {
-            PatchMemReq patchMemReq = new PatchMemReq(memIdx, member.getEmail(), member.getPw(),member.getPhone(), member.getNick(),
-                    member.getIntro(),member.getBirth(),member.getAddresCode(),member.getAddres(),member.getAddresPlus());
-            memberService.editMem(patchMemReq,profile);
+            memberService.editMem(memIdx,patchMemReq,profile);
 
             String result = "회원정보가 수정되었습니다.";
             return new BaseResponse<>(result);

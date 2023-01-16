@@ -32,10 +32,10 @@ public class MemberDao {
         return this.jdbcTemplate.queryForObject(lastInsertIdQuery, int.class);
     }
     //유저 정보 변경
-    public int editMem(PatchMemReq patchMemReq, String profileUrl) {
+    public int editMem(int memIdx,PatchMemReq patchMemReq, String profileUrl) {
         String editMemQuery = "update Member set mem_email = ?,mem_password = ? ,mem_phone = ?,mem_nickname = ?, mem_profile_content = ?, mem_profile_url = ?, mem_birth = ?,mem_address = ?,mem_address_code=?,mem_address_detail=? where mem_idx = ? ";
         Object[] editMemParams = new Object[]{patchMemReq.getEmail(),patchMemReq.getPw(),patchMemReq.getPhone(), patchMemReq.getNick(),patchMemReq.getIntro(),profileUrl,
-                patchMemReq.getBirth(),patchMemReq.getAddres(),patchMemReq.getAddresCode(),patchMemReq.getAddresPlus(),patchMemReq.getMemIdx()};
+                patchMemReq.getBirth(),patchMemReq.getAddres(),patchMemReq.getAddresCode(),patchMemReq.getAddresPlus(),memIdx};
 
         return this.jdbcTemplate.update(editMemQuery,editMemParams);
     }

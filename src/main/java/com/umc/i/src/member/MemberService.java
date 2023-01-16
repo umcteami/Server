@@ -240,7 +240,7 @@ public class MemberService {
         }
     }
     //회원 정보 수정
-    public void editMem(PatchMemReq patchMemReq,MultipartFile profile) throws BaseException, IOException {
+    public void editMem(int memIdx,PatchMemReq patchMemReq,MultipartFile profile) throws BaseException, IOException {
         try {
             //이미지 수정
             String saveFilePath = "";
@@ -256,7 +256,7 @@ public class MemberService {
                 saveFilePath = File.separator + uploadImageS3.upload(profile, fileName, saveFileName);
             }
 
-            int result = memberDao.editMem(patchMemReq,saveFilePath); // 해당 과정이 무사히 수행되면 True(1), 그렇지 않으면 False(0)입니다.
+            int result = memberDao.editMem(memIdx,patchMemReq,saveFilePath); // 해당 과정이 무사히 수행되면 True(1), 그렇지 않으면 False(0)입니다.
             if (result == 0) { // result값이 0이면 과정이 실패한 것이므로 에러 메서지를 보냅니다.
                 throw new BaseException(PATCH_MEMBER_EDIT_FAIL);
             }
