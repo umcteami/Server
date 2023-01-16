@@ -31,13 +31,12 @@ public class FeedsService {
     @Autowired
     private FeedsDao feedsDao;
 
-    public PostFeedsRes writeFeeds(int boardType, PostFeedsReq postFeedsReq) throws BaseException {
-        if(postFeedsReq.getImgCnt() != 0) { //이미지 업로드를 안할 경우
+    public PostFeedsRes writeFeeds(int boardType, PostFeedsReq postFeedsReq, List<MultipartFile> file) throws BaseException {
+        if(postFeedsReq.getImgCnt() == 0) { //이미지 업로드를 안할 경우
             int feedsIdx = feedsDao.createFeeds(boardType, postFeedsReq);
             return new PostFeedsRes(feedsIdx);
         }
         else {
-            List<MultipartFile> file = postFeedsReq.getFeedImg();
             List<Image> img = new ArrayList<Image>();
             String fileName = "image" + File.separator + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMM"));
             try {
@@ -54,8 +53,6 @@ public class FeedsService {
         }
         
     }
-
-
 
     //임시 파일 생성 -> 업데이트 -> 임시 파일 삭제
     public Image createAndUploadFile(MultipartFile mf, String filePath, int category, int order) throws BaseException {

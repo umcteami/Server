@@ -1,11 +1,14 @@
 package com.umc.i.src.feeds;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,21 +31,43 @@ public class FeedsController {
 
     @ResponseBody
     @PostMapping("/write/{boardType}")     // 이야기방, 일기장 게시글 작성
-    public BaseResponse<PostFeedsRes> createFeeds(@PathVariable("boardType") int boardType, @RequestBody PostFeedsReq<MultipartFile> postFeedsReq) throws BaseException {
+    public BaseResponse<PostFeedsRes> createFeeds(@PathVariable("boardType") int boardType, 
+                        @RequestBody PostFeedsReq postFeedsReq) throws BaseException {
         switch(boardType) {
             case 1: //이야기방
                 if(postFeedsReq.getRoomType() > 3) 
                     return new BaseResponse<>(BaseResponseStatus.POST_FEEDS_INVALID_TYPE);
-                return new BaseResponse<>(feedsService.writeFeeds(boardType, postFeedsReq));
+                return new BaseResponse<>(feedsService.writeFeeds(boardType, postFeedsReq, null));
             case 2: //일기장
                 if(postFeedsReq.getRoomType() > 2) 
                     return new BaseResponse<>(BaseResponseStatus.POST_FEEDS_INVALID_TYPE);
-                return new BaseResponse<>(feedsService.writeFeeds(boardType, postFeedsReq));
+                return new BaseResponse<>(feedsService.writeFeeds(boardType, postFeedsReq, null));
 
         }
 
         return new BaseResponse<>(BaseResponseStatus.POST_FEEDS_INVALID_TYPE);
     }
+
+    @ResponseBody
+    @PostMapping("/write/img/{boardType}")     // 이야기방, 일기장 게시글 작성
+    public BaseResponse<PostFeedsRes> createFeedsWithImg(@PathVariable("boardType") int boardType, 
+                        @RequestPart("PostFeedsReq") PostFeedsReq postFeedsReq, 
+                        @RequestPart("img") List<MultipartFile> file) throws BaseException {
+        switch(boardType) {
+            case 1: //이야기방
+                if(postFeedsReq.getRoomType() > 3) 
+                    return new BaseResponse<>(BaseResponseStatus.POST_FEEDS_INVALID_TYPE);
+                return new BaseResponse<>(feedsService.writeFeeds(boardType, postFeedsReq, file));
+            case 2: //일기장
+                if(postFeedsReq.getRoomType() > 2) 
+                    return new BaseResponse<>(BaseResponseStatus.POST_FEEDS_INVALID_TYPE);
+                return new BaseResponse<>(feedsService.writeFeeds(boardType, postFeedsReq, file));
+
+        }
+
+        return new BaseResponse<>(BaseResponseStatus.POST_FEEDS_INVALID_TYPE);
+    }
+
 
 
     
