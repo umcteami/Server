@@ -101,6 +101,11 @@ public class FeedsService {
     // 이야기방, 일기장 게시글 삭제
     public void deleteFeeds(int boardType, int feedsIdx) throws BaseException{
         try {
+            List<Image> img = feedsDao.getFeedsImage(boardType, feedsIdx);
+            for(int i = 0; i < img.size(); i++) {   
+                uploadImageS3.remove(img.get(i).getUploadFilePath());       // s3에 있는 이미지 삭제
+            }
+            
             feedsDao.deleteFeeds(boardType, feedsIdx);
         } catch (BaseException e) {
             throw new BaseException(e.getStatus());

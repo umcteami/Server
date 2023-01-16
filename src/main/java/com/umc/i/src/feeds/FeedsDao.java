@@ -138,14 +138,20 @@ public class FeedsDao {
     public void deleteFeeds(int boardType, int feedsIdx) throws BaseException {
         String deleteFeedsQuery = null;
 
-        if(boardType == 1) {    // 이야기방
-            deleteFeedsQuery = "delete from Story_feed where story_idx = ?";
-        } else if(boardType == 2) {     // 일기장
-            deleteFeedsQuery = "delete from Diary_feed where diary_idx = ?";
-        }
+        try {  
+            // feed table 삭제
+            if(boardType == 1) {    // 이야기방
+                deleteFeedsQuery = "delete from Story_feed where story_idx = ?";
+            } else if(boardType == 2) {     // 일기장
+                deleteFeedsQuery = "delete from Diary_feed where diary_idx = ?";
+            }
+            this.jdbcTemplate.update(deleteFeedsQuery, feedsIdx);   
 
-        try {
-            this.jdbcTemplate.update(deleteFeedsQuery, feedsIdx);
+            // image_url table 삭제
+            deleteFeedsQuery = "delete from Image_url where content_category = ? && content_idx = ?";
+            Object[] deleteFeedsParams = new Object[] {boardType, feedsIdx};
+            this.jdbcTemplate.update(deleteFeedsQuery, deleteFeedsParams);
+
         } catch (Exception e) {
             e.printStackTrace();
              throw new BaseException(BaseResponseStatus.PATCH_DELETE_FEEDS_FAIL);
