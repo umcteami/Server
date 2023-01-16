@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
@@ -43,5 +44,18 @@ public class UploadImageS3 {
         }
         
         return fileName;
+    }
+
+    // 조회
+    public String getS3(String fileName) {
+        return amazonS3.getUrl(bucket, fileName).toString();
+    }
+    
+    // 삭제
+    public void remove(String fileName) {
+        if (!amazonS3.doesObjectExist(bucket, fileName)) {
+            throw new AmazonS3Exception("Object " + fileName + " does not exist!");
+        }
+        amazonS3.deleteObject(bucket, fileName);
     }
 }
