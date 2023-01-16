@@ -3,12 +3,15 @@ package com.umc.i.src.member;
 import static com.umc.i.utils.ValidationRegex.isRegexEmail;
 import static com.umc.i.utils.ValidationRegex.isRegexPhone;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 import javax.mail.MessagingException;
 
 import com.fasterxml.jackson.databind.ser.Serializers;
+import com.umc.i.src.member.model.Member;
+import com.umc.i.src.member.model.patch.PatchMemReq;
 import com.umc.i.src.member.model.post.PostJoinReq;
 import com.umc.i.src.member.model.post.PostJoinRes;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,27 +34,37 @@ public class MemberController {
     @Autowired
     private final MemberService memberService;
 
-    //이미지 업로드 미완
-    /*
-    @PostMapping("/file")
-    public BaseResponse<List<String>> uploadFile(@RequestPart List<MultipartFile> multipartFile) {
-        memberService.uploadFile(multipartFile);
-        return null;
-    }*/
     //회원가입
     @ResponseBody
     @PostMapping("/join")
-    public BaseResponse<PostJoinRes> createMem(@RequestPart("request") PostJoinReq postJoinReq, 
-                        @RequestPart("profile") MultipartFile profile){
+    public BaseResponse<PostJoinRes> createMem(@RequestPart("request") PostJoinReq postJoinReq,
+                                               @RequestPart("profile") MultipartFile profile){
         try {
             return new BaseResponse<>(memberService.createMem(postJoinReq, profile));
         } catch (BaseException exception) {
             return new BaseResponse<>((exception.getStatus()));
         }
     }
-
+    //회원 정보 수정
     @ResponseBody
-    @PostMapping("/join/auth")  
+    @PutMapping("/{memIdx}")
+    public BaseResponse<String> editMem(@PathVariable("memIdx") int memIdx, @ModelAttribute("request") Member member,
+                                        @ModelAttribute("profile") MultipartFile profile) {
+        try {
+            PatchMemReq patchMemReq = new PatchMemReq(memIdx, member.getEmail(), member.getPw(),member.getPhone(), member.getNick(),
+                    member.getIntro(),member.getBirth(),member.getAddresCode(),member.getAddres(),member.getAddresPlus());
+            memberService.editMem(patchMemReq,profile);
+
+            String result = "회원정보가 수정되었습니다.";
+            return new BaseResponse<>(result);
+        } catch (BaseException exception) {
+            return new BaseResponse<>((exception.getStatus()));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    @ResponseBody
+    @PostMapping("/join/auth")
     // 본인인증
     public BaseResponse<PostAuthRes> checkType(@RequestBody PostAuthReq postJoinAuthReq) throws MessagingException, UnsupportedEncodingException {
         switch(postJoinAuthReq.getType()) {

@@ -11,7 +11,7 @@ public enum BaseResponseStatus {
      * 1000 : 요청 성공
      */
     SUCCESS(true, 1000, "요청에 성공하였습니다."),
-
+    INTERNET_ERROR(false,2000,"인터넷오류"),
     // 2000 : Request 오류
 
     // [POST] /member/join
@@ -25,8 +25,10 @@ public enum BaseResponseStatus {
 
     POST_AUTH_INVALID_TYPE(false, 2016, "인증 타입을 확인해주세요"),
     POST_AUTH_SEND_FAIL(false, 2017, "인증번호 발송 실패"),
-    POST_MEMBER_JOIN(false,2018,"회원가입 실패");
+    POST_MEMBER_JOIN(false,2018,"회원가입 실패"),
 
+    //[PATCH] /member
+    PATCH_MEMBER_EDIT_FAIL(false,2019,"회원정보 수정 실패");
 
     private final boolean isSuccess;
     private final int code;
