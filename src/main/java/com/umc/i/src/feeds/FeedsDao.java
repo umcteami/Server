@@ -90,6 +90,13 @@ public class FeedsDao {
             this.jdbcTemplate.update(editFeedsImageQuery, editFeedsImageParams);
         }
     }
+
+    // // 이야기방, 일기장 이미지 조회
+    // public List<Image> getFeedsImage(int boardType, int feedsIdx) {
+    //     String getFeedsImageQuery = "select * from Image_url where content_category = ? & content_idx = ?";
+    //     Object[] getFeedsImageParams = new Object[] {boardType, feedsIdx};
+
+    // }
         
 
 }

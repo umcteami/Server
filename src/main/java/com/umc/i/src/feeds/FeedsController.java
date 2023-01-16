@@ -78,9 +78,10 @@ public class FeedsController {
         switch(boardType) {
             case 1:     // 이야기방
                 if(patchFeedsReq.getRoomType() > 3) break;
-                // return new BaseResponse<>(null)
+                return new BaseResponse<>(feedsService.editFeeds(boardType, patchFeedsReq, null));
             case 2:     // 일기장
                 if(patchFeedsReq.getRoomType() > 2) break;
+                return new BaseResponse<>(feedsService.editFeeds(boardType, patchFeedsReq, null));
         }
 
         return new BaseResponse<>(BaseResponseStatus.POST_FEEDS_INVALID_TYPE);
@@ -94,10 +95,10 @@ public class FeedsController {
         switch(boardType) {
             case 1:     // 이야기방
                 if(patchFeedsReq.getRoomType() > 3) break;
-                // return new BaseResponse<>(null)
+                return new BaseResponse<>(feedsService.editFeeds(boardType, patchFeedsReq, img));
             case 2:     // 일기장
                 if(patchFeedsReq.getRoomType() > 2) break;
-
+                return new BaseResponse<>(feedsService.editFeeds(boardType, patchFeedsReq, img));
         }
 
         return new BaseResponse<>(BaseResponseStatus.POST_FEEDS_INVALID_TYPE);
