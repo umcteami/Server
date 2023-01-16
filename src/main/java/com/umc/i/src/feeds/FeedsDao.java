@@ -53,7 +53,7 @@ public class FeedsDao {
 
     // 이야기방, 일기장 이미지 정보 저장
     public void createFeedsImage(List<Image> img, int feedsIdx) {
-        String createFeedsImageQuery = "insert into image_url (content_category, content_idx, image_url, image_order)";
+        String createFeedsImageQuery = "insert into Image_url (content_category, content_idx, image_url, image_order)";
         createFeedsImageQuery += " values (?, ?, ?, ?)";
         for (int i = 0; i < img.size(); i++) {
             Object[] createFeedsImageParams = new Object[] {img.get(i).getCategory(), feedsIdx, img.get(i).getUploadFilePath(), i};
