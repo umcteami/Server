@@ -3,7 +3,7 @@ package com.umc.i.utils.S3Storage;
 import java.io.IOException;
 
 import org.springframework.beans.factory.annotation.Autowired;
-
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -22,9 +22,9 @@ public class UploadImageS3 {
     @Autowired
     private final AmazonS3 amazonS3;
 
-    // @Value("${aws.s3.image.bucket:i-image}")
-    // private String bucket;
-    private String bucket = "i-image";
+    @Value("${aws.s3.image.bucket:i-image}")
+    private String bucket;
+    // private String bucket = "i-image";
 
     // 업로드
     public String upload(MultipartFile uploadFile, String filePath, String saveFileName) throws AmazonServiceException, SdkClientException, IOException {
