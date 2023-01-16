@@ -13,6 +13,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.umc.i.config.BaseException;
 import com.umc.i.config.BaseResponseStatus;
+import com.umc.i.src.feeds.model.patch.PatchFeedsReq;
+import com.umc.i.src.feeds.model.patch.PatchFeedsRes;
 import com.umc.i.src.feeds.model.post.PostFeedsReq;
 import com.umc.i.src.feeds.model.post.PostFeedsRes;
 import com.umc.i.utils.S3Storage.Image;
@@ -53,7 +55,7 @@ public class FeedsService {
         
     }
 
-    //임시 파일 생성 -> 업데이트 -> 임시 파일 삭제
+    // 파일 업로드
     public Image createAndUploadFile(MultipartFile mf, String filePath, int category, int order) throws BaseException {
         long time = System.currentTimeMillis();
         String originalFilename = mf.getOriginalFilename();
@@ -67,5 +69,15 @@ public class FeedsService {
             e.printStackTrace();
             throw new BaseException(BaseResponseStatus.POST_UPLOAD_IMAGE_FAIL);
         }
+    }
+
+    // 이야기방, 일기장 게시글 수정
+    public PatchFeedsRes editFeeds(int boardType, PatchFeedsReq patchFeedsReq, List<MultipartFile> file) throws BaseException {
+        int feedsIdx = feedsDao.editFeeds(boardType, patchFeedsReq);
+        if(file != null) {  // 이미지 수정
+
+        } 
+        
+        return new PatchFeedsRes(feedsIdx);
     }
 }

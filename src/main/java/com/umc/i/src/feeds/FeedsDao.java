@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import com.umc.i.src.feeds.model.patch.PatchFeedsReq;
 import com.umc.i.src.feeds.model.post.PostFeedsReq;
 import com.umc.i.utils.S3Storage.Image;
 
@@ -60,4 +61,35 @@ public class FeedsDao {
             this.jdbcTemplate.update(createFeedsImageQuery, createFeedsImageParams);
         }
     }
+
+    // 이야기방, 일기장 게시글 수정
+    public int editFeeds(int boardType, PatchFeedsReq patchFeedsReq) {
+        String editFeedsQuery = null;
+        switch(boardType) {
+            case 1: // 이야기방 수정
+                editFeedsQuery = "update Story_feed set story_title=?, story_content=?, story_image=? where story_idx=?";
+                break;
+            case 2: // 일기장 수정
+                editFeedsQuery = "update Diary_feed set diary_title=?, diary_content=?, diary_image=? where diary_idx=?";
+                break;
+        }
+
+        Object[] editFeedsParams = new Object[] {patchFeedsReq.getTitle(), patchFeedsReq.getContent(), 
+            patchFeedsReq.getImgCnt(), patchFeedsReq.getFeedsIdx()};
+        this.jdbcTemplate.update(editFeedsQuery, editFeedsParams);
+        
+        return patchFeedsReq.getFeedsIdx();
+    }
+
+    // 이야기방, 일기장 이미지 정보 수정
+    public void editFeedsImage(List<Image> img, int feedsIdx) {
+        String editFeedsImageQuery = "update Image_url set image_url=?, image_order=? where content_category=? & content_idx=?";
+        Object[] editFeedsImageParams;
+        for(int i = 0; i < img.size(); i++) {
+            editFeedsImageParams = new Object[] {img.get(i).getUploadFilePath(), i, img.get(i).getCategory(), feedsIdx};
+            this.jdbcTemplate.update(editFeedsImageQuery, editFeedsImageParams);
+        }
+    }
+        
+
 }
