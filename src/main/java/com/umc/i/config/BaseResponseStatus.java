@@ -24,7 +24,8 @@ public enum BaseResponseStatus {
     POST_MEMBER_EXISTS_PHONE(false,2015,"중복된 전화번호입니다."),
 
     POST_AUTH_INVALID_TYPE(false, 2016, "인증 타입을 확인해주세요"),
-    POST_AUTH_SEND_FAIL(false, 2017, "인증번호 발송 실패");
+    POST_AUTH_SEND_FAIL(false, 2017, "인증번호 발송 실패"),
+    POST_MEMBER_JOIN(false,2018,"회원가입 실패");
 
 
     private final boolean isSuccess;

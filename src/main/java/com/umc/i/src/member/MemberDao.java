@@ -5,6 +5,7 @@ import java.time.format.DateTimeFormatter;
 
 import javax.sql.DataSource;
 
+import com.umc.i.src.member.model.post.PostJoinReq;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -17,6 +18,17 @@ public class MemberDao {
     @Autowired
     public void setDataSource(DataSource dataSource) {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
+    }
+
+    //회원가입
+    public int createMem(PostJoinReq postJoinReq) {
+        String createUserQuery = "insert into Member (mem_email, mem_password,mem_phone, mem_nickname,mem_profile_content,mem_profile_url,mem_birth,mem_address,mem_address_code,mem_address_detail) VALUES (?,?,?,?,?,?,?,?,?,?)";
+        Object[] createUserParams = new Object[]{postJoinReq.getEmail(), postJoinReq.getPw(),postJoinReq.getPhone(), postJoinReq.getNick(),postJoinReq.getIntro(),postJoinReq.getProfileImg(),
+                                                    postJoinReq.getBirth(),postJoinReq.getAdres(),postJoinReq.getAdresCode(),postJoinReq.getAdresPlus()};
+        this.jdbcTemplate.update(createUserQuery, createUserParams);
+
+        String lastInsertIdQuery = "select last_insert_id()";
+        return this.jdbcTemplate.queryForObject(lastInsertIdQuery, int.class);
     }
 
     //핸드폰번호 중복 확인
@@ -47,5 +59,4 @@ public class MemberDao {
         int authIdx = this.jdbcTemplate.queryForObject(lastInserIdQuery, int.class);
         return authIdx;
     }
-
 }

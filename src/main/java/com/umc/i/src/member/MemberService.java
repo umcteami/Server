@@ -1,26 +1,33 @@
 package com.umc.i.src.member;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
-import java.util.Random;
+import java.util.*;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.DeleteObjectRequest;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.umc.i.src.member.model.post.PostJoinReq;
+import com.umc.i.src.member.model.post.PostJoinRes;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring5.SpringTemplateEngine;
 
@@ -30,9 +37,17 @@ import com.umc.i.src.member.model.post.PostAuthRes;
 
 import lombok.RequiredArgsConstructor;
 
+import static com.umc.i.config.BaseResponseStatus.*;
+
 @Service
 @RequiredArgsConstructor
 public class MemberService {
+    //이미지 관리
+    @Value("${cloud.aws.s3.bucket}")
+    private String bucket;
+
+    private final AmazonS3 amazonS3;
+
     //의존성 주입 -> 필요한 객체 가져오기
     private final JavaMailSender eMailSender;
     // 타임리프를 사용하기 위한 객체
@@ -194,5 +209,52 @@ public class MemberService {
 
 	  return encodeBase64String;
 	}
-    
+
+    //회원가입
+    public PostJoinRes createMem(PostJoinReq postJoinReq) throws BaseException {
+        try {
+            int userIdx = memberDao.createMem(postJoinReq);
+            //jwt 발급.
+            //String jwt = jwtService.createJwt(userIdx);
+            return new PostJoinRes(userIdx);
+        } catch (Exception exception) { // 회원가입 실패시
+            throw new BaseException(POST_MEMBER_JOIN);
+        }
+    }
+    //이미지 업로드 및 삭제
+    public String uploadFile(MultipartFile file) {
+
+        // forEach 구문을 통해 multipartFile로 넘어온 파일들 하나씩 fileNameList에 추가
+
+        String fileName = createFileName(file.getOriginalFilename());
+        ObjectMetadata objectMetadata = new ObjectMetadata();
+        objectMetadata.setContentLength(file.getSize());
+        objectMetadata.setContentType(file.getContentType());
+
+        try(InputStream inputStream = file.getInputStream()) {
+            amazonS3.putObject(new PutObjectRequest(bucket, fileName, inputStream, objectMetadata)
+                    .withCannedAcl(CannedAccessControlList.PublicRead));
+        } catch(IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다.");
+        }
+
+        return fileName;
+    }
+
+    public void deleteFile(String fileName) {
+        amazonS3.deleteObject(new DeleteObjectRequest(bucket, fileName));
+    }
+
+    private String createFileName(String fileName) { // 먼저 파일 업로드 시, 파일명을 난수화하기 위해 random으로 돌립니다.
+        return UUID.randomUUID().toString().concat(getFileExtension(fileName));
+    }
+
+    private String getFileExtension(String fileName) { // file 형식이 잘못된 경우를 확인하기 위해 만들어진 로직이며, 파일 타입과 상관없이 업로드할 수 있게 하기 위해 .의 존재 유무만 판단하였습니다.
+        try {
+            return fileName.substring(fileName.lastIndexOf("."));
+        } catch (StringIndexOutOfBoundsException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "잘못된 형식의 파일(" + fileName + ") 입니다.");
+        }
+    }
+
 }

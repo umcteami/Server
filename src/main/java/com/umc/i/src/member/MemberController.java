@@ -4,15 +4,16 @@ import static com.umc.i.utils.ValidationRegex.isRegexEmail;
 import static com.umc.i.utils.ValidationRegex.isRegexPhone;
 
 import java.io.UnsupportedEncodingException;
+import java.util.List;
 
 import javax.mail.MessagingException;
 
+import com.fasterxml.jackson.databind.ser.Serializers;
+import com.umc.i.src.member.model.post.PostJoinReq;
+import com.umc.i.src.member.model.post.PostJoinRes;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import com.umc.i.config.BaseException;
 import com.umc.i.config.BaseResponse;
@@ -21,6 +22,7 @@ import com.umc.i.src.member.model.post.PostAuthReq;
 import com.umc.i.src.member.model.post.PostAuthRes;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/member")
@@ -28,6 +30,26 @@ import lombok.RequiredArgsConstructor;
 public class MemberController {
     @Autowired
     private final MemberService memberService;
+
+    //이미지 업로드 미완
+    /*
+    @PostMapping("/file")
+    public BaseResponse<List<String>> uploadFile(@RequestPart List<MultipartFile> multipartFile) {
+        memberService.uploadFile(multipartFile);
+        return null;
+    }*/
+    //회원가입
+    @ResponseBody
+    @PostMapping("/join/")
+    public BaseResponse<PostJoinRes> createMem(@ModelAttribute PostJoinReq postJoinReq){
+        try {
+            memberService.uploadFile(postJoinReq.getProfileImg());
+            PostJoinRes postJoinRes = memberService.createMem(postJoinReq);
+            return new BaseResponse<>(postJoinRes);
+        } catch (BaseException exception) {
+            return new BaseResponse<>((exception.getStatus()));
+        }
+    }
 
     @ResponseBody
     @PostMapping("/join/auth")  
