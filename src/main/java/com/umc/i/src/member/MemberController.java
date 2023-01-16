@@ -47,7 +47,7 @@ public class MemberController {
     }
     //회원 정보 수정
     @ResponseBody
-    @PutMapping("/{memIdx}")
+    @PatchMapping("/{memIdx}")
     public BaseResponse<String> editMem(@PathVariable("memIdx") int memIdx, @ModelAttribute PatchMemReq patchMemReq,
                                         @ModelAttribute MultipartFile profile) {
         try {
