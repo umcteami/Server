@@ -39,6 +39,7 @@ public class MemberController {
                 if(!isRegexEmail(postJoinAuthReq.getAuth())) return new BaseResponse<>(BaseResponseStatus.POST_MEMBER_INVALID_EMAIL);
                 try {
                     PostAuthRes postAuthRes = memberService.sendEmail(postJoinAuthReq.getAuth());
+                    if(postAuthRes == null) return new BaseResponse<>(BaseResponseStatus.POST_MEMBER_EXISTS_EMAIL);
                     return new BaseResponse<>(postAuthRes);
                 } catch (BaseException e) {
                     return new BaseResponse<>(e.getStatus());
@@ -48,6 +49,7 @@ public class MemberController {
                 if(!isRegexPhone(postJoinAuthReq.getAuth())) return new BaseResponse<>(BaseResponseStatus.POST_MEMBER_INVALID_PHONE);
                 try {
                     PostAuthRes postAuthRes = memberService.send_msg(postJoinAuthReq.getAuth());
+                    if(postAuthRes == null) return new BaseResponse<>(BaseResponseStatus.POST_MEMBER_EXISTS_PHONE);
                     return new BaseResponse<>(postAuthRes);
                 } catch (BaseException e) {
                     return new BaseResponse<>(e.getStatus());
