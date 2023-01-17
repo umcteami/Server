@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import com.fasterxml.jackson.databind.JsonSerializable.Base;
 import com.umc.i.config.BaseException;
 import com.umc.i.config.BaseResponseStatus;
 import com.umc.i.src.feeds.model.patch.PatchFeedsReq;
@@ -26,34 +27,39 @@ public class FeedsDao {
     }
 
     // 이야기방, 일기장 게시글 저장
-    public int createFeeds(int boardType, PostFeedsReq postFeedsReq) {
+    public int createFeeds(PostFeedsReq postFeedsReq) throws BaseException{
         LocalDateTime time = LocalDateTime.now();
         DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         String currentTime = time.format(timeFormatter);
 
         String createFeedsQuery = null;
 
-        switch(boardType) {
-            case 1: //이야기방
-                createFeedsQuery = "insert into Story_feed (story_roomType, mem_idx, story_title, story_content, ";
-                createFeedsQuery += "story_image, story_hit, story_comment_count, story_like_count, story_blame, story_created_at)";
-                createFeedsQuery += "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                break;
-            case 2: //일기장
-                createFeedsQuery = "insert into Diary_feed (diary_roomType, mem_idx, diary_title, diary_content, ";
-                createFeedsQuery += "diary_image, diary_hit, diary_comment_count, diary_like_count, diary_blame, diary_created_at)";
-                createFeedsQuery += "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                break;
+        try {
+            switch(postFeedsReq.getBoardIdx()) {
+                case 1: //이야기방
+                    createFeedsQuery = "insert into Story_feed (board_idx, story_roomType, mem_idx, story_title, story_content, ";
+                    createFeedsQuery += "story_image, story_hit, story_comment_count, story_like_count, story_blame, story_created_at)";
+                    createFeedsQuery += "values (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    break;
+                case 2: //일기장
+                    createFeedsQuery = "insert into Diary_feed (board_idx, diary_roomType, mem_idx, diary_title, diary_content, ";
+                    createFeedsQuery += "diary_image, diary_hit, diary_comment_count, diary_like_count, diary_blame, diary_created_at)";
+                    createFeedsQuery += "values (2, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    break;
+            }
+    
+            Object[] createFeedsParams = new Object[] {postFeedsReq.getRoomType(), postFeedsReq.getUserIdx(), postFeedsReq.getTitle(),
+                                    postFeedsReq.getContent(), postFeedsReq.getImgCnt(), 0, 0, 0, 0, currentTime};
+            this.jdbcTemplate.update(createFeedsQuery, createFeedsParams);  // 게시물 저장
+    
+            String lastInserIdQuery = "select last_insert_id()"; // 가장 마지막에 삽입된(생성된) id값은 가져온다.
+            int feedsIdx = this.jdbcTemplate.queryForObject(lastInserIdQuery, int.class);
+            
+            return feedsIdx;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BaseException(BaseResponseStatus.POST_FEEDS_UPLOAD_FAIL);
         }
-
-        Object[] createFeedsParams = new Object[] {postFeedsReq.getRoomType(), postFeedsReq.getUserIdx(), postFeedsReq.getTitle(),
-                                postFeedsReq.getContent(), postFeedsReq.getImgCnt(), 0, 0, 0, 0, currentTime};
-        this.jdbcTemplate.update(createFeedsQuery, createFeedsParams);  // 게시물 저장
-
-        String lastInserIdQuery = "select last_insert_id()"; // 가장 마지막에 삽입된(생성된) id값은 가져온다.
-        int feedsIdx = this.jdbcTemplate.queryForObject(lastInserIdQuery, int.class);
-        
-        return feedsIdx;
     }
 
     // 이야기방, 일기장 이미지 정보 저장
@@ -67,9 +73,9 @@ public class FeedsDao {
     }
 
     // 이야기방, 일기장 게시글 수정
-    public int editFeeds(int boardType, PatchFeedsReq patchFeedsReq) {
+    public int editFeeds(PatchFeedsReq patchFeedsReq) throws BaseException {
         String editFeedsQuery = null;
-        switch(boardType) {
+        switch(patchFeedsReq.getBoardIdx()) {
             case 1: // 이야기방 수정
                 editFeedsQuery = "update Story_feed set story_title=?, story_content=?, story_image=? where story_idx=?";
                 break;
@@ -78,9 +84,14 @@ public class FeedsDao {
                 break;
         }
 
-        Object[] editFeedsParams = new Object[] {patchFeedsReq.getTitle(), patchFeedsReq.getContent(), 
-            patchFeedsReq.getImgCnt(), patchFeedsReq.getFeedsIdx()};
-        this.jdbcTemplate.update(editFeedsQuery, editFeedsParams);
+        try {
+            Object[] editFeedsParams = new Object[] {patchFeedsReq.getTitle(), patchFeedsReq.getContent(), 
+                patchFeedsReq.getImgCnt(), patchFeedsReq.getFeedsIdx()};
+            this.jdbcTemplate.update(editFeedsQuery, editFeedsParams);
+        } catch(Exception e) {
+            e.printStackTrace();
+            throw new BaseException(BaseResponseStatus.PATCH_EDIT_FEEDS_FAIL);
+        }        
         
         return patchFeedsReq.getFeedsIdx();
     }

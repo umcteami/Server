@@ -8,5 +8,6 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class PatchFeedsRes {
+    private int boardIdx;    // 게시판 정보
     private int feedsIdx;   // 수정한 글의 인덱스
 }

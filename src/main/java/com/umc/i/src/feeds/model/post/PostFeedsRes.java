@@ -8,5 +8,6 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class PostFeedsRes {
+    private int boardIdx;   // 작성한 글의 게시판 정보
     private int feedsIdx;   // 작성한 글의 인덱스
 }

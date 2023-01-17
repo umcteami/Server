@@ -29,12 +29,14 @@ public enum BaseResponseStatus {
 
     // [POST] /feeds
     POST_FEEDS_INVALID_TYPE(false, 2020, "타입을 확인해주세요"),
+    
 
 
     // 3000 : 서버 오류
 
     // image
-    POST_UPLOAD_IMAGE_FAIL(false, 3001, "파일 업로드에 실패했습니다"),
+    POST_FEEDS_UPLOAD_FAIL(false, 3001, "게시글 저장에 실패했습니다."),
+    POST_UPLOAD_IMAGE_FAIL(false, 3002, "파일 업로드에 실패했습니다"),
 
     PATCH_EDIT_FEEDS_FAIL(false, 3010, "수정을 실패했습니다"),
     PATCH_DELETE_FEEDS_FAIL(false, 3011, "게시물 삭제를 실패했습니다");
