@@ -54,7 +54,7 @@ public class MemberDao {
 
     // 인증 코드 찾기
     public Optional<PostAuthNumberReq> findByAuthIdx(int maIdx) {
-        List<PostAuthNumberReq> result = this.jdbcTemplate.query("select * from member_auth where ma_idx = ?", authRowMapper(), maIdx);
+        List<PostAuthNumberReq> result = this.jdbcTemplate.query("select * from Member_auth where ma_idx = ?", authRowMapper(), maIdx);
 
         return result.stream().findAny();
     }
