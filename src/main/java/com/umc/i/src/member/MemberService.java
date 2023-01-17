@@ -89,14 +89,20 @@ public class MemberService {
 
     // 메일 전송
     public PostAuthRes sendEmail(String toEmail) throws BaseException {
-        createCode();   // 인증코드 생성
-        // 메일 전송에 필요한 정보 설정
-        MimeMessage emailForm = createEmailForm(toEmail, authCode);
-        // 실제 메일 전송
-        eMailSender.send(emailForm);
-        int autoIdx = memberDao.createAuth(1, authCode);
+        // 메일 중복 확인
+        if(memberDao.checkEmail(toEmail) == 0) {
+            createCode();   // 인증코드 생성
 
-        return new PostAuthRes(autoIdx);
+            // 메일 전송에 필요한 정보 설정
+            MimeMessage emailForm = createEmailForm(toEmail, authCode);
+
+            // 실제 메일 전송
+            eMailSender.send(emailForm);
+            int autoIdx = memberDao.createAuth(1, authCode);
+
+            return new PostAuthRes(autoIdx);
+        }
+        return null;
     }
 
     // 타임리프를 이용한 context 설정
@@ -106,83 +112,87 @@ public class MemberService {
         return templateEngine.process("signup", context);     // signup.html
     }
 
+    // 전화번호 인증
     @SuppressWarnings("unchecked")
-    public PostAuthRes send_msg(String tel) throws BaseException {
-        // 인증코드 생성
-        createCode();
+	public PostAuthRes send_msg(String tel) throws BaseException {
+        //전화번호 중복 확인
+        if(memberDao.checkPhone(tel) == 0) {
+            // 인증코드 생성
+            createCode();
 
-        String hostNameUrl = "https://sens.apigw.ntruss.com";     		// 호스트 URL
-        String requestUrl= "/sms/v2/services/";                   		// 요청 URL
-        String requestUrlType = "/messages";                      		// 요청 URL
-        String accessKey = "WmOvHZnmnkfla7ApfDhy";                     	// 개인 인증키
-        String secretKey = "IPPjyEWY0gITTQVhNNs7TeeGzF9lGXs1IC2ZghAs";  // 2차 인증을 위해 서비스마다 할당되는 service secret
-        String serviceId = "ncp:sms:kr:299805410270:umc-i";        		// 프로젝트에 할당된 SMS 서비스 ID
-        String method = "POST";											// 요청 method
-        String timestamp = Long.toString(System.currentTimeMillis()); 	// current timestamp (epoch)
-        requestUrl += serviceId + requestUrlType;
-        String apiUrl = hostNameUrl + requestUrl;
+            String hostNameUrl = "https://sens.apigw.ntruss.com";     		// 호스트 URL
+            String requestUrl= "/sms/v2/services/";                   		// 요청 URL
+            String requestUrlType = "/messages";                      		// 요청 URL
+            String accessKey = "WmOvHZnmnkfla7ApfDhy";                     	// 개인 인증키
+            String secretKey = "IPPjyEWY0gITTQVhNNs7TeeGzF9lGXs1IC2ZghAs";  // 2차 인증을 위해 서비스마다 할당되는 service secret
+            String serviceId = "ncp:sms:kr:299805410270:umc-i";        		// 프로젝트에 할당된 SMS 서비스 ID
+            String method = "POST";											// 요청 method
+            String timestamp = Long.toString(System.currentTimeMillis()); 	// current timestamp (epoch)
+            requestUrl += serviceId + requestUrlType;
+            String apiUrl = hostNameUrl + requestUrl;
 
-        // JSON 을 활용한 body data 생성
-        JSONObject bodyJson = new JSONObject();
-        JSONObject toJson = new JSONObject();
-        JSONArray  toArr = new JSONArray();
+            // JSON 을 활용한 body data 생성
+            JSONObject bodyJson = new JSONObject();
+            JSONObject toJson = new JSONObject();
+            JSONArray  toArr = new JSONArray();
 
-        toJson.put("to",tel);
-        toArr.add(toJson);
+            toJson.put("to",tel);
+            toArr.add(toJson);
 
-        bodyJson.put("type","sms");	// 메시지 Type (sms | lms)
-        bodyJson.put("contentType","COMM");
-        bodyJson.put("countryCode","82");
-        bodyJson.put("from","");	// 발신번호 * 사전에 인증/등록된 번호만 사용할 수 있습니다.
-        bodyJson.put("messages", toArr);
-        bodyJson.put("content", "아이 - 아름답게 이별하는 법\n본인인증 코드는 [" + authCode + "] 입니다.");
+            bodyJson.put("type","sms");	// 메시지 Type (sms | lms)
+            bodyJson.put("contentType","COMM");
+            bodyJson.put("countryCode","82");
+            bodyJson.put("from","");	// 발신번호 * 사전에 인증/등록된 번호만 사용할 수 있습니다.
+            bodyJson.put("messages", toArr);
+            bodyJson.put("content", "아이 - 아름답게 이별하는 법\n본인인증 코드는 [" + authCode + "] 입니다.");
 
-        String body = bodyJson.toJSONString();
+            String body = bodyJson.toJSONString();
 
-        try {
-            URL url = new URL(apiUrl);
+            try {
+                URL url = new URL(apiUrl);
 
-            HttpURLConnection con = (HttpURLConnection)url.openConnection();
-            con.setUseCaches(false);
-            con.setDoOutput(true);
-            con.setDoInput(true);
-            con.setRequestProperty("content-type", "application/json");
-            con.setRequestProperty("x-ncp-apigw-timestamp", timestamp);
-            con.setRequestProperty("x-ncp-iam-access-key", accessKey);
-            con.setRequestProperty("x-ncp-apigw-signature-v2", makeSignature(requestUrl, timestamp, method, accessKey, secretKey));
-            con.setRequestMethod(method);
-            con.setDoOutput(true);
-            DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+                HttpURLConnection con = (HttpURLConnection)url.openConnection();
+                con.setUseCaches(false);
+                con.setDoOutput(true);
+                con.setDoInput(true);
+                con.setRequestProperty("content-type", "application/json");
+                con.setRequestProperty("x-ncp-apigw-timestamp", timestamp);
+                con.setRequestProperty("x-ncp-iam-access-key", accessKey);
+                con.setRequestProperty("x-ncp-apigw-signature-v2", makeSignature(requestUrl, timestamp, method, accessKey, secretKey));
+                con.setRequestMethod(method);
+                con.setDoOutput(true);
+                DataOutputStream wr = new DataOutputStream(con.getOutputStream());
 
-            wr.write(body.getBytes("UTF-8"));
-            wr.flush();
-            wr.close();
+                wr.write(body.getBytes("UTF-8"));
+                wr.flush();
+                wr.close();
 
-            int responseCode = con.getResponseCode();
-            BufferedReader br;
-            System.out.println("responseCode" +" " + responseCode);
-            if(responseCode==202) { // 정상 호출
-                br = new BufferedReader(new InputStreamReader(con.getInputStream(), "UTF-8"));
-            } else {  // 에러 발생
-                br = new BufferedReader(new InputStreamReader(con.getErrorStream(), "UTF-8"));
+                int responseCode = con.getResponseCode();
+                BufferedReader br;
+                System.out.println("responseCode" +" " + responseCode);
+                if(responseCode==202) { // 정상 호출
+                    br = new BufferedReader(new InputStreamReader(con.getInputStream(), "UTF-8"));
+                } else {  // 에러 발생
+                    br = new BufferedReader(new InputStreamReader(con.getErrorStream(), "UTF-8"));
+                }
+
+                String inputLine;
+                StringBuffer response = new StringBuffer();
+                while ((inputLine = br.readLine()) != null) {
+                    response.append(inputLine);
+                }
+                br.close();
+
+            } catch (Exception e) {
+                throw new BaseException(BaseResponseStatus.POST_AUTH_SEND_FAIL);
             }
 
-            String inputLine;
-            StringBuffer response = new StringBuffer();
-            while ((inputLine = br.readLine()) != null) {
-                response.append(inputLine);
-            }
-            br.close();
+            int autoIdx = memberDao.createAuth(2, authCode);
 
-            System.out.println(response.toString());
-
-        } catch (Exception e) {
-            throw new BaseException(BaseResponseStatus.POST_AUTH_SEND_FAIL);
+            return new PostAuthRes(autoIdx);
         }
 
-        int autoIdx = memberDao.createAuth(2, authCode);
-
-        return new PostAuthRes(autoIdx);
+        return null;
     }
 
     public static String makeSignature(String url, String timestamp, String method, String accessKey, String secretKey) throws BaseException {

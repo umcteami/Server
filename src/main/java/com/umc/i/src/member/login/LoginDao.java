@@ -22,7 +22,7 @@ public class LoginDao implements LoginRepository {
 
     @Override
     public Optional<PostLoginMemberReq> findByLoginEmail(String loginEmail) {
-        List<PostLoginMemberReq> result = jdbcTemplate.query("select * from member where mem_email = ?", memberRowMapper(), loginEmail);
+        List<PostLoginMemberReq> result = jdbcTemplate.query("select * from Member where mem_email = ?", memberRowMapper(), loginEmail);
 
         return result.stream().findAny();
     }

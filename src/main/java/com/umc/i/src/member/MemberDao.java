@@ -65,14 +65,14 @@ public class MemberDao {
 
     //핸드폰번호 중복 확인
     public int checkPhone(String tel) {
-        String checkPhoneQuery = "select * from Member where mem_phone = ?";
+        String checkPhoneQuery = "select count(*) from Member where mem_phone = ?";
         // 있으면 1 없으면 0
         return this.jdbcTemplate.queryForObject(checkPhoneQuery, int.class, tel);
     }
 
     //이메일 중복 확인
     public int checkEmail(String email) {
-        String checkEmailQuery = "select * from Member where mem_email = ?";
+        String checkEmailQuery = "select count(*) from Member where mem_email = ?";
         // 있으면 1 없으면 0
         return this.jdbcTemplate.queryForObject(checkEmailQuery, int.class, email);
     }
@@ -90,5 +90,23 @@ public class MemberDao {
         String lastInserIdQuery = "select last_insert_id()"; // 가장 마지막에 삽입된(생성된) id값은 가져온다.
         int authIdx = this.jdbcTemplate.queryForObject(lastInserIdQuery, int.class);
         return authIdx;
+    }
+
+    // 인증 코드 찾기
+    public Optional<PostAuthNumberReq> findByAuthIdx(int maIdx) {
+        List<PostAuthNumberReq> result = this.jdbcTemplate.query("select * from Member_auth where ma_idx = ?", authRowMapper(), maIdx);
+
+        return result.stream().findAny();
+    }
+
+    private static RowMapper<PostAuthNumberReq> authRowMapper() {
+        return (rs, rowNum) -> {
+            PostAuthNumberReq postAuthNumberReq = new PostAuthNumberReq();
+            postAuthNumberReq.setAuthIdx(rs.getInt("ma_idx"));
+            postAuthNumberReq.setType(rs.getString("ma_type"));
+            postAuthNumberReq.setAuthNumber(rs.getString("ma_key"));
+            postAuthNumberReq.setCreatedAt(rs.getTimestamp("ma_generate_time"));
+            return postAuthNumberReq;
+        };
     }
 }
