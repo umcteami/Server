@@ -1,9 +1,11 @@
 package com.umc.i;
 
-import com.umc.i.member.jwt.JdbcTemplateJwtRepository;
-import com.umc.i.member.jwt.JwtRepository;
-import com.umc.i.member.login.JdbcTemplateMemberRepository;
-import com.umc.i.member.login.MemberRepository;
+import com.umc.i.src.market.feed.JdbcTemplateMarketFeedRepository;
+import com.umc.i.src.market.feed.MarketFeedRepository;
+import com.umc.i.src.member.jwt.JwtDao;
+import com.umc.i.src.member.jwt.JwtRepository;
+import com.umc.i.src.member.login.LoginDao;
+import com.umc.i.src.member.login.LoginRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -20,14 +22,17 @@ public class SpringConfig {
 
 
     @Bean
-    public MemberRepository memberRepository() {
-        return new JdbcTemplateMemberRepository(dataSource);
+    public LoginRepository memberRepository() {
+        return new LoginDao(dataSource);
     }
 
     @Bean
     public JwtRepository jwtRepository() {
-        return new JdbcTemplateJwtRepository(dataSource);
+        return new JwtDao(dataSource);
     }
 
-
+    @Bean
+    public MarketFeedRepository marketFeedRepository() {
+        return new JdbcTemplateMarketFeedRepository(dataSource);
+    }
 }

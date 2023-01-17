@@ -1,6 +1,7 @@
-package com.umc.i.member.jwt;
+package com.umc.i.src.member.jwt;
 
-import com.umc.i.member.login.Member;
+import com.umc.i.src.member.jwt.model.Jwt;
+import com.umc.i.src.member.login.model.PostLoginMemberReq;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
@@ -20,12 +21,12 @@ import java.util.Map;
 @Service
 public class JwtServiceImpl implements JwtService{
 
-    private final JdbcTemplateJwtRepository JwtRepository;
+    private final JwtDao JwtRepository;
 
     private final String secretKey = Base64.getEncoder().encodeToString(Jwt.SECRET_KEY.getBytes(StandardCharsets.UTF_8));
 
     @Override
-    public String createAccessToken(Member loginMember) {
+    public String createAccessToken(PostLoginMemberReq postLoginMemberReq) {
 
         Map<String, Object> headers = new HashMap<>();
         headers.put("typ", "JWT");
@@ -38,8 +39,8 @@ public class JwtServiceImpl implements JwtService{
 
         String accessToken = Jwts.builder()
                 .setHeader(headers)
-                .setSubject(loginMember.getEmail())
-                .claim("uid", loginMember.getId())
+                .setSubject(postLoginMemberReq.getEmail())
+                .claim("uid", postLoginMemberReq.getId())
                 .setExpiration(expireTime)
                 .signWith(signatureAlgorithm, secretKey)
                 .compact();
@@ -48,7 +49,7 @@ public class JwtServiceImpl implements JwtService{
     }
 
     @Override
-    public String createRefreshToken(Member loginMember) {
+    public String createRefreshToken(PostLoginMemberReq postLoginMemberReq) {
         Map<String, Object> headers = new HashMap<>();
         headers.put("typ", "JWT");
         headers.put("alg", "HS256");
@@ -60,8 +61,8 @@ public class JwtServiceImpl implements JwtService{
 
         String refreshToken = Jwts.builder()
                 .setHeader(headers)
-                .setSubject(loginMember.getEmail())
-                .claim("uid", loginMember.getId())
+                .setSubject(postLoginMemberReq.getEmail())
+                .claim("uid", postLoginMemberReq.getId())
                 .setExpiration(expireTime)
                 .signWith(signatureAlgorithm, secretKey)
                 .compact();
@@ -78,11 +79,11 @@ public class JwtServiceImpl implements JwtService{
         String userKey = getMemberId(token);
         log.info("userKey={}", userKey);
 
-        Member member = JwtRepository.findByLoginId(userKey)
+        PostLoginMemberReq postLoginMemberReq = JwtRepository.findByLoginId(userKey)
                 .filter(m -> String.valueOf(m.getId()).equals(userKey))
                 .orElse(null);
 
-        if (member == null) {
+        if (postLoginMemberReq == null) {
             return false;
         }
 

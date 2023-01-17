@@ -2,11 +2,15 @@ package com.umc.i.src.member;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Optional;
 
 import javax.sql.DataSource;
 
+import com.umc.i.src.member.model.post.PostAuthNumberReq;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -48,4 +52,22 @@ public class MemberDao {
         return authIdx;
     }
 
+    // 인증 코드 찾기
+    public Optional<PostAuthNumberReq> findByAuthIdx(int maIdx) {
+        List<PostAuthNumberReq> result = this.jdbcTemplate.query("select * from member_auth where ma_idx = ?", authRowMapper(), maIdx);
+
+        return result.stream().findAny();
+    }
+
+    private static RowMapper<PostAuthNumberReq> authRowMapper() {
+        return (rs, rowNum) -> {
+            PostAuthNumberReq postAuthNumberReq = new PostAuthNumberReq();
+            postAuthNumberReq.setAuthIdx(rs.getInt("ma_idx"));
+            postAuthNumberReq.setType(rs.getString("ma_type"));
+            postAuthNumberReq.setAuthNumber(rs.getString("ma_key"));
+            postAuthNumberReq.setCreatedAt(rs.getTimestamp("ma_generate_time"));
+            return postAuthNumberReq;
+        };
+    }
 }
+

@@ -1,6 +1,6 @@
-package com.umc.i.member.jwt;
+package com.umc.i.src.member.jwt;
 
-import com.umc.i.member.login.Member;
+import com.umc.i.src.member.login.model.PostLoginMemberReq;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -12,18 +12,18 @@ import java.util.Optional;
 
 @Slf4j
 @Repository
-public class JdbcTemplateJwtRepository implements JwtRepository{
+public class JwtDao implements JwtRepository{
 
     private final JdbcTemplate jdbcTemplate;
 
-    public JdbcTemplateJwtRepository(DataSource dataSource) {
+    public JwtDao(DataSource dataSource) {
         jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
 
     @Override
-    public Optional<Member> findByLoginId(String id) {
-        List<Member> result = jdbcTemplate.query("select * from member where mem_idx = ?", memberRowMapper(), id);
+    public Optional<PostLoginMemberReq> findByLoginId(String id) {
+        List<PostLoginMemberReq> result = jdbcTemplate.query("select * from member where mem_idx = ?", memberRowMapper(), id);
 
         return result.stream().findAny();
     }
@@ -48,11 +48,11 @@ public class JdbcTemplateJwtRepository implements JwtRepository{
         }
     }
 
-    private RowMapper<Member> memberRowMapper() {
+    private RowMapper<PostLoginMemberReq> memberRowMapper() {
         return (rs, rowNum) -> {
-            Member member = new Member();
-            member.setId(rs.getLong("mem_idx"));
-            return member;
+            PostLoginMemberReq postLoginMemberReq = new PostLoginMemberReq();
+            postLoginMemberReq.setId(rs.getLong("mem_idx"));
+            return postLoginMemberReq;
         };
     }
 }
