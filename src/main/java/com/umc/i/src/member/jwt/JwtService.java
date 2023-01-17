@@ -1,12 +1,12 @@
-package com.umc.i.member.jwt;
+package com.umc.i.src.member.jwt;
 
-import com.umc.i.member.login.Member;
+import com.umc.i.src.member.login.model.PostLoginMemberReq;
 
 
 public interface JwtService {
-    public String createAccessToken(Member loginMember);
+    public String createAccessToken(PostLoginMemberReq postLoginMemberReq);
 
-    public String createRefreshToken(Member loginMember);
+    public String createRefreshToken(PostLoginMemberReq postLoginMemberReq);
 
     public void updateRefreshToken(String memIdx, String refreshToken);
 

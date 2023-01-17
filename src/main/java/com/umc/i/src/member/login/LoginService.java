@@ -1,5 +1,7 @@
-package com.umc.i.member.login;
+package com.umc.i.src.member.login;
 
+import com.umc.i.src.member.login.model.PostLoginMemberReq;
+import com.umc.i.utils.UserSha256;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -7,9 +9,9 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class LoginService {
 
-    private final JdbcTemplateLoginRepository loginRepository;
+    private final LoginDao loginRepository;
 
-    public Member login(String loginEmail, String password) {
+    public PostLoginMemberReq login(String loginEmail, String password) {
         return loginRepository.findByLoginEmail(loginEmail)
                 .filter(m -> m.getPassword().equals(passwordCrypto(password)))
                 .orElse(null);
