@@ -25,12 +25,22 @@ public class MemberDao {
     public int createMem(PostJoinReq postJoinReq, String profileUrl) {
         String createUserQuery = "insert into Member (mem_email, mem_password,mem_phone, mem_nickname,mem_profile_content,mem_profile_url,mem_birth,mem_address,mem_address_code,mem_address_detail) VALUES (?,?,?,?,?,?,?,?,?,?)";
         Object[] createUserParams = new Object[]{postJoinReq.getEmail(), postJoinReq.getPw(),postJoinReq.getPhone(), postJoinReq.getNick(),postJoinReq.getIntro(),profileUrl,
-                                                    postJoinReq.getBirth(),postJoinReq.getAddres(),postJoinReq.getAddresCode(),postJoinReq.getAddresPlus()};
+                postJoinReq.getBirth(),postJoinReq.getAddres(),postJoinReq.getAddresCode(),postJoinReq.getAddresPlus()};
         this.jdbcTemplate.update(createUserQuery, createUserParams);
-
-        String lastInsertIdQuery = "select last_insert_id()";
-        return this.jdbcTemplate.queryForObject(lastInsertIdQuery, int.class);
+        //성공 시 0
+        return 0;
     }
+
+    // 닉네임 중복 확인
+    public int checkNick(String nick) {
+        if (!nick.matches("[0-9|a-z|A-Z|ㄱ-ㅎ|ㅏ-ㅣ|가-힝]*")) {
+            return 2;
+        }
+        String checkPhoneQuery = "select * from Member_nickname where nickname = ?";
+        // 특수문자 포함 2 있으면 1 없으면 0
+        return this.jdbcTemplate.queryForObject(checkPhoneQuery, int.class, nick);
+    }
+
     //유저 정보 변경
     public int editMem(int memIdx,PatchMemReq patchMemReq, String profileUrl) {
         String editMemQuery = "update Member set mem_email = ?,mem_password = ? ,mem_phone = ?,mem_nickname = ?, mem_profile_content = ?, mem_profile_url = ?, mem_birth = ?,mem_address = ?,mem_address_code=?,mem_address_detail=? where mem_idx = ? ";
@@ -59,7 +69,7 @@ public class MemberDao {
         LocalDateTime time = LocalDateTime.now();
         DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         String currentTime = time.format(timeFormatter);
-        
+
         String createAuthQuery = "insert into Member_auth (ma_key, ma_type, ma_generate_time, ma_expired) values (?, ?, ?, ?)";
         Object[] createAuthParams = new Object[]{key, Integer.toString(type), currentTime, false}; // 동적 쿼리의 ?부분에 주입될 값
         this.jdbcTemplate.update(createAuthQuery, createAuthParams);    //인증 정보 생성

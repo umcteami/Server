@@ -216,7 +216,7 @@ public class MemberService {
 
 
     //회원가입
-    public PostJoinRes createMem(PostJoinReq postJoinReq, MultipartFile profile) throws BaseException {
+    public int createMem(PostJoinReq postJoinReq, MultipartFile profile) throws BaseException {
         try {
             String saveFilePath = null;
             if(!profile.getOriginalFilename().equals("basic.jpg")) {  //기본 프로필이 아니면 + 기본 프로필 사진 이름으로 변경하기
@@ -230,12 +230,16 @@ public class MemberService {
                 // 이미지 업로드
                 saveFilePath = File.separator + uploadImageS3.upload(profile, fileName, saveFileName);
             }
-
+            int checkNick = memberDao.checkNick(postJoinReq.getNick());
             int userIdx = memberDao.createMem(postJoinReq, saveFilePath);
+            if(checkNick != 0){
+                return checkNick;
+            }
             //jwt 발급.
             //String jwt = jwtService.createJwt(userIdx);
-            return new PostJoinRes(userIdx);
+            return userIdx;
         } catch (Exception exception) { // 회원가입 실패시
+            exception.printStackTrace();
             throw new BaseException(POST_MEMBER_JOIN);
         }
     }

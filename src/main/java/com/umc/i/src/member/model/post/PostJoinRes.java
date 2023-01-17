@@ -9,6 +9,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class PostJoinRes {
     private int memIdx;
+    //private String checkNick;
    // private String jwt;
 
 }

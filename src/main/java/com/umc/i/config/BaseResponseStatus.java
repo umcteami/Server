@@ -26,9 +26,10 @@ public enum BaseResponseStatus {
     POST_AUTH_INVALID_TYPE(false, 2016, "인증 타입을 확인해주세요"),
     POST_AUTH_SEND_FAIL(false, 2017, "인증번호 발송 실패"),
     POST_MEMBER_JOIN(false,2018,"회원가입 실패"),
+    POST_MEMBER_NICK_FAIL(false,2019,"닉네임 중복"),
 
     //[PATCH] /member
-    PATCH_MEMBER_EDIT_FAIL(false,2019,"회원정보 수정 실패");
+    PATCH_MEMBER_EDIT_FAIL(false,2020,"회원정보 수정 실패");
 
     private final boolean isSuccess;
     private final int code;

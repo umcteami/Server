@@ -37,8 +37,8 @@ public class MemberController {
     //회원가입
     @ResponseBody
     @PostMapping("/join")
-    public BaseResponse<PostJoinRes> createMem(@RequestPart("request") PostJoinReq postJoinReq,
-                                               @RequestPart("profile") MultipartFile profile){
+    public BaseResponse<Integer> createMem(@ModelAttribute("request") PostJoinReq postJoinReq,
+                                           @ModelAttribute("profile") MultipartFile profile){
         try {
             return new BaseResponse<>(memberService.createMem(postJoinReq, profile));
         } catch (BaseException exception) {
