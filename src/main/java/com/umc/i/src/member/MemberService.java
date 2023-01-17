@@ -51,7 +51,7 @@ public class MemberService {
 
     // 메일 양식 작성
     public MimeMessage createEmailForm(String email, String authCode) throws BaseException {
-        String setFrom = "amanda010926@gmail.com";  // 보내는 사람 이메일
+        String setFrom = "umcteami215@gmail.com";  // 보내는 사람 이메일
         String toEmail = email; //받는 사람
         String title = "아이 - 아름답게 이별하는 법 본인 인증 코드";    // 메일 제목
 
