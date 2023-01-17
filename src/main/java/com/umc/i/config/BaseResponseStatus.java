@@ -29,8 +29,10 @@ public enum BaseResponseStatus {
     POST_MEMBER_NICK_FAIL(false,2019,"닉네임 중복"),
 
     //[PATCH] /member
-    PATCH_MEMBER_EDIT_FAIL(false,2020,"회원정보 수정 실패"),
+    PATCH_MEMBER_EDIT_INTRO(false,2020,"한줄 소개 크기 초과"),
 
+    PATCH_MEMBER_EDIT_NICK(false,2021,"닉네임 수정 횟수 초과"),
+    PATCH_MEMBER_SPECIAL_NICK(false,2022,"닉네임 특수문자 포함"),
     POST_NUMBER_AUTH_FAILED(false, 2018, "번호 인증을 실패"),
 
     POST_NUMBER_AUTH_TIME_FAILED(false, 2019, "시간 초과"),

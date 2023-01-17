@@ -7,17 +7,19 @@ import java.util.Optional;
 
 import javax.sql.DataSource;
 
+import com.umc.i.config.BaseException;
 import com.umc.i.src.member.model.patch.PatchMemReq;
 import com.umc.i.src.member.model.post.PostAuthNumberReq;
 import com.umc.i.src.member.model.post.PostJoinReq;
 import com.umc.i.utils.ValidationRegex;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 @Repository
-
+@Slf4j
 public class MemberDao {
     private JdbcTemplate jdbcTemplate;
     private ValidationRegex validationRegex;
@@ -45,26 +47,38 @@ public class MemberDao {
         return 0;
     }
 
-    // 닉네임 중복 확인
+    // 닉네임 확인
     public int checkNick(String nick) {
 
         int checkNick = validationRegex.isRegexNick(nick);
         if(checkNick == 2){return checkNick;}
 
-        String checkPhoneQuery = "select count(*) from Member_nickname where nickname = ?";
-        int num = this.jdbcTemplate.queryForObject(checkPhoneQuery, int.class, nick);
+        String checkNickQuery = "select count(*) from Member_nickname where nickname = ?";
+        int num = this.jdbcTemplate.queryForObject(checkNickQuery, int.class, nick);
         if(num != 0){ num = 1;}
-        // 특수문자 포함 2 있으면 1 없으면 0
+        // 특수문자 포함 2 중복 있으면 1 없으면 0
         return num;
     }
 
     //유저 정보 변경
-    public int editMem(int memIdx,PatchMemReq patchMemReq, String profileUrl) {
+    public void editMem(int memIdx,PatchMemReq patchMemReq, String profileUrl) {
         String editMemQuery = "update Member set mem_email = ?,mem_password = ? ,mem_phone = ?,mem_nickname = ?, mem_profile_content = ?, mem_profile_url = ?, mem_birth = ?,mem_address = ?,mem_address_code=?,mem_address_detail=? where mem_idx = ? ";
         Object[] editMemParams = new Object[]{patchMemReq.getEmail(),patchMemReq.getPw(),patchMemReq.getPhone(), patchMemReq.getNick(),patchMemReq.getIntro(),profileUrl,
                 patchMemReq.getBirth(),patchMemReq.getAddres(),patchMemReq.getAddresCode(),patchMemReq.getAddresPlus(),memIdx};
+        this.jdbcTemplate.update(editMemQuery,editMemParams);
 
-        return this.jdbcTemplate.update(editMemQuery,editMemParams);
+        //변경된 닉네임 닉네임테이블로 이동
+        String uploadNickQuery = "insert into Member_nickname (mem_idx,nickname) VALUES (?,?)";
+        Object[] uploadNickParams = new Object[]{memIdx,patchMemReq.getNick()};
+        this.jdbcTemplate.update(uploadNickQuery,uploadNickParams);
+    }
+
+    public int editNickNum(int memIdx){
+        String editNickNumQuery = "select count(mem_idx) from Member_nickname where mem_idx = ?";
+
+        int num = this.jdbcTemplate.queryForObject(editNickNumQuery, int.class, memIdx);
+        log.info("{}",num);
+        return num;
     }
 
     //핸드폰번호 중복 확인
