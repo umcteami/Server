@@ -10,28 +10,32 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
 
 
 @Slf4j
 @Controller
 @RequiredArgsConstructor
-public class MemberController {
+public class LoginController {
 
-    private final MemberService memberService;
+    private final LoginService loginService;
 
     private final JwtService jwtService;
 
     @PostMapping(value = "/login")
-    public ResponseEntity<PostLoginRes> login(@RequestHeader("Auth-Refresh") String existRefreshToken,
+    public ResponseEntity<PostLoginRes> login(//@RequestHeader("Auth-Refresh") String existRefreshToken,
+                                              @RequestHeader Map<String, String> headers,
                                               @RequestBody Member member) {
         /**
          * jwt refreshToken 이 전달된 경우 확인
          * jwtService isValid, isExpire 후에 모두 true면
          * uid, email 추출해서 밑에 새로운 토큰 발행 후 전달
          */
-//        String existRefreshToken = header.get("Auth-Refresh");
-        log.info("existRefreshToken={} {}", existRefreshToken, existRefreshToken == null);
-        if (existRefreshToken.length() > 0) {
+        String existRefreshToken = headers.get("auth-refresh");
+        log.info("{}", existRefreshToken);
+        if (existRefreshToken != null) {
             if (!(jwtService.isExpiredToken(existRefreshToken) && jwtService.isValidToken(existRefreshToken))) {
                 PostLoginRes res = new PostLoginRes(false);
                 return new ResponseEntity<>(res, HttpStatus.UNAUTHORIZED);
@@ -51,7 +55,7 @@ public class MemberController {
             }
         }
 
-        Member loginMember = memberService.login(member.getEmail(), member.getPassword());
+        Member loginMember = loginService.login(member.getEmail(), member.getPassword());
 
         if (loginMember == null) {
             return ResponseEntity.notFound().build();
