@@ -3,20 +3,16 @@ package com.umc.i.src.member;
 import static com.umc.i.utils.ValidationRegex.isRegexEmail;
 import static com.umc.i.utils.ValidationRegex.isRegexPhone;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.List;
 
 import javax.mail.MessagingException;
 
-import com.fasterxml.jackson.databind.ser.Serializers;
-import com.umc.i.src.member.model.Member;
-import com.umc.i.src.member.model.patch.PatchMemReq;
-import com.umc.i.src.member.model.post.PostJoinReq;
-import com.umc.i.src.member.model.post.PostJoinRes;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.umc.i.config.BaseException;
 import com.umc.i.config.BaseResponse;
@@ -25,7 +21,6 @@ import com.umc.i.src.member.model.post.PostAuthReq;
 import com.umc.i.src.member.model.post.PostAuthRes;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/member")
@@ -34,35 +29,8 @@ public class MemberController {
     @Autowired
     private final MemberService memberService;
 
-    //회원가입
     @ResponseBody
-    @PostMapping("/join")
-    public BaseResponse<Integer> createMem(@ModelAttribute("request") PostJoinReq postJoinReq,
-                                           @ModelAttribute("profile") MultipartFile profile){
-        try {
-            return new BaseResponse<>(memberService.createMem(postJoinReq, profile));
-        } catch (BaseException exception) {
-            return new BaseResponse<>((exception.getStatus()));
-        }
-    }
-    //회원 정보 수정
-    @ResponseBody
-    @PatchMapping("/{memIdx}")
-    public BaseResponse<String> editMem(@PathVariable("memIdx") int memIdx, @ModelAttribute PatchMemReq patchMemReq,
-                                        @ModelAttribute MultipartFile profile) {
-        try {
-            memberService.editMem(memIdx,patchMemReq,profile);
-
-            String result = "회원정보가 수정되었습니다.";
-            return new BaseResponse<>(result);
-        } catch (BaseException exception) {
-            return new BaseResponse<>((exception.getStatus()));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-    @ResponseBody
-    @PostMapping("/join/auth")
+    @PostMapping("/join/auth")  
     // 본인인증
     public BaseResponse<PostAuthRes> checkType(@RequestBody PostAuthReq postJoinAuthReq) throws MessagingException, UnsupportedEncodingException {
         switch(postJoinAuthReq.getType()) {
