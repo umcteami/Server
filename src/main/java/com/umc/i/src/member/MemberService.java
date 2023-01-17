@@ -1,26 +1,38 @@
 package com.umc.i.src.member;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
-import java.util.Random;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.DeleteObjectRequest;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.umc.i.src.member.model.patch.PatchMemReq;
+import com.umc.i.src.member.model.post.PostJoinReq;
+import com.umc.i.src.member.model.post.PostJoinRes;
+import com.umc.i.utils.S3Storage.UploadImageS3;
+
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring5.SpringTemplateEngine;
 
@@ -30,14 +42,21 @@ import com.umc.i.src.member.model.post.PostAuthRes;
 
 import lombok.RequiredArgsConstructor;
 
+import static com.umc.i.config.BaseResponseStatus.*;
+
 @Service
 @RequiredArgsConstructor
 public class MemberService {
+    @Autowired
+    private final UploadImageS3 uploadImageS3;
+
+    private final AmazonS3 amazonS3;
+
     //의존성 주입 -> 필요한 객체 가져오기
     private final JavaMailSender eMailSender;
     // 타임리프를 사용하기 위한 객체
     private final SpringTemplateEngine templateEngine;
-    
+
     @Autowired
     private MemberDao memberDao;
     private String authCode; //인증코드
@@ -59,7 +78,7 @@ public class MemberService {
         try {
             MimeMessage message = eMailSender.createMimeMessage();
             message.addRecipients(MimeMessage.RecipientType.TO, toEmail);     //보낼 이메일 설정
-            message.setSubject(title);      // 제목 설정   
+            message.setSubject(title);      // 제목 설정
             message.setFrom(setFrom);       // 보내는 이메일
             message.setText(setContext(authCode), "utf-8", "html");
             return message;
@@ -88,7 +107,7 @@ public class MemberService {
     }
 
     @SuppressWarnings("unchecked")
-	public PostAuthRes send_msg(String tel) throws BaseException {
+    public PostAuthRes send_msg(String tel) throws BaseException {
         // 인증코드 생성
         createCode();
 
@@ -106,20 +125,20 @@ public class MemberService {
         // JSON 을 활용한 body data 생성
         JSONObject bodyJson = new JSONObject();
         JSONObject toJson = new JSONObject();
-	    JSONArray  toArr = new JSONArray();
+        JSONArray  toArr = new JSONArray();
 
-	    toJson.put("to",tel);
-	    toArr.add(toJson);
-	    
-	    bodyJson.put("type","sms");	// 메시지 Type (sms | lms)
-	    bodyJson.put("contentType","COMM");
-	    bodyJson.put("countryCode","82");
-	    bodyJson.put("from","");	// 발신번호 * 사전에 인증/등록된 번호만 사용할 수 있습니다.		
-	    bodyJson.put("messages", toArr);
+        toJson.put("to",tel);
+        toArr.add(toJson);
+
+        bodyJson.put("type","sms");	// 메시지 Type (sms | lms)
+        bodyJson.put("contentType","COMM");
+        bodyJson.put("countryCode","82");
+        bodyJson.put("from","");	// 발신번호 * 사전에 인증/등록된 번호만 사용할 수 있습니다.
+        bodyJson.put("messages", toArr);
         bodyJson.put("content", "아이 - 아름답게 이별하는 법\n본인인증 코드는 [" + authCode + "] 입니다.");
-	    
-	    String body = bodyJson.toJSONString();
-	    
+
+        String body = bodyJson.toJSONString();
+
         try {
             URL url = new URL(apiUrl);
 
@@ -134,7 +153,7 @@ public class MemberService {
             con.setRequestMethod(method);
             con.setDoOutput(true);
             DataOutputStream wr = new DataOutputStream(con.getOutputStream());
-            
+
             wr.write(body.getBytes("UTF-8"));
             wr.flush();
             wr.close();
@@ -154,7 +173,7 @@ public class MemberService {
                 response.append(inputLine);
             }
             br.close();
-            
+
             System.out.println(response.toString());
 
         } catch (Exception e) {
@@ -165,34 +184,89 @@ public class MemberService {
 
         return new PostAuthRes(autoIdx);
     }
-	
-	public static String makeSignature(String url, String timestamp, String method, String accessKey, String secretKey) throws BaseException {
-	    String space = " "; 
-	    String newLine = "\n"; 
 
-	    String message = new StringBuilder()
-	        .append(method)
-	        .append(space)
-	        .append(url)
-	        .append(newLine)
-	        .append(timestamp)
-	        .append(newLine)
-	        .append(accessKey)
-	        .toString();
+    public static String makeSignature(String url, String timestamp, String method, String accessKey, String secretKey) throws BaseException {
+        String space = " ";
+        String newLine = "\n";
 
-	    SecretKeySpec signingKey;
-	    String encodeBase64String;
-		try {
-			signingKey = new SecretKeySpec(secretKey.getBytes("UTF-8"), "HmacSHA256");
-			Mac mac = Mac.getInstance("HmacSHA256");
-			mac.init(signingKey);
-			byte[] rawHmac = mac.doFinal(message.getBytes("UTF-8"));
-		    encodeBase64String = Base64.getEncoder().encodeToString(rawHmac);
-		} catch (Exception e) {
-			throw new BaseException(BaseResponseStatus.POST_AUTH_SEND_FAIL);
-		}
+        String message = new StringBuilder()
+                .append(method)
+                .append(space)
+                .append(url)
+                .append(newLine)
+                .append(timestamp)
+                .append(newLine)
+                .append(accessKey)
+                .toString();
 
-	  return encodeBase64String;
-	}
-    
+        SecretKeySpec signingKey;
+        String encodeBase64String;
+        try {
+            signingKey = new SecretKeySpec(secretKey.getBytes("UTF-8"), "HmacSHA256");
+            Mac mac = Mac.getInstance("HmacSHA256");
+            mac.init(signingKey);
+            byte[] rawHmac = mac.doFinal(message.getBytes("UTF-8"));
+            encodeBase64String = Base64.getEncoder().encodeToString(rawHmac);
+        } catch (Exception e) {
+            throw new BaseException(BaseResponseStatus.POST_AUTH_SEND_FAIL);
+        }
+
+        return encodeBase64String;
+    }
+
+
+    //회원가입
+    public int createMem(PostJoinReq postJoinReq, MultipartFile profile) throws BaseException {
+        try {
+            String saveFilePath = null;
+            if(!profile.getOriginalFilename().equals("basic.jpg")) {  //기본 프로필이 아니면 + 기본 프로필 사진 이름으로 변경하기
+                String fileName = "image" + File.separator + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMM"));
+
+                // 저장할 새 이름
+                long time = System.currentTimeMillis();
+                String originalFilename = profile.getOriginalFilename();
+                String saveFileName = String.format("%d_%s", time, originalFilename.replaceAll(" ", ""));
+
+                // 이미지 업로드
+                saveFilePath = File.separator + uploadImageS3.upload(profile, fileName, saveFileName);
+            }
+            int checkNick = memberDao.checkNick(postJoinReq.getNick());
+            if(checkNick != 0){
+                return checkNick;
+            }
+            int userIdx = memberDao.createMem(postJoinReq, saveFilePath);
+
+            //jwt 발급.
+            //String jwt = jwtService.createJwt(userIdx);
+            return userIdx;
+        } catch (Exception exception) { // 회원가입 실패시
+            exception.printStackTrace();
+            throw new BaseException(POST_MEMBER_JOIN);
+        }
+    }
+    //회원 정보 수정
+    public void editMem(int memIdx,PatchMemReq patchMemReq,MultipartFile profile) throws BaseException, IOException {
+        try {
+            //이미지 수정
+            String saveFilePath = "";
+            if(!profile.getOriginalFilename().equals("basic.jpg")) {  //기본 프로필이 아니면 + 기본 프로필 사진 이름으로 변경하기
+                String fileName = "image" + File.separator + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMM"));
+
+                // 저장할 새 이름
+                long time = System.currentTimeMillis();
+                String originalFilename = profile.getOriginalFilename();
+                String saveFileName = String.format("%d_%s", time, originalFilename.replaceAll(" ", ""));
+
+                // 이미지 업로드
+                saveFilePath = File.separator + uploadImageS3.upload(profile, fileName, saveFileName);
+            }
+
+            int result = memberDao.editMem(memIdx,patchMemReq,saveFilePath); // 해당 과정이 무사히 수행되면 True(1), 그렇지 않으면 False(0)입니다.
+            if (result == 0) { // result값이 0이면 과정이 실패한 것이므로 에러 메서지를 보냅니다.
+                throw new BaseException(PATCH_MEMBER_EDIT_FAIL);
+            }
+        } catch (Exception exception) { // 인터넷 오류
+            throw new BaseException(INTERNET_ERROR);
+        }
+    }
 }
