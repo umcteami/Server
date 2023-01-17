@@ -24,6 +24,7 @@ import com.umc.i.src.member.model.post.PostJoinReq;
 import com.umc.i.src.member.model.post.PostJoinRes;
 import com.umc.i.utils.S3Storage.UploadImageS3;
 
+import com.umc.i.utils.UserSha256;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -241,13 +242,15 @@ public class MemberService {
                 saveFilePath = File.separator + uploadImageS3.upload(profile, fileName, saveFileName);
             }
             int checkNick = memberDao.checkNick(postJoinReq.getNick());
+            //암호화
+            String encryptPwd = UserSha256.encrypt(postJoinReq.getPw());
+            postJoinReq.setPw(encryptPwd);
+
             if(checkNick != 0){
                 return checkNick;
             }
             int userIdx = memberDao.createMem(postJoinReq, saveFilePath);
 
-            //jwt 발급.
-            //String jwt = jwtService.createJwt(userIdx);
             return userIdx;
         } catch (Exception exception) { // 회원가입 실패시
             exception.printStackTrace();

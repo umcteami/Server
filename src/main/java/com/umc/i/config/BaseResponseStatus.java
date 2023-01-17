@@ -29,7 +29,17 @@ public enum BaseResponseStatus {
     POST_MEMBER_NICK_FAIL(false,2019,"닉네임 중복"),
 
     //[PATCH] /member
-    PATCH_MEMBER_EDIT_FAIL(false,2020,"회원정보 수정 실패");
+    PATCH_MEMBER_EDIT_FAIL(false,2020,"회원정보 수정 실패"),
+
+    POST_NUMBER_AUTH_FAILED(false, 2018, "번호 인증을 실패"),
+
+    POST_NUMBER_AUTH_TIME_FAILED(false, 2019, "시간 초과"),
+
+    POST_AUTH_JWT_TOKEN_INVALID(false, 2020, "jwt 토큰 만료"),
+
+    POST_AUTH_MEMBER_NOT_EXIST(false, 2021, "회원 정보가 존재하지 않음"),
+
+    POST_MARKET_FEED_FAILED(false, 2022, "나눔 거래 게시물 작성 실패"),;
 
     private final boolean isSuccess;
     private final int code;

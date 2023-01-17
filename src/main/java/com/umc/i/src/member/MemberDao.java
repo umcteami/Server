@@ -2,14 +2,18 @@ package com.umc.i.src.member;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Optional;
 
 import javax.sql.DataSource;
 
 import com.umc.i.src.member.model.patch.PatchMemReq;
+import com.umc.i.src.member.model.post.PostAuthNumberReq;
 import com.umc.i.src.member.model.post.PostJoinReq;
 import com.umc.i.utils.ValidationRegex;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 @Repository
