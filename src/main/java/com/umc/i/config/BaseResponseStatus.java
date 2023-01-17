@@ -13,11 +13,8 @@ public enum BaseResponseStatus {
 
     SUCCESS(true, 200, "요청에 성공하였습니다."),
 
-    AUTH_FAILED(false, 2020, "인증에 실패하였습니다.");
 
-    SUCCESS(true, 1000, "요청에 성공하였습니다."),
-
-    // 2000 : Request 오류
+    // 2000 : Request 오류,
 
     // [POST] /member/join
     POST_MEMBER_EMPTY_EMAIL(false, 2010, "이메일을 입력해주세요."),
@@ -29,8 +26,17 @@ public enum BaseResponseStatus {
     POST_MEMBER_EXISTS_PHONE(false,2015,"중복된 전화번호입니다."),
 
     POST_AUTH_INVALID_TYPE(false, 2016, "인증 타입을 확인해주세요"),
-    POST_AUTH_SEND_FAIL(false, 2017, "인증번호 발송 실패");
+    POST_AUTH_SEND_FAIL(false, 2017, "인증번호 발송 실패"),
 
+    POST_NUMBER_AUTH_FAILED(false, 2018, "번호 인증을 실패"),
+
+    POST_NUMBER_AUTH_TIME_FAILED(false, 2019, "시간 초과"),
+
+    POST_AUTH_JWT_TOKEN_INVALID(false, 2020, "jwt 토큰 만료"),
+
+    POST_AUTH_MEMBER_NOT_EXIST(false, 2021, "회원 정보가 존재하지 않음"),
+
+    POST_MARKET_FEED_FAILED(false, 2022, "나눔 거래 게시물 작성 실패"),;
 
 
     private final boolean isSuccess;

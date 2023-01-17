@@ -3,19 +3,18 @@ package com.umc.i.src.member;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+import java.util.Date;
 import java.util.Random;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
+import com.umc.i.config.Constant;
+import com.umc.i.src.member.model.post.PostAuthNumberReq;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -194,5 +193,20 @@ public class MemberService {
 
 	  return encodeBase64String;
 	}
-    
+
+
+    public PostAuthNumberReq getSignAuthNumberObject(int authIdx) {
+        return memberDao.findByAuthIdx(authIdx)
+                .filter(o -> o.getAuthIdx() == authIdx)
+                .orElse(null);
+    }
+
+    public static boolean isExpired(PostAuthNumberReq postAuthNumberReq) {
+        Date createdAt = postAuthNumberReq.getCreatedAt();
+        Date date = new Date();
+
+        long diffSec = (date.getTime() - createdAt.getTime()) / (1000);
+
+        return diffSec <= Constant.NUMBER_AUTH_TIME_LIMIT;
+    }
 }

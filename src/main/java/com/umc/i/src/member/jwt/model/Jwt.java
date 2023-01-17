@@ -1,4 +1,4 @@
-package com.umc.i.member.jwt;
+package com.umc.i.src.member.jwt.model;
 
 import lombok.Data;
 

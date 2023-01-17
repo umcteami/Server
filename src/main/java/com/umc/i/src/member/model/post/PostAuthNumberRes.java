@@ -1,4 +1,4 @@
-package com.umc.i.member.auth.model;
+package com.umc.i.src.member.model.post;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -6,6 +6,5 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class PostAuthNumberRes {
-
-    private boolean isSuccess;
+    private String authIdx;
 }

@@ -1,15 +1,16 @@
-package com.umc.i.member.jwt;
+package com.umc.i.src.member.login.model;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@Builder
-@NoArgsConstructor
 @AllArgsConstructor
-public class Token {
+@NoArgsConstructor
+public class PostLoginMemberRes {
+    private Long id;
+    private String email;
+    private String nickname;
     private String accessToken;
     private String refreshToken;
 }

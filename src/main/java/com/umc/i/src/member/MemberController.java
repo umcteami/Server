@@ -7,12 +7,11 @@ import java.io.UnsupportedEncodingException;
 
 import javax.mail.MessagingException;
 
+import com.umc.i.src.member.model.post.PostAuthNumberReq;
+import com.umc.i.src.member.model.post.PostAuthNumberRes;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.umc.i.config.BaseException;
 import com.umc.i.config.BaseResponse;
@@ -22,6 +21,7 @@ import com.umc.i.src.member.model.post.PostAuthRes;
 
 import lombok.RequiredArgsConstructor;
 
+@Slf4j
 @RestController
 @RequestMapping("/member")
 @RequiredArgsConstructor
@@ -54,5 +54,23 @@ public class MemberController {
                 }
         }
         return new BaseResponse<>(BaseResponseStatus.POST_AUTH_INVALID_TYPE);
+    }
+
+    @GetMapping("/join/auth")
+    public BaseResponse<PostAuthNumberRes> checkAuthNumber(@RequestBody PostAuthNumberReq postAuthNumberReq) {
+        int authIdx = postAuthNumberReq.getAuthIdx();
+
+        PostAuthNumberReq res = memberService.getSignAuthNumberObject(authIdx);
+        log.info("res={}, {}", res, res.getAuthNumber());
+        if (res == null) {
+            return new BaseResponse<>(BaseResponseStatus.POST_NUMBER_AUTH_FAILED);
+        }
+
+        if (memberService.isExpired(res)) {
+            PostAuthNumberRes postAuthNumberRes = new PostAuthNumberRes(res.getAuthNumber());
+            return new BaseResponse<>(postAuthNumberRes);
+        }
+
+        return new BaseResponse<>(BaseResponseStatus.POST_NUMBER_AUTH_TIME_FAILED);
     }
 }
