@@ -11,11 +11,11 @@ import java.util.Optional;
 
 @Slf4j
 @Repository
-public class JdbcTemplateMemberRepository implements MemberRepository{
+public class JdbcTemplateLoginRepository implements LoginRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
-    public JdbcTemplateMemberRepository(DataSource dataSource) {
+    public JdbcTemplateLoginRepository(DataSource dataSource) {
         jdbcTemplate = new JdbcTemplate(dataSource);
     }
 

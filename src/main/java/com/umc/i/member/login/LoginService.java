@@ -5,12 +5,12 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class MemberService {
+public class LoginService {
 
-    private final JdbcTemplateMemberRepository memberRepository;
+    private final JdbcTemplateLoginRepository loginRepository;
 
     public Member login(String loginEmail, String password) {
-        return memberRepository.findByLoginEmail(loginEmail)
+        return loginRepository.findByLoginEmail(loginEmail)
                 .filter(m -> m.getPassword().equals(passwordCrypto(password)))
                 .orElse(null);
     }
