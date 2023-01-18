@@ -23,12 +23,20 @@ public class ValidationRegex {
     }
 
     //특수문자 형식 체크
-    public static int isRegexNick(String target){
+    public static boolean isRegexNick(String target){
         String regex = "^[0-9|a-z|A-Z|ㄱ-ㅎ|ㅏ-ㅣ|가-힣|\\s]*$";
         if (!Pattern.matches(regex, target)) {
-            return 2;
+            return true;
         }
-        return 0;
+        return false;
+    }
+
+    public static boolean isRegexPw(String target){
+        String regex = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$";
+        if(!Pattern.matches(regex,target)){
+            return true;
+        }
+        return false;
     }
 
 }

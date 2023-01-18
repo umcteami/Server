@@ -227,15 +227,11 @@ public class MemberService {
 
 
     //회원가입
-    public int createMem(PostJoinReq postJoinReq, MultipartFile profile) throws BaseException {
+    public String createMem(PostJoinReq postJoinReq, MultipartFile profile) throws BaseException {
         try {
-            //특수문자 및 중복 닉네임 확인
+            //중복 닉네임 확인(0,1)
             int checkNick = memberDao.checkNick(postJoinReq.getNick());
-            if(checkNick != 0){
-                return checkNick;
-            }
-
-            if(postJoinReq.getIntro().length() > 50){return 4;}
+            if(checkNick != 0){return "닉네임 중복";}
 
             String saveFilePath = null;
             if(!profile.getOriginalFilename().equals("basic.jpg")) {  //기본 프로필이 아니면 + 기본 프로필 사진 이름으로 변경하기
@@ -254,9 +250,8 @@ public class MemberService {
             String encryptPwd = UserSha256.encrypt(postJoinReq.getPw());
             postJoinReq.setPw(encryptPwd);
 
-            int num = memberDao.createMem(postJoinReq, saveFilePath);
+            return memberDao.createMem(postJoinReq, saveFilePath);
 
-            return num;
         } catch (Exception exception) { // 회원가입 실패시
             exception.printStackTrace();
             throw new BaseException(POST_MEMBER_JOIN);
@@ -264,22 +259,16 @@ public class MemberService {
     }
 
     //회원 정보 수정
-    public int editMem(int memIdx,PatchMemReq patchMemReq,MultipartFile profile) throws BaseException, IOException {
+    public String editMem(int memIdx,PatchMemReq patchMemReq,MultipartFile profile) throws BaseException, IOException {
         try {
-            //닉네임 횟수 제한
             int editNickNum = memberDao.editNickNum(memIdx);
             if(editNickNum > 2){
-                return 3;
+                return "닉네임 변경 횟수 초과";
             }
 
-            //닉네임 특수문자 및 중복 확인
             int checkNick = memberDao.checkNick(patchMemReq.getNick());
-            if(checkNick != 0){
-                return checkNick;
-            }
+            if(checkNick != 0){return "닉네임 중복";}
 
-            //한줄 소개 길이 초과 50자
-            if(patchMemReq.getIntro().length() > 50){return 4;}
             //이미지 수정
             String saveFilePath = "";
             if(!profile.getOriginalFilename().equals("basic.jpg")) {  //기본 프로필이 아니면 + 기본 프로필 사진 이름으로 변경하기
@@ -295,9 +284,22 @@ public class MemberService {
             }
 
             memberDao.editMem(memIdx,patchMemReq,saveFilePath); // 해당 과정이 무사히 수행되면 True(1), 그렇지 않으면 False(0)입니다.
-            return 0;
+            return "성공";
         } catch (Exception exception) { // 인터넷 오류
             exception.printStackTrace();
+            throw new BaseException(INTERNET_ERROR);
+        }
+    }
+    //비밀번호 변경
+    public String editPw(int memIdx,String pw)throws BaseException{
+        try {
+            //암호화
+            String encryptPwd = UserSha256.encrypt(pw);
+
+            memberDao.editPw(encryptPwd,memIdx);
+            return "비밀번호 변경 성공";
+        }catch (Exception e){
+            e.printStackTrace();
             throw new BaseException(INTERNET_ERROR);
         }
     }

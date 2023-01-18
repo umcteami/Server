@@ -22,7 +22,6 @@ import org.springframework.stereotype.Repository;
 @Slf4j
 public class MemberDao {
     private JdbcTemplate jdbcTemplate;
-    private ValidationRegex validationRegex;
 
     @Autowired
     public void setDataSource(DataSource dataSource) {
@@ -30,7 +29,7 @@ public class MemberDao {
     }
 
     //회원가입
-    public int createMem(PostJoinReq postJoinReq, String profileUrl) {
+    public String createMem(PostJoinReq postJoinReq, String profileUrl) {
         String createUserQuery = "insert into Member (mem_email, mem_password,mem_phone, mem_nickname,mem_profile_content,mem_profile_url,mem_birth,mem_address,mem_address_code,mem_address_detail) VALUES (?,?,?,?,?,?,?,?,?,?)";
         Object[] createUserParams = new Object[]{postJoinReq.getEmail(), postJoinReq.getPw(),postJoinReq.getPhone(), postJoinReq.getNick(),postJoinReq.getIntro(),profileUrl,
                 postJoinReq.getBirth(),postJoinReq.getAddres(),postJoinReq.getAddresCode(),postJoinReq.getAddresPlus()};
@@ -44,26 +43,22 @@ public class MemberDao {
         this.jdbcTemplate.update(uploadNickQuery,uploadNickParams);
 
         //성공 시 0
-        return 0;
+        return "성공";
     }
 
     // 닉네임 확인
     public int checkNick(String nick) {
-
-        int checkNick = validationRegex.isRegexNick(nick);
-        if(checkNick == 2){return checkNick;}
-
         String checkNickQuery = "select count(*) from Member_nickname where nickname = ?";
         int num = this.jdbcTemplate.queryForObject(checkNickQuery, int.class, nick);
         if(num != 0){ num = 1;}
-        // 특수문자 포함 2 중복 있으면 1 없으면 0
+        //중복 있으면 1 없으면 0
         return num;
     }
 
     //유저 정보 변경
     public void editMem(int memIdx,PatchMemReq patchMemReq, String profileUrl) {
-        String editMemQuery = "update Member set mem_email = ?,mem_password = ? ,mem_phone = ?,mem_nickname = ?, mem_profile_content = ?, mem_profile_url = ?, mem_birth = ?,mem_address = ?,mem_address_code=?,mem_address_detail=? where mem_idx = ? ";
-        Object[] editMemParams = new Object[]{patchMemReq.getEmail(),patchMemReq.getPw(),patchMemReq.getPhone(), patchMemReq.getNick(),patchMemReq.getIntro(),profileUrl,
+        String editMemQuery = "update Member set mem_email = ? ,mem_phone = ?,mem_nickname = ?, mem_profile_content = ?, mem_profile_url = ?, mem_birth = ?,mem_address = ?,mem_address_code=?,mem_address_detail=? where mem_idx = ? ";
+        Object[] editMemParams = new Object[]{patchMemReq.getEmail(),patchMemReq.getPhone(), patchMemReq.getNick(),patchMemReq.getIntro(),profileUrl,
                 patchMemReq.getBirth(),patchMemReq.getAddres(),patchMemReq.getAddresCode(),patchMemReq.getAddresPlus(),memIdx};
         this.jdbcTemplate.update(editMemQuery,editMemParams);
 
@@ -72,15 +67,18 @@ public class MemberDao {
         Object[] uploadNickParams = new Object[]{memIdx,patchMemReq.getNick()};
         this.jdbcTemplate.update(uploadNickQuery,uploadNickParams);
     }
-
+    // 닉네임 변경횟수
     public int editNickNum(int memIdx){
         String editNickNumQuery = "select count(mem_idx) from Member_nickname where mem_idx = ?";
 
         int num = this.jdbcTemplate.queryForObject(editNickNumQuery, int.class, memIdx);
-        log.info("{}",num);
         return num;
     }
-
+    //비밀번호 변경
+    public void editPw(String pw,int memIdx){
+        String editPwQuery = "update Member set mem_password = ? where mem_idx = ?";
+        this.jdbcTemplate.update(editPwQuery,pw,memIdx);
+    }
     //핸드폰번호 중복 확인
     public int checkPhone(String tel) {
         String checkPhoneQuery = "select count(*) from Member where mem_phone = ?";
