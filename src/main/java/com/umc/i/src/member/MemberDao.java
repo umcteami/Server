@@ -8,6 +8,7 @@ import java.util.Optional;
 import javax.sql.DataSource;
 
 import com.umc.i.config.BaseException;
+import com.umc.i.src.member.model.get.GetMemRes;
 import com.umc.i.src.member.model.patch.PatchMemReq;
 import com.umc.i.src.member.model.post.PostAuthNumberReq;
 import com.umc.i.src.member.model.post.PostJoinReq;
@@ -78,6 +79,23 @@ public class MemberDao {
     public void editPw(String pw,int memIdx){
         String editPwQuery = "update Member set mem_password = ? where mem_idx = ?";
         this.jdbcTemplate.update(editPwQuery,pw,memIdx);
+    }
+    //유저 조회
+    public GetMemRes getMem(int memIdx) {
+        String getMemQuery = "select * from Member where mem_idx = ?";
+        int getMemParams = memIdx;
+        return this.jdbcTemplate.queryForObject(getMemQuery,
+                (rs, rowNum) -> new GetMemRes(
+                        rs.getString("mem_email"),
+                        rs.getString("mem_phone"),
+                        rs.getString("mem_nickname"),
+                        rs.getString("mem_profile_content"),
+                        rs.getString("mem_birth"),
+                        rs.getString("mem_address_code"),
+                        rs.getString("mem_address"),
+                        rs.getString("mem_address_detail"),
+                        rs.getString("mem_profile_url")), // RowMapper(위의 링크 참조): 원하는 결과값 형태로 받기
+                getMemParams); // 한 개의 회원정보를 얻기 위한 jdbcTemplate 함수(Query, 객체 매핑 정보, Params)의 결과 반환
     }
     //핸드폰번호 중복 확인
     public int checkPhone(String tel) {

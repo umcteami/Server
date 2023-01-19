@@ -19,6 +19,7 @@ import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.umc.i.src.member.model.get.GetMemRes;
 import com.umc.i.src.member.model.patch.PatchMemReq;
 import com.umc.i.src.member.model.post.PostJoinReq;
 import com.umc.i.src.member.model.post.PostJoinRes;
@@ -300,6 +301,17 @@ public class MemberService {
             return "비밀번호 변경 성공";
         }catch (Exception e){
             e.printStackTrace();
+            throw new BaseException(INTERNET_ERROR);
+        }
+    }
+
+    //유저 조회
+    public GetMemRes getMem(int memIdx)throws BaseException{
+        try {
+            GetMemRes getMemRes = memberDao.getMem(memIdx);
+            return getMemRes;
+        } catch (Exception exception) {
+            exception.printStackTrace();
             throw new BaseException(INTERNET_ERROR);
         }
     }

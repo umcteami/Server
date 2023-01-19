@@ -10,10 +10,12 @@ import javax.mail.MessagingException;
 
 import com.fasterxml.jackson.databind.ser.Serializers;
 import com.umc.i.src.member.model.Member;
+import com.umc.i.src.member.model.get.GetMemRes;
 import com.umc.i.src.member.model.patch.PatchMemReq;
 import com.umc.i.src.member.model.post.PostJoinReq;
 import com.umc.i.src.member.model.post.PostJoinRes;
 import com.umc.i.utils.ValidationRegex;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -103,6 +105,18 @@ public class MemberController {
             return new BaseResponse<>(result);
         }catch (BaseException e){
             return new BaseResponse<>((e.getStatus()));
+        }
+    }
+
+    //유저 조회
+    @ResponseBody
+    @GetMapping("/{memIdx}")
+    public BaseResponse<GetMemRes> getMem(@PathVariable("memIdx") int memIdx) throws BaseException{
+        try {
+            GetMemRes getMemRes = memberService.getMem(memIdx);
+            return new BaseResponse<>(getMemRes);
+        } catch (BaseException exception) {
+            return new BaseResponse<>((exception.getStatus()));
         }
     }
 
