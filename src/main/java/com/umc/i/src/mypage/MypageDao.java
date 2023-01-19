@@ -1,6 +1,7 @@
 package com.umc.i.src.mypage;
 
 import com.umc.i.src.member.model.get.GetMemRes;
+import com.umc.i.src.mypage.model.get.GetComuWriteRes;
 import com.umc.i.src.mypage.model.get.GetMypageMemRes;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +37,7 @@ public class MypageDao {
                 memIdx);
 
     }
+    //작성한 글 수
     public List<Integer> getMyPCountMem(int memIdx){
         List<Integer> getMyPCountMemList = new ArrayList<>();
         //장터 후기 수
@@ -53,7 +55,12 @@ public class MypageDao {
         //나눔장터 작성 글 수
         String countMarketQuery = "select count(*) from Market where mem_idx = ?";
         getMyPCountMemList.add(this.jdbcTemplate.queryForObject(countMarketQuery,int.class,memIdx));
-        log.info("{}",getMyPCountMemList);
+
         return getMyPCountMemList;
     }
+    // 전체 대상 작성한 글 조회 - boardIdx , comuIdx , feedImg , createAt
+    /*public GetComuWriteRes getComuWrite(int memIdx){
+        String getComuWriteQuery = "select "
+    }*/
+    // 이야기방 장터후기 대상 작성한 글 조회
 }
