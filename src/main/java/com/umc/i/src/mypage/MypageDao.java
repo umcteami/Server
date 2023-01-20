@@ -6,6 +6,7 @@ import com.umc.i.src.mypage.model.get.GetComuWriteRes;
 import com.umc.i.src.mypage.model.get.GetMypageMemRes;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Repository;
@@ -23,6 +24,8 @@ public class MypageDao {
     public void setDataSource(DataSource dataSource) {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
+
+    private List<GetComuWriteRes> getComuWriteList = new ArrayList<>();
 
     //마이 홈페이지 시작창 조회
     public GetMypageMemRes getMyPMem (int memIdx){
@@ -59,53 +62,57 @@ public class MypageDao {
         return getMyPCountMemList;
     }
     // 전체 대상 작성한 글 조회
-    public GetComuWriteRes getDiaryWrite(int memIdx){
+    public List<GetComuWriteRes> getDiaryWrite(int memIdx){
 
-        String getDiaryWriteQuery = "select board_idx,diary_idx,diary_hit,diary_created_at from Diary_feed where mem_idx = ?";
-        GetComuWriteRes getDiaryWriteRes = this.jdbcTemplate.queryForObject(getDiaryWriteQuery,
-                (rs, rowNum) -> new GetComuWriteRes(
-                        rs.getInt("board_idx"),
-                        rs.getInt("diary_idx"),
-                        rs.getInt("diary_hit"),
-                        rs.getString("diary_created_at")),
-                memIdx);
+        try {
+            String getDiaryWriteQuery = "select board_idx,diary_roomType,diary_idx,diary_title,diary_hit,diary_created_at,diary_image from Diary_feed where mem_idx = ?";
+            getComuWriteList.add(this.jdbcTemplate.queryForObject(getDiaryWriteQuery,
+                    (rs, rowNum) -> new GetComuWriteRes(
+                            rs.getInt("board_idx"),
+                            rs.getInt("diary_roomType"),
+                            rs.getInt("diary_idx"),
+                            rs.getString("diary_title"),
+                            rs.getInt("diary_hit"),
+                            rs.getString("diary_created_at"),
+                            rs.getInt("diary_image")),
+                    memIdx));
+            //feedImg(1)
+            for(int i =0;i<=getComuWriteList.size();i++){
+                if(getComuWriteList.get(i).getImageCount() != 0){
+                    String getDiaryImgQuery = "select image_url from Image_url where content_category = ? and content_idx = ? and image_order = 0";
+                    String diaryImg = this.jdbcTemplate.queryForObject(getDiaryImgQuery,String.class,getComuWriteList.get(i).getBoarIdx(),getComuWriteList.get(i).getComuIdx());
+                    getComuWriteList.get(i).setFeedImg(diaryImg);
+                }else{
+                    getComuWriteList.get(i).setFeedImg(null);
+                }
+                //CountLike Comment
+                String getCountLikeQuery = "select count(*) from Diary_feed_like where diary_idx = ?";
+                int countLike = this.jdbcTemplate.queryForObject(getCountLikeQuery,int.class,getComuWriteList.get(i).getComuIdx());
+                String getCountComment = "select count(*) from Diary_comment where diary_idx = ?";
+                int countComment = this.jdbcTemplate.queryForObject(getCountComment,int.class,getComuWriteList.get(i).getComuIdx());
 
-        if(getDiaryWriteRes.getBoarIdx() < 3){
+                getComuWriteList.get(i).setCountComment(countComment);
+                getComuWriteList.get(i).setCountLike(countLike);
+            }
+            //getComuWriteList.add(getDiaryWriteRes);
+            log.info("{}","test");
+            return getComuWriteList;
 
-        }else{
-
+        } catch (EmptyResultDataAccessException e) {
+            e.printStackTrace();
+            return null;
         }
-        //roomType set
-        String getdiaryRoomTypeQuery = "select diary_roomType from Diary_feed where mem_idx = ?";
-        int diaryRoomType = this.jdbcTemplate.queryForObject(getdiaryRoomTypeQuery, int.class,memIdx);
-        getDiaryWriteRes.setRoomType(diaryRoomType);
-        //title
-        String getDiaryTitleQuery = "select diary_title from Diary_feed where mem_idx = ?";
-        String diaryTitle = this.jdbcTemplate.queryForObject(getDiaryTitleQuery,String.class,memIdx);
-        getDiaryWriteRes.setTitle(diaryTitle);
-        //feedImg(1)
-        String getDiaryImgQuery = "select image_url from Image_url where content_category = ? and content_idx = ? and image_order = 0";
-        String diaryImg = this.jdbcTemplate.queryForObject(getDiaryImgQuery,String.class,getDiaryWriteRes.getBoarIdx(),getDiaryWriteRes.getComuIdx());
-        getDiaryWriteRes.setFeedImg(diaryImg);
-        //CountLike Comment
-        String getCountLikeQuery = "select count(*) from Diary_feed_like where diary_idx = ?";
-        int countLike = this.jdbcTemplate.queryForObject(getCountLikeQuery,int.class,getDiaryWriteRes.getComuIdx());
-        String getCountComment = "select count(*) from Diary_comment where diary_idx = ?";
-        int countComment = this.jdbcTemplate.queryForObject(getCountComment,int.class,getDiaryWriteRes.getComuIdx());
 
-        getDiaryWriteRes.setCountComment(countComment);
-        getDiaryWriteRes.setCountLike(countLike);
-
-        return getDiaryWriteRes;
     }
-    public GetComuWriteRes getReviewWrite(int memIdx){
-        String getReviewWriteQuery = "select board_idx,review_idx,review_hit,review_created_at from Market_review where buy_mem_idx = ?";
+    public List<GetComuWriteRes> getReviewWrite(int memIdx){
+        String getReviewWriteQuery = "select board_idx,review_idx,review_hit,review_created_at,review_image from Market_review where buy_mem_idx = ?";
         GetComuWriteRes getReviewWriteRes = this.jdbcTemplate.queryForObject(getReviewWriteQuery,
                 (rs, rowNum) -> new GetComuWriteRes(
                         rs.getInt("board_idx"),
                         rs.getInt("diary_idx"),
                         rs.getInt("diary_hit"),
-                        rs.getString("diary_created_at")),
+                        rs.getString("diary_created_at"),
+                        rs.getInt("review_image")),
                 memIdx);
         //roomType set
         getReviewWriteRes.setRoomType(0);
@@ -120,9 +127,13 @@ public class MypageDao {
 
         getReviewWriteRes.setTitle(diaryTitle);
         //feedImg(1)
-        String getDiaryImgQuery = "select image_url from Image_url where content_category = ? and content_idx = ? and image_order = 0";
-        String diaryImg = this.jdbcTemplate.queryForObject(getDiaryImgQuery,String.class,getReviewWriteRes.getBoarIdx(),getReviewWriteRes.getComuIdx());
-        getReviewWriteRes.setFeedImg(diaryImg);
+        if(getReviewWriteRes.getImageCount()!=0){
+            String getDiaryImgQuery = "select image_url from Image_url where content_category = ? and content_idx = ? and image_order = 0";
+            String diaryImg = this.jdbcTemplate.queryForObject(getDiaryImgQuery,String.class,getReviewWriteRes.getBoarIdx(),getReviewWriteRes.getComuIdx());
+            getReviewWriteRes.setFeedImg(diaryImg);
+        }else{
+            getReviewWriteRes.setFeedImg(null);
+        }
         //CountLike Comment
         String getCountLikeQuery = "select count(*) from Diary_feed_like where diary_idx = ?";
         int countLike = this.jdbcTemplate.queryForObject(getCountLikeQuery,int.class,getReviewWriteRes.getComuIdx());
@@ -132,17 +143,19 @@ public class MypageDao {
         getReviewWriteRes.setCountComment(countComment);
         getReviewWriteRes.setCountLike(countLike);
 
-        return getReviewWriteRes;
+        getComuWriteList.add(getReviewWriteRes);
+        return getComuWriteList;
     }
     //이야기방 조회
-    public GetComuWriteRes getStoryWrite(int memIdx){
-        String getStoryWriteQuery = "select board_idx,story_idx,story_hit,story_created_at from Story_feed where mem_idx = ?";
+    public List<GetComuWriteRes> getStoryWrite(int memIdx){
+        String getStoryWriteQuery = "select board_idx,story_idx,story_hit,story_created_at,story_image from Story_feed where mem_idx = ?";
         GetComuWriteRes getStoryWriteRes = this.jdbcTemplate.queryForObject(getStoryWriteQuery,
                 (rs, rowNum) -> new GetComuWriteRes(
                         rs.getInt("board_idx"),
                         rs.getInt("story_idx"),
                         rs.getInt("story_hit"),
-                        rs.getString("story_created_at")),
+                        rs.getString("story_created_at"),
+                        rs.getInt("story_image")),
                 memIdx);
         //roomType set
         String getStoryRoomTypeQuery = "select story_roomType from Story_feed where mem_idx = ?";
@@ -153,9 +166,13 @@ public class MypageDao {
         String storyTitle = this.jdbcTemplate.queryForObject(getStoryTitleQuery,String.class,memIdx);
         getStoryWriteRes.setTitle(storyTitle);
         //feedImg(1)
-        String getStoryImgQuery = "select image_url from Image_url where content_category = ? and content_idx = ? and image_order = 0";
-        String diaryImg = this.jdbcTemplate.queryForObject(getStoryImgQuery,String.class,getStoryWriteRes.getBoarIdx(),getStoryWriteRes.getComuIdx());
-        getStoryWriteRes.setFeedImg(diaryImg);
+        if(getStoryWriteRes.getImageCount() != 0){
+            String getStoryImgQuery = "select image_url from Image_url where content_category = ? and content_idx = ? and image_order = 0";
+            String diaryImg = this.jdbcTemplate.queryForObject(getStoryImgQuery,String.class,getStoryWriteRes.getBoarIdx(),getStoryWriteRes.getComuIdx());
+            getStoryWriteRes.setFeedImg(diaryImg);
+        }else{
+            getStoryWriteRes.setFeedImg(null);
+        }
         //CountLike Comment
         String getCountLikeQuery = "select count(*) from Story_feed_like where story_idx = ?";
         int countLike = this.jdbcTemplate.queryForObject(getCountLikeQuery,int.class,getStoryWriteRes.getComuIdx());
@@ -164,9 +181,8 @@ public class MypageDao {
 
         getStoryWriteRes.setCountComment(countComment);
         getStoryWriteRes.setCountLike(countLike);
-
-        return getStoryWriteRes;
+        getComuWriteList.add(getStoryWriteRes);
+        return getComuWriteList;
     }
-    // roomType 얻기
 
 }

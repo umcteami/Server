@@ -32,13 +32,5 @@ public class MypageProvider {
         }
     }
     //전체 대상 작성 글 조회
-    public GetComuWriteRes getComuWrite(int memIdx)throws BaseException{
-        try {
 
-
-        } catch (Exception exception) {
-            exception.printStackTrace();
-            throw new BaseException(INTERNET_ERROR);
-        }
-    }
 }
