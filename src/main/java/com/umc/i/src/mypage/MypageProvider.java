@@ -1,6 +1,7 @@
 package com.umc.i.src.mypage;
 
 import com.umc.i.config.BaseException;
+import com.umc.i.src.mypage.model.get.GetComuWriteRes;
 import com.umc.i.src.mypage.model.get.GetMypageMemRes;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,16 @@ public class MypageProvider {
             getMypageMemRes.setMarketCount(mypageDao.getMyPCountMem(memIdx).get(2));
 
             return getMypageMemRes;
+        } catch (Exception exception) {
+            exception.printStackTrace();
+            throw new BaseException(INTERNET_ERROR);
+        }
+    }
+    //전체 대상 작성 글 조회
+    public GetComuWriteRes getComuWrite(int memIdx)throws BaseException{
+        try {
+
+
         } catch (Exception exception) {
             exception.printStackTrace();
             throw new BaseException(INTERNET_ERROR);

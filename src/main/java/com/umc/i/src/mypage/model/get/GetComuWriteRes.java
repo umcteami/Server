@@ -1,6 +1,7 @@
 package com.umc.i.src.mypage.model.get;
 
 import lombok.*;
+import org.springframework.lang.Nullable;
 
 @Getter
 @Setter
@@ -14,8 +15,8 @@ public class GetComuWriteRes {
     @NonNull
     private int comuIdx;
     private String title; //boarIdx 가 장터후기면 필터링
-    @NonNull
     private String feedImg;
+    @NonNull
     private int hit;       //Dao단에서 분리하고 provider에서 합치기
     private int countLike;
     private int countComment;
