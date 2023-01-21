@@ -3,7 +3,6 @@ package com.umc.i.src.mypage;
 import com.umc.i.config.BaseException;
 import com.umc.i.src.member.MemberDao;
 import com.umc.i.src.member.model.get.GetMemRes;
-import com.umc.i.src.mypage.model.get.GetComuWriteResDto;
 import com.umc.i.src.mypage.model.get.GetMypageMemRes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;

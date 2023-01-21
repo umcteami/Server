@@ -1,7 +1,9 @@
 package com.umc.i.src.mypage;
 
+import com.fasterxml.jackson.databind.ser.Serializers;
 import com.umc.i.config.BaseException;
 import com.umc.i.src.mypage.model.get.GetComuWriteRes;
+import com.umc.i.src.mypage.model.get.GetMarketWriteRes;
 import com.umc.i.src.mypage.model.get.GetMypageMemRes;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,19 +35,18 @@ public class MypageProvider {
             throw new BaseException(INTERNET_ERROR);
         }
     }
-
+    class createAtComparator implements Comparator<GetComuWriteRes> {
+        @Override
+        public int compare(GetComuWriteRes f1, GetComuWriteRes f2) {
+            return f1.getCreateAt().compareTo(f2.getCreateAt());
+        }
+    }
     //전체 대상 작성 글 조회
-    public List<GetComuWriteRes> getRSDWrite(int memIdx)throws BaseException{
+    public List<GetComuWriteRes> getWrite(int memIdx)throws BaseException{
         try {
             List<GetComuWriteRes> RSDList = mypageDao.getDiaryWrite(memIdx);
             RSDList.addAll(getRSWrite(memIdx));
 
-            class createAtComparator implements Comparator<GetComuWriteRes> {
-                @Override
-                public int compare(GetComuWriteRes f1, GetComuWriteRes f2) {
-                    return f1.getCreateAt().compareTo(f2.getCreateAt());
-                }
-            }
             Collections.sort(RSDList, new createAtComparator().reversed());
 
             return RSDList;
@@ -60,15 +61,27 @@ public class MypageProvider {
             List<GetComuWriteRes> RSList = mypageDao.getReviewWrite(memIdx);
             RSList.addAll(mypageDao.getStoryWrite(memIdx));
 
-            class createAtComparator implements Comparator<GetComuWriteRes> {
-                @Override
-                public int compare(GetComuWriteRes f1, GetComuWriteRes f2) {
-                    return f1.getCreateAt().compareTo(f2.getCreateAt());
-                }
-            }
             Collections.sort(RSList, new createAtComparator());
 
             return RSList;
+        }catch (Exception exception){
+            exception.printStackTrace();
+            throw new BaseException(INTERNET_ERROR);
+        }
+    }
+    //일기장 대상 조회
+    public List<GetComuWriteRes> getSWrite(int memIdx)throws BaseException{
+        try {
+            return mypageDao.getDiaryWrite(memIdx);
+        }catch (Exception exception){
+            exception.printStackTrace();
+            throw new BaseException(INTERNET_ERROR);
+        }
+    }
+    //나눔장터 대상 조회
+    public List<GetMarketWriteRes> getMarketWrite(int memIdx)throws BaseException{
+        try {
+            return mypageDao.getMarketWrite(memIdx);
         }catch (Exception exception){
             exception.printStackTrace();
             throw new BaseException(INTERNET_ERROR);

@@ -3,6 +3,7 @@ package com.umc.i.src.mypage;
 import com.umc.i.src.member.model.get.GetMemRes;
 import com.umc.i.src.mypage.model.MypageFeed;
 import com.umc.i.src.mypage.model.get.GetComuWriteRes;
+import com.umc.i.src.mypage.model.get.GetMarketWriteRes;
 import com.umc.i.src.mypage.model.get.GetMypageMemRes;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -138,7 +139,7 @@ public class MypageDao {
                         } else {
                             getReviewWriteRes.setFeedImg(null);
                         }
-                        //CountLike Comment
+                        /**CountLike Comment-마켓 리뷰 찜하기 테이블 및 댓글 테이블 없음**/
                         String getCountLikeQuery = "select count(*) from Diary_feed_like where diary_idx = ?";
                         int countLike = this.jdbcTemplate.queryForObject(getCountLikeQuery, int.class, getReviewWriteRes.getComuIdx());
                         String getCountComment = "select count(*) from Diary_comment where diary_idx = ?";
@@ -194,4 +195,37 @@ public class MypageDao {
             return null;
         }
     }
+    //나눔장터 조회
+    public List<GetMarketWriteRes> getMarketWrite(int memIdx){
+        try {
+            String getMarketWriteQuery = "select board_idx,market_idx,market_title,market_soldout,market_goods,market_like_count,market_image " +
+                    "from Market where mem_idx = ?";
+
+            return this.jdbcTemplate.query(getMarketWriteQuery,
+                    (rs, rowNum) -> {
+                        GetMarketWriteRes getMarketWriteRes = new GetMarketWriteRes(
+                                rs.getInt("board_idx"),
+                                rs.getInt("market_idx"),
+                                rs.getString("market_title"),
+                                rs.getInt("market_soldout"),
+                                rs.getInt("market_goods"),
+                                rs.getInt("market_image")
+                        );
+                        String getStoryImgQuery = "select image_url from Image_url where content_category = ? and content_idx = ? and image_order = 0";
+                        String marketImg = this.jdbcTemplate.queryForObject(getStoryImgQuery,String.class,getMarketWriteRes.getBoarIdx(),getMarketWriteRes.getComuIdx());
+                        getMarketWriteRes.setFeedImg(marketImg);
+
+                        String getCountReserve = "select count(*) from Market_like where market_idx = ? and ml_status = 1 ";
+                        int marketCountReserve = this.jdbcTemplate.queryForObject(getCountReserve,int.class,getMarketWriteRes.getComuIdx());
+                        getMarketWriteRes.setCountReserve(marketCountReserve);
+
+                        return getMarketWriteRes;
+                    },
+                    memIdx);
+        }catch (EmptyResultDataAccessException e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 }

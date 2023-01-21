@@ -26,14 +26,9 @@ public enum BaseResponseStatus {
     POST_AUTH_INVALID_TYPE(false, 2016, "인증 타입을 확인해주세요"),
     POST_AUTH_SEND_FAIL(false, 2017, "인증번호 발송 실패"),
     POST_MEMBER_JOIN(false,2018,"회원가입 실패"),
-    POST_MEMBER_NICK_FAIL(false,2019,"닉네임 중복"),
 
     //[PATCH] /member
-    PATCH_MEMBER_EDIT_INTRO(false,2020,"한줄 소개 크기 초과"),
 
-    PATCH_MEMBER_EDIT_NICK(false,2021,"닉네임 수정 횟수 초과"),
-    PATCH_MEMBER_SPECIAL_NICK(false,2022,"닉네임 특수문자 포함"),
-    POST_NUMBER_AUTH_FAILED(false, 2018, "번호 인증을 실패"),
 
     POST_NUMBER_AUTH_TIME_FAILED(false, 2019, "시간 초과"),
 
@@ -41,7 +36,10 @@ public enum BaseResponseStatus {
 
     POST_AUTH_MEMBER_NOT_EXIST(false, 2021, "회원 정보가 존재하지 않음"),
 
-    POST_MARKET_FEED_FAILED(false, 2022, "나눔 거래 게시물 작성 실패"),;
+    POST_MARKET_FEED_FAILED(false, 2022, "나눔 거래 게시물 작성 실패"),
+
+    //[GET] /mypage
+    GET_WRITE_FEED_FAILED(false,2023,"조회 실패");
 
     private final boolean isSuccess;
     private final int code;

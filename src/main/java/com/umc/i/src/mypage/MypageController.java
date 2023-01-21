@@ -2,7 +2,9 @@ package com.umc.i.src.mypage;
 
 import com.umc.i.config.BaseException;
 import com.umc.i.config.BaseResponse;
+import com.umc.i.config.BaseResponseStatus;
 import com.umc.i.src.mypage.model.get.GetComuWriteRes;
+import com.umc.i.src.mypage.model.get.GetMarketWriteRes;
 import com.umc.i.src.mypage.model.get.GetMypageMemRes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,20 +32,46 @@ public class MypageController {
             return new BaseResponse<>((exception.getStatus()));
         }
     }
-    //무한 스크롤.....
+    //type별 대상 작성 조회
     @ResponseBody
-    @GetMapping("/test/{memIdx}/{start}")
-    public BaseResponse<Stream<GetComuWriteRes>> getComuWrite(@PathVariable("memIdx")int memIdx,
-                                                              @PathVariable("start")int start) {
+    @GetMapping("/{type}/{memIdx}/{end}")
+    public BaseResponse<Stream<GetComuWriteRes>> getWrite(@PathVariable("memIdx")int memIdx,
+                                                            @PathVariable("end")int end,
+                                                            @PathVariable("type")int type) {
         try {
-            int skip = start;
-            int limit = skip+3;
+            end *= 3;
+            List<GetComuWriteRes> getComuWriteList = null;
+            switch (type) {
+                case 1: //RSDWrite 리뷰 스토리 일기장 대상 조회
+                    getComuWriteList = mypageProvider.getWrite(memIdx);
+                case 2://리뷰 스토리 대상 조회
+                    getComuWriteList = mypageProvider.getRSWrite(memIdx);
+                case 3: //일기장 대상 조회
+                    getComuWriteList = mypageProvider.getSWrite(memIdx);
+            }
+            if (end > getComuWriteList.size()) {
+                end = getComuWriteList.size();
+            }
+            return new BaseResponse<>(getComuWriteList.stream().limit(end));
+        }catch (Exception e){
+            throw new RuntimeException();
+        }
+    }
+    @ResponseBody
+    @GetMapping("/market/{memIdx}/{end}")
+    public BaseResponse<Stream<GetMarketWriteRes>>  getMarketWrite(@PathVariable("memIdx")int memIdx,
+                                                                    @PathVariable("end")int end){
+        try {
+            end *=3;
+            List<GetMarketWriteRes> getMarketWriteList = mypageProvider.getMarketWrite(memIdx);
+            if (end > getMarketWriteList.size()) {
+                end = getMarketWriteList.size();
+            }
+            return new BaseResponse<>(getMarketWriteList.stream().limit(end));
 
-            List<GetComuWriteRes> list = mypageProvider.getRSDWrite(memIdx);
-            if(limit > list.size()){limit = list.size();}
-            return new BaseResponse<>(list.stream().skip(skip).limit(limit));
-        } catch (BaseException exception) {
+        }catch (Exception e){
             throw new RuntimeException();
         }
     }
 }
+
