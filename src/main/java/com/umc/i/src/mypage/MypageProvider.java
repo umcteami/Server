@@ -7,7 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static com.umc.i.config.BaseResponseStatus.INTERNET_ERROR;
@@ -32,5 +31,17 @@ public class MypageProvider {
         }
     }
     //전체 대상 작성 글 조회
+    public List<GetComuWriteRes> getComuWriteRes(int memIdx)throws BaseException{
+        try {
 
+            for (GetComuWriteRes getComuWriteRes : mypageDao.getDiaryWrite(memIdx)) {
+
+            }
+
+            return null;
+        }catch (Exception exception){
+            exception.printStackTrace();
+            throw new BaseException(INTERNET_ERROR);
+        }
+    }
 }
