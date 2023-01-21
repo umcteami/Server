@@ -121,12 +121,12 @@ public class MypageDao {
                         //roomType set
                         getReviewWriteRes.setRoomType(0);
                         //title - 굿즈 차우 변경예정
-                        String getReviewIdxQuery = "select review_goods,m.mem_nickname from Market_review join Member as m where sell_mem_idx = m.mem_idx and buy_mem_idx = ? limit 1";
+                        String getReviewIdxQuery = "select review_goods,m.mem_nickname from Market_review join Member as m where board_idx = ? and review_idx = ? and sell_mem_idx = m.mem_idx and buy_mem_idx = ?";
 
                         MypageFeed mypageFeed = this.jdbcTemplate.queryForObject(getReviewIdxQuery,
                                 (myrs, myrowNum) -> new MypageFeed(
                                         myrs.getString("review_goods"),
-                                        myrs.getString("mem_nickname")), memIdx);
+                                        myrs.getString("mem_nickname")), getReviewWriteRes.getBoarIdx(),getReviewWriteRes.getComuIdx(),memIdx);
                         String diaryTitle = mypageFeed.getNick() + "님과" + mypageFeed.getGoods() + "을 거래했습니다";
 
                         getReviewWriteRes.setTitle(diaryTitle);
