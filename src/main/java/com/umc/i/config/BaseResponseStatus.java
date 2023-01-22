@@ -19,11 +19,11 @@ public enum BaseResponseStatus {
     // [POST] /member/join
     POST_MEMBER_EMPTY_EMAIL(false, 2010, "이메일을 입력해주세요."),
     POST_MEMBER_INVALID_EMAIL(false, 2011, "이메일 형식을 확인해주세요."),
-    POST_MEMBER_EXISTS_EMAIL(false,2012,"중복된 이메일입니다."),
+    POST_MEMBER_EXISTS_EMAIL(false, 2012, "중복된 이메일입니다."),
 
     POST_MEMBER_EMPTY_PHONE(false, 2013, "전화번호를 입력해주세요."),
     POST_MEMBER_INVALID_PHONE(false, 2014, "전화번호 형식을 확인해주세요."),
-    POST_MEMBER_EXISTS_PHONE(false,2015,"중복된 전화번호입니다."),
+    POST_MEMBER_EXISTS_PHONE(false, 2015, "중복된 전화번호입니다."),
 
     POST_AUTH_INVALID_TYPE(false, 2016, "인증 타입을 확인해주세요"),
     POST_AUTH_SEND_FAIL(false, 2017, "인증번호 발송 실패"),
@@ -36,7 +36,9 @@ public enum BaseResponseStatus {
 
     POST_AUTH_MEMBER_NOT_EXIST(false, 2021, "회원 정보가 존재하지 않음"),
 
-    POST_MARKET_FEED_FAILED(false, 2022, "나눔 거래 게시물 작성 실패"),;
+    POST_MARKET_FEED_FAILED(false, 2022, "나눔 거래 게시물 작성 실패"),
+
+    GET_MARKET_FEED_BY_PARAM_FAILED(false, 2100, "나눔 거래 게시물 조회 카테고리 설정 오류"),;
 
 
     private final boolean isSuccess;
@@ -48,4 +50,4 @@ public enum BaseResponseStatus {
         this.code = code;
         this.message = message;
     }
-}
+    }
