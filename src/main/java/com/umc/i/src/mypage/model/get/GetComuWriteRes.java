@@ -23,16 +23,14 @@ public class GetComuWriteRes {
     private int countComment;
     @NonNull
     private String  createAt;
-    @NonNull
-    private int imageCount;
 
-    public GetComuWriteRes(int boarIdx, int roomType, int comuIdx,String title,int hit,String createAt,int imageCount){
+
+    public GetComuWriteRes(int boarIdx, int roomType, int comuIdx,String title,int hit,String createAt){
         this.boarIdx = boarIdx;
         this.roomType = roomType;
         this.comuIdx = comuIdx;
         this.title = title;
         this.hit = hit;
         this.createAt = createAt;
-        this.imageCount = imageCount;
     }
 }

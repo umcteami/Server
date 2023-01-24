@@ -14,15 +14,14 @@ public class GetMarketWriteRes {
     private int soldout;
     private int goods;
     private int countReserve;
-    private int imageCount;
+
 
     //나눔장터 용
-    public GetMarketWriteRes(int boarIdx,int comuIdx,String title,int soldout,int goods,int imageCount){
+    public GetMarketWriteRes(int boarIdx,int comuIdx,String title,int soldout,int goods){
         this.boarIdx = boarIdx;
         this.comuIdx = comuIdx;
         this.title = title;
         this.soldout = soldout;
         this.goods = goods; // 파는 상품
-        this.imageCount = imageCount;
     }
 }

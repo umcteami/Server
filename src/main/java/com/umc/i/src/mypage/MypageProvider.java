@@ -1,15 +1,11 @@
 package com.umc.i.src.mypage;
 
-import com.fasterxml.jackson.databind.ser.Serializers;
 import com.umc.i.config.BaseException;
-import com.umc.i.src.mypage.model.get.GetComuWriteRes;
-import com.umc.i.src.mypage.model.get.GetMarketWriteRes;
-import com.umc.i.src.mypage.model.get.GetMypageMemRes;
+import com.umc.i.src.mypage.model.get.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -41,10 +37,17 @@ public class MypageProvider {
             return f1.getCreateAt().compareTo(f2.getCreateAt());
         }
     }
+
+    class feedCreateAtComparator implements Comparator<GetComentWriteRes> {
+        @Override
+        public int compare(GetComentWriteRes f1, GetComentWriteRes f2) {
+            return f1.getFeedCreateAt().compareTo(f2.getFeedCreateAt());
+        }
+    }
     //전체 대상 작성 글 조회
     public List<GetComuWriteRes> getWrite(int memIdx)throws BaseException{
         try {
-            List<GetComuWriteRes> RSDList = mypageDao.getDiaryWrite(memIdx);
+            List<GetComuWriteRes> RSDList = mypageDao.getDiaryWrite(memIdx,false);
             RSDList.addAll(getRSWrite(memIdx));
 
             Collections.sort(RSDList, new createAtComparator().reversed());
@@ -58,8 +61,8 @@ public class MypageProvider {
     // 장터후기 스토리 대상 조회
     public List<GetComuWriteRes> getRSWrite(int memIdx)throws BaseException{
         try {
-            List<GetComuWriteRes> RSList = mypageDao.getReviewWrite(memIdx);
-            RSList.addAll(mypageDao.getStoryWrite(memIdx));
+            List<GetComuWriteRes> RSList = mypageDao.getReviewWrite(memIdx,false);
+            RSList.addAll(mypageDao.getStoryWrite(memIdx,false));
 
             Collections.sort(RSList, new createAtComparator());
 
@@ -72,7 +75,7 @@ public class MypageProvider {
     //일기장 대상 조회
     public List<GetComuWriteRes> getSWrite(int memIdx)throws BaseException{
         try {
-            return mypageDao.getDiaryWrite(memIdx);
+            return mypageDao.getStoryWrite(memIdx,false);
         }catch (Exception exception){
             exception.printStackTrace();
             throw new BaseException(INTERNET_ERROR);
@@ -82,6 +85,53 @@ public class MypageProvider {
     public List<GetMarketWriteRes> getMarketWrite(int memIdx)throws BaseException{
         try {
             return mypageDao.getMarketWrite(memIdx);
+        }catch (Exception exception){
+            exception.printStackTrace();
+            throw new BaseException(INTERNET_ERROR);
+        }
+    }
+
+    //작성한 댓글 조회
+    public List<GetComentWriteRes> getCmtWrite(int memIdx)throws BaseException{
+        try {
+            List<GetComentWriteRes> cmtList = mypageDao.getComentSWrite(memIdx);
+            cmtList.addAll(mypageDao.getComentDWrite(memIdx));
+            cmtList.addAll(mypageDao.getComentRWrite(memIdx));
+
+            Collections.sort(cmtList, new feedCreateAtComparator().reversed());
+            return cmtList;
+        }catch (Exception exception){
+            exception.printStackTrace();
+            throw new BaseException(INTERNET_ERROR);
+        }
+    }
+    //좋아요한 개시글 조회
+    public List<GetComuWriteRes> getLikeFeed(int memIdx)throws BaseException{
+        try {
+            List<GetComuWriteRes> cmtList = mypageDao.getReviewWrite(memIdx,true);
+            cmtList.addAll(mypageDao.getStoryWrite(memIdx,true));
+            cmtList.addAll(mypageDao.getDiaryWrite(memIdx,true));
+
+            Collections.sort(cmtList, new createAtComparator().reversed());
+            return cmtList;
+        }catch (Exception exception){
+            exception.printStackTrace();
+            throw new BaseException(INTERNET_ERROR);
+        }
+    }
+    //찜한 나눔장터 조회
+    public List<GetWantMarketRes> getWantMarket(int memIdx)throws BaseException{
+        try {
+            return mypageDao.getWantMarket(memIdx);
+        }catch (Exception exception){
+            exception.printStackTrace();
+            throw new BaseException(INTERNET_ERROR);
+        }
+    }
+    //차단한 사용자 조회
+    public List<GetBlockMemRes> getBlockMem(int memIdx)throws BaseException{
+        try {
+            return mypageDao.getBlockMem(memIdx);
         }catch (Exception exception){
             exception.printStackTrace();
             throw new BaseException(INTERNET_ERROR);
