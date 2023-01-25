@@ -1,5 +1,6 @@
 package com.umc.i;
 
+
 import com.umc.i.src.market.feed.MarketFeedDao;
 import com.umc.i.src.market.feed.MarketFeedRepository;
 import com.umc.i.src.member.jwt.JwtDao;
@@ -30,6 +31,7 @@ public class SpringConfig {
     public JwtRepository jwtRepository() {
         return new JwtDao(dataSource);
     }
+
 
     @Bean
     public MarketFeedRepository marketFeedRepository() {

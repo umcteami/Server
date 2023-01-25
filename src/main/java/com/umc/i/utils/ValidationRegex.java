@@ -1,9 +1,11 @@
 package com.umc.i.utils;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
+@Slf4j
 public class ValidationRegex {
     // 이메일 형식 체크
     public static boolean isRegexEmail(String target) {
@@ -19,4 +21,22 @@ public class ValidationRegex {
         Matcher matcher = pattern.matcher(target);
         return matcher.find();
     }
+
+    //특수문자 형식 체크
+    public static boolean isRegexNick(String target){
+        String regex = "^[0-9|a-z|A-Z|ㄱ-ㅎ|ㅏ-ㅣ|가-힣|\\s]*$";
+        if (!Pattern.matches(regex, target)) {
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean isRegexPw(String target){
+        String regex = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$";
+        if(!Pattern.matches(regex,target)){
+            return true;
+        }
+        return false;
+    }
+
 }

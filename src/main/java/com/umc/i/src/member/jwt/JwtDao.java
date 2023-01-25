@@ -23,7 +23,7 @@ public class JwtDao implements JwtRepository{
 
     @Override
     public Optional<PostLoginMemberReq> findByLoginId(String id) {
-        List<PostLoginMemberReq> result = jdbcTemplate.query("select * from member where mem_idx = ?", memberRowMapper(), id);
+        List<PostLoginMemberReq> result = jdbcTemplate.query("select * from Member where mem_idx = ?", memberRowMapper(), id);
 
         return result.stream().findAny();
     }
@@ -31,7 +31,7 @@ public class JwtDao implements JwtRepository{
     @Override
     public void deleteRefreshToken(String memIdx) {
         try {
-            int result = jdbcTemplate.update("delete from auto_login where mem_idx = ?", memIdx);
+            int result = jdbcTemplate.update("delete from Auto_login where mem_idx = ?", memIdx);
         } catch (Exception e) {
             log.info("{}", e);
             ;
@@ -41,7 +41,7 @@ public class JwtDao implements JwtRepository{
     @Override
     public void insertRefreshToken(String memIdx, String refreshToken) {
         try {
-            int result = jdbcTemplate.update("insert into auto_login(mem_idx, aul_key, aul_created_time) values (?, ?, now())", memIdx, refreshToken);
+            int result = jdbcTemplate.update("insert into Auto_login(mem_idx, aul_key, aul_created_time) values (?, ?, now())", memIdx, refreshToken);
         } catch (Exception e) {
             log.info("{}", e);
             ;
