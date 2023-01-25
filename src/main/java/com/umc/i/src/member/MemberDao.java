@@ -8,10 +8,12 @@ import java.util.Optional;
 import javax.sql.DataSource;
 
 import com.umc.i.config.BaseException;
+import com.umc.i.src.member.model.Member;
 import com.umc.i.src.member.model.get.GetMemRes;
 import com.umc.i.src.member.model.patch.PatchMemReq;
 import com.umc.i.src.member.model.post.PostAuthNumberReq;
 import com.umc.i.src.member.model.post.PostJoinReq;
+import com.umc.i.src.member.model.post.PostWithdrawReq;
 import com.umc.i.utils.ValidationRegex;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,7 +85,6 @@ public class MemberDao {
     //유저 조회
     public GetMemRes getMem(int memIdx) {
         String getMemQuery = "select * from Member where mem_idx = ?";
-        int getMemParams = memIdx;
         return this.jdbcTemplate.queryForObject(getMemQuery,
                 (rs, rowNum) -> new GetMemRes(
                         rs.getString("mem_email"),
@@ -94,8 +95,8 @@ public class MemberDao {
                         rs.getString("mem_address_code"),
                         rs.getString("mem_address"),
                         rs.getString("mem_address_detail"),
-                        rs.getString("mem_profile_url")), // RowMapper(위의 링크 참조): 원하는 결과값 형태로 받기
-                getMemParams); // 한 개의 회원정보를 얻기 위한 jdbcTemplate 함수(Query, 객체 매핑 정보, Params)의 결과 반환
+                        rs.getString("mem_profile_url")),
+                memIdx);
     }
     //핸드폰번호 중복 확인
     public int checkPhone(String tel) {
@@ -142,5 +143,21 @@ public class MemberDao {
             postAuthNumberReq.setCreatedAt(rs.getTimestamp("ma_generate_time"));
             return postAuthNumberReq;
         };
+    }
+    //탈퇴하기
+    public void postWithdraw(int memIdx){
+        String selectMemQuery = "select mem_email,mem_phone,mem_nickname from Member where mem_idx = ?";
+        Member member = this.jdbcTemplate.queryForObject(selectMemQuery,
+                (rs, rowNum) -> new Member(
+                        rs.getString("mem_email"),
+                        rs.getString("mem_phone"),
+                        rs.getString("mem_nickname")
+                )
+                ,memIdx);
+        String postWithdrawQuery = "insert into Member_withdraw(mem_email,mem_phone,mem_nickname) VALUES (?,?,?)";
+        this.jdbcTemplate.update(postWithdrawQuery,member.getEmail(),member.getPhone(),member.getNickname());
+
+        String deletMemberQuery = "delete from Member where mem_idx = ?";
+        this.jdbcTemplate.update(deletMemberQuery,memIdx);
     }
 }

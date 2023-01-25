@@ -26,6 +26,7 @@ import com.umc.i.src.member.model.post.PostJoinRes;
 import com.umc.i.utils.S3Storage.UploadImageS3;
 
 import com.umc.i.utils.UserSha256;
+import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +49,7 @@ import static com.umc.i.config.BaseResponseStatus.*;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MemberService {
     @Autowired
     private final UploadImageS3 uploadImageS3;
@@ -311,6 +313,15 @@ public class MemberService {
             GetMemRes getMemRes = memberDao.getMem(memIdx);
             return getMemRes;
         } catch (Exception exception) {
+            exception.printStackTrace();
+            throw new BaseException(INTERNET_ERROR);
+        }
+    }
+    //유저 탈퇴
+    public void postWithdraw(int memIdx)throws BaseException{
+        try {
+            memberDao.postWithdraw(memIdx);
+        }catch (Exception exception) {
             exception.printStackTrace();
             throw new BaseException(INTERNET_ERROR);
         }
