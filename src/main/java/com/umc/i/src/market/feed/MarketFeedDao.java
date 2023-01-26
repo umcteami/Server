@@ -23,6 +23,20 @@ public class MarketFeedDao implements MarketFeedRepository {
     }
 
     @Override
+    public int getFeedUserIdx(String marketIdx) {
+        String query = "select mem_idx from market where market_idx = ?";
+
+        try {
+            int memIdx = jdbcTemplate.update(query, marketIdx);
+            return memIdx;
+        } catch (Exception e) {
+            log.info("{}", e);
+        }
+
+        return -1;
+    }
+
+    @Override
     public void updateFeedHitCount(String marketIdx) {
         String query = "update market set market_hit = market_hit + 1 where market_idx = ?";
 

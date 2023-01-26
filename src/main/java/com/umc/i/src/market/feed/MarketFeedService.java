@@ -46,4 +46,9 @@ public class MarketFeedService {
         List<GetMarketFeedRes> result = marketFeedDao.getFeedByUserIdx(userIdx);
         return result;
     }
+
+    public int getFeedUserIdx(String marketIdx) {
+        int feedUserIdx = marketFeedDao.getFeedUserIdx(marketIdx);
+        return feedUserIdx;
+    }
 }

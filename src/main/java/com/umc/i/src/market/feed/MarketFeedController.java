@@ -96,13 +96,25 @@ public class MarketFeedController {
     public BaseResponse updateFeedDetail(@RequestParam String marketIdx,
                                          @RequestBody PostMarketFeedReq marketFeedReq) {
 
+        int feedUserIdx = marketFeedService.getFeedUserIdx(marketIdx);
+        if (marketFeedReq.getUserId() != feedUserIdx) {
+            return new BaseResponse<>(BaseResponseStatus.FEED_UNAUTHORIZED);
+        }
+
         marketFeedService.updateFeed(marketIdx, marketFeedReq);
 
         return new BaseResponse<>(marketFeedReq.getUserId());
     }
 
     @DeleteMapping("/market/delete")
-    public BaseResponse deleteFeed(@RequestParam String marketIdx) {
+    public BaseResponse deleteFeed(@RequestParam String marketIdx,
+                                   @RequestBody PostMarketFeedReq marketFeedReq) {
+
+        int feedUserIdx = marketFeedService.getFeedUserIdx(marketIdx);
+        if (marketFeedReq.getUserId() != feedUserIdx) {
+            return new BaseResponse<>(BaseResponseStatus.FEED_UNAUTHORIZED);
+        }
+
         marketFeedService.deleteFeed(marketIdx);
         return new BaseResponse<>();
     }
@@ -110,6 +122,12 @@ public class MarketFeedController {
     @PutMapping("/market/soldout")
     public BaseResponse updateFeedSoldoutStatus(@RequestParam String marketIdx,
                                                 @RequestBody PostMarketFeedReq marketFeedReq) {
+
+        int feedUserIdx = marketFeedService.getFeedUserIdx(marketIdx);
+        if (marketFeedReq.getUserId() != feedUserIdx) {
+            return new BaseResponse<>(BaseResponseStatus.FEED_UNAUTHORIZED);
+        }
+
         marketFeedService.updateFeed(marketIdx, marketFeedReq);
 
         return new BaseResponse<>();

@@ -43,7 +43,9 @@ public enum BaseResponseStatus {
 
     POST_MARKET_FEED_FAILED(false, 2022, "나눔 거래 게시물 작성 실패"),
 
-    GET_MARKET_FEED_BY_PARAM_FAILED(false, 2100, "나눔 거래 게시물 조회 카테고리 설정 오류"),;
+    GET_MARKET_FEED_BY_PARAM_FAILED(false, 2100, "나눔 거래 게시물 조회 카테고리 설정 오류"),
+
+    FEED_UNAUTHORIZED(false, 2111, "게시물 수정 및 삭제 권한 없음"),;
 
     private final boolean isSuccess;
     private final int code;

@@ -23,4 +23,6 @@ public interface MarketFeedRepository {
     public void feedLike(int userIdx, int marketIdx);
 
     public List<GetMarketFeedRes> getFeedByUserIdx(int userIdx);
+
+    public int getFeedUserIdx(String marketIdx);
 }
