@@ -137,4 +137,13 @@ public class MypageProvider {
             throw new BaseException(INTERNET_ERROR);
         }
     }
+    //신고한 게시글 조회
+    public List<GetBlameFeedRes> getBlameFeed(int memIdx)throws BaseException{
+        try {
+            return mypageDao.getBlameFeed(memIdx);
+        }catch (Exception exception){
+            exception.printStackTrace();
+            throw new BaseException(INTERNET_ERROR);
+        }
+    }
 }

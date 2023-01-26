@@ -1,5 +1,6 @@
 package com.umc.i.src.mypage;
 
+import com.umc.i.src.mypage.model.Blame;
 import com.umc.i.src.mypage.model.MypageFeed;
 import com.umc.i.src.mypage.model.get.*;
 import com.umc.i.src.mypage.model.post.PostAskReq;
@@ -362,5 +363,73 @@ public class MypageDao {
     public void postAsk(PostAskReq postAskReq){
         String postAskQuery = "insert into Complain(complain_title,complain_content,complain_email) VALUES (?,?,?)";
         this.jdbcTemplate.update(postAskQuery,postAskReq.getTitle(),postAskReq.getContent(),postAskReq.getEmail());
+    }
+    //내가 신고한 게시글 조회하기
+    public List<GetBlameFeedRes> getBlameFeed(int memIdx){
+        String getBlameQuery = "select target_type,target_idx,TIMEDIFF(blame_time,CURRENT_TIMESTAMP())as createAt from Blame where mem_idx = ?";
+
+        String getBlameStoryQuery = "select story_roomType,mem_profile_url,mem_nickname from Story_feed S join Member M " +
+                "    on S.mem_idx = M.mem_idx " +
+                "where S.board_idx = 1 and S.story_idx = ?";
+        String getBlameDiaryQuery = "select diary_roomType,mem_profile_url,M.mem_nickname from Diary_feed D join Member M" +
+                "    on D.mem_idx = M.mem_idx\n" +
+                "where D.board_idx = 2 and D.diary_idx = ?";
+
+        String getBlameReviewQuery = "select mem_profile_url,mem_nickname from Market_review MR join Member M" +
+                "    on MR.buy_mem_idx = M.mem_idx\n" +
+                "where MR.board_idx = 3 and MR.review_idx = ?";
+
+        /**룸타입 뭘로 표시할지 ? 일단 marekt_group 으로 표시**/
+        String getBlameMarketQuery = "select market_group,mem_profile_url,mem_nickname from Market join Member M " +
+                "    on Market.mem_idx = M.mem_idx\n" +
+                "where Market.board_idx = 4 and Market.market_idx = ?";
+
+        return this.jdbcTemplate.query(getBlameQuery,
+                (rs, rowNum) -> {
+                    Blame blame = new Blame(
+                            rs.getInt("target_type"),
+                            rs.getInt("target_idx"),
+                            rs.getString("createAt")
+                    );
+                    GetBlameFeedRes getBlameFeedRes = null;
+                    if(blame.getBoardIdx() == 1){
+                       getBlameFeedRes = this.jdbcTemplate.queryForObject(getBlameStoryQuery,
+                               (rs2,rowNum2) -> new GetBlameFeedRes(
+                                       rs2.getInt("story_roomType"),
+                                       rs2.getString("mem_profile_url"),
+                                       rs2.getString("mem_nickname"),
+                                       blame.getCreateAt()
+                               )
+                               ,blame.getComuIdx());
+                    } else if (blame.getBoardIdx() == 2) {
+                        getBlameFeedRes = this.jdbcTemplate.queryForObject(getBlameDiaryQuery,
+                                (rs2,rowNum2) -> new GetBlameFeedRes(
+                                        rs2.getInt("diary_roomType"),
+                                        rs2.getString("mem_profile_url"),
+                                        rs2.getString("mem_nickname"),
+                                        blame.getCreateAt()
+                                )
+                                ,blame.getComuIdx());
+                    } else if(blame.getBoardIdx() == 3){
+                        getBlameFeedRes = this.jdbcTemplate.queryForObject(getBlameReviewQuery,
+                            (rs2,rowNum2) -> new GetBlameFeedRes(
+                                    rs2.getString("mem_profile_url"),
+                                    rs2.getString("mem_nickname"),
+                                    blame.getCreateAt()
+                            )
+                            ,blame.getComuIdx());
+                    } else if(blame.getBoardIdx() == 4){
+                        getBlameFeedRes = this.jdbcTemplate.queryForObject(getBlameMarketQuery,
+                                (rs2,rowNum2) -> new GetBlameFeedRes(
+                                        rs2.getInt("market_group"),
+                                        rs2.getString("mem_profile_url"),
+                                        rs2.getString("mem_nickname"),
+                                        blame.getCreateAt()
+                                )
+                                ,blame.getComuIdx());
+                    }
+
+                    return getBlameFeedRes;
+                },memIdx);
     }
 }

@@ -23,6 +23,7 @@ import com.umc.i.src.member.model.get.GetMemRes;
 import com.umc.i.src.member.model.patch.PatchMemReq;
 import com.umc.i.src.member.model.post.PostJoinReq;
 import com.umc.i.src.member.model.post.PostJoinRes;
+import com.umc.i.src.member.model.post.PostMemblockReq;
 import com.umc.i.utils.S3Storage.UploadImageS3;
 
 import com.umc.i.utils.UserSha256;
@@ -321,6 +322,15 @@ public class MemberService {
     public void postWithdraw(int memIdx)throws BaseException{
         try {
             memberDao.postWithdraw(memIdx);
+        }catch (Exception exception) {
+            exception.printStackTrace();
+            throw new BaseException(INTERNET_ERROR);
+        }
+    }
+    //유저 차단
+    public void postMemblock(PostMemblockReq postMemblockReq)throws BaseException{
+        try {
+            memberDao.postMemblock(postMemblockReq);
         }catch (Exception exception) {
             exception.printStackTrace();
             throw new BaseException(INTERNET_ERROR);

@@ -37,7 +37,7 @@ public enum BaseResponseStatus {
     POST_AUTH_MEMBER_NOT_EXIST(false, 2021, "회원 정보가 존재하지 않음"),
 
     POST_MARKET_FEED_FAILED(false, 2022, "나눔 거래 게시물 작성 실패"),
-
+    POST_FEED_BLAME_DOUBLE(false,2023,"이미 신고한 게시글 입니다"),
     //[GET] /mypage
     GET_WRITE_FEED_FAILED(false,2023,"조회 실패");
 

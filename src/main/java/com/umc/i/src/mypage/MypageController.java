@@ -147,5 +147,10 @@ public class MypageController {
         mypageService.postAsk(postAskReq);
         return new BaseResponse<>(BaseResponseStatus.SUCCESS);
     }
+    @ResponseBody
+    @GetMapping("/blame/{memIdx}")
+    public BaseResponse<List<GetBlameFeedRes>> getBlameFeed(@PathVariable("memIdx")int memIdx)throws BaseException{
+        return new BaseResponse<>(mypageProvider.getBlameFeed(memIdx));
+    }
 }
 

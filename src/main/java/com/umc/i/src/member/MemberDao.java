@@ -7,14 +7,12 @@ import java.util.Optional;
 
 import javax.sql.DataSource;
 
-import com.umc.i.config.BaseException;
 import com.umc.i.src.member.model.Member;
 import com.umc.i.src.member.model.get.GetMemRes;
 import com.umc.i.src.member.model.patch.PatchMemReq;
 import com.umc.i.src.member.model.post.PostAuthNumberReq;
 import com.umc.i.src.member.model.post.PostJoinReq;
-import com.umc.i.src.member.model.post.PostWithdrawReq;
-import com.umc.i.utils.ValidationRegex;
+import com.umc.i.src.member.model.post.PostMemblockReq;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -159,5 +157,10 @@ public class MemberDao {
 
         String deletMemberQuery = "delete from Member where mem_idx = ?";
         this.jdbcTemplate.update(deletMemberQuery,memIdx);
+    }
+    //사용자 차단하기
+    public void postMemblock(PostMemblockReq postMemblockReq){
+        String postMemblockQuery = "insert into Member_block(mem_idx,blocked_mem_idx)VALUES(?,?)";
+        this.jdbcTemplate.update(postMemblockQuery,postMemblockReq.getMemIdx(),postMemblockReq.getBlockmemIdx());
     }
 }

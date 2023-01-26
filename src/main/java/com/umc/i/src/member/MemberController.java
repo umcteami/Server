@@ -145,9 +145,19 @@ public class MemberController {
     //유저 탈퇴
     @ResponseBody
     @PostMapping("/withdraw")
-    public BaseResponse<BaseException> getWithdraw(@RequestPart("memIdx") int memIdx) throws BaseException {
+    public BaseResponse<BaseException> postWithdraw(@RequestPart("memIdx") int memIdx) throws BaseException {
         try {
             memberService.postWithdraw(memIdx);
+            return new BaseResponse<>(BaseResponseStatus.SUCCESS);
+        }catch (Exception e){
+            return new BaseResponse<>(BaseResponseStatus.INTERNET_ERROR);
+        }
+    }
+    @ResponseBody
+    @PostMapping("/block")
+    public BaseResponse<BaseException> postBlock(@RequestBody PostMemblockReq postMemblockReq)throws BaseException{
+        try {
+            memberService.postMemblock(postMemblockReq);
             return new BaseResponse<>(BaseResponseStatus.SUCCESS);
         }catch (Exception e){
             return new BaseResponse<>(BaseResponseStatus.INTERNET_ERROR);
