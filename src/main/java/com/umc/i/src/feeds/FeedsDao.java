@@ -1,15 +1,9 @@
 package com.umc.i.src.feeds;
 
-import com.umc.i.config.BaseException;
-import com.umc.i.config.BaseResponseStatus;
 import com.umc.i.src.feeds.model.post.PostBlameReq;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import org.springframework.web.bind.annotation.RequestMapping;
-
 import javax.sql.DataSource;
 
 @Repository
