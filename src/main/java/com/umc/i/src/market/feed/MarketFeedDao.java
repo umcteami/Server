@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.sql.DataSource;
 import java.util.List;
@@ -49,10 +50,10 @@ public class MarketFeedDao implements MarketFeedRepository {
 
     @Override
     public void updateFeed(String marketIdx, PostMarketFeedReq req) {
-        String query = "update market set market_group = ?, market_price = ?, market_title = ?, market_content = ?, market_image = ?, market_soldout = ? where market_idx = ?";
+        String query = "update market set market_group = ?, market_price = ?, market_title = ?, market_content = ?, market_soldout = ? where market_idx = ?";
 
         try {
-            jdbcTemplate.update(query, req.getCategory(), req.getPrice(), req.getTitle(), req.getCategory(), req.getImage(), req.getSoldout(), marketIdx);
+            jdbcTemplate.update(query, req.getCategory(), req.getPrice(), req.getTitle(), req.getCategory(), req.getSoldout(), marketIdx);
         } catch (Exception e) {
             log.info("{}", e);
         }
@@ -84,9 +85,9 @@ public class MarketFeedDao implements MarketFeedRepository {
     }
 
     @Override
-    public int postNewFeed(PostMarketFeedReq marketFeed) {
-        String query = "insert into market (mem_idx, market_group, market_price, market_title, market_content, market_image) values (?, ?, ?, ?, ?, ?)";
-        Object[] params = {marketFeed.getUserId(), marketFeed.getCategory(), marketFeed.getPrice(), marketFeed.getTitle(), marketFeed.getContent(), marketFeed.getImage()};
+    public int postNewFeed(PostMarketFeedReq marketFeed, List<MultipartFile> multipartFiles) {
+        String query = "insert into market (mem_idx, market_group, market_price, market_title, market_content) values (?, ?, ?, ?, ?)";
+        Object[] params = {marketFeed.getUserId(), marketFeed.getCategory(), marketFeed.getPrice(), marketFeed.getTitle(), marketFeed.getContent()};
         try {
             jdbcTemplate.update(query, params);
             return marketFeed.getUserId();

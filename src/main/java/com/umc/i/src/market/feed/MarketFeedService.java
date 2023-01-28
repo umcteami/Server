@@ -5,6 +5,7 @@ import com.umc.i.src.market.feed.model.MarketFeed;
 import com.umc.i.src.market.feed.model.PostMarketFeedReq;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -14,8 +15,8 @@ public class MarketFeedService {
 
     private final MarketFeedDao marketFeedDao;
 
-    public int postNewFeed(PostMarketFeedReq feed) {
-        return marketFeedDao.postNewFeed(feed);
+    public int postNewFeed(PostMarketFeedReq feed, List<MultipartFile> multipartFiles) {
+        return marketFeedDao.postNewFeed(feed, multipartFiles);
     }
 
     public void updateFeed(String marketIdx, PostMarketFeedReq feed) {

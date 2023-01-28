@@ -15,7 +15,6 @@ public class PostMarketFeedReq {
     private String category;
     private int price;
     private String content;
-    private String[] image;
     private String soldout;
     private Date createdAt;
 }

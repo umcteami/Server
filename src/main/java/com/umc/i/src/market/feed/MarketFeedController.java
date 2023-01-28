@@ -10,6 +10,7 @@ import com.umc.i.src.market.feed.model.PostMarketFeedRes;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Arrays;
 import java.util.List;
@@ -26,7 +27,8 @@ public class MarketFeedController {
 
     @PostMapping("/market")
     public BaseResponse<PostMarketFeedRes> postNewsFeed(@RequestHeader Map<String, String> headers,
-                                                        @RequestBody PostMarketFeedReq marketFeedReq) {
+                                                        @RequestParam("request") PostMarketFeedReq marketFeedReq,
+                                                        @RequestParam("images") List<MultipartFile> files) {
         /**
          * TODO
          * jwt access token으로 사용자 판별
@@ -41,7 +43,7 @@ public class MarketFeedController {
 //        log.info("memberId={}", memberId);
 //        marketFeedReq.setUserId(memberId);
 
-        int userIdx = marketFeedService.postNewFeed(marketFeedReq);
+        int userIdx = marketFeedService.postNewFeed(marketFeedReq, files);
         PostMarketFeedRes res = new PostMarketFeedRes(userIdx);
         if (userIdx == -1) {
             return new BaseResponse<>(BaseResponseStatus.POST_MARKET_FEED_FAILED);

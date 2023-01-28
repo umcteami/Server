@@ -3,12 +3,13 @@ package com.umc.i.src.market.feed;
 import com.umc.i.src.market.feed.model.GetMarketFeedRes;
 import com.umc.i.src.market.feed.model.MarketFeed;
 import com.umc.i.src.market.feed.model.PostMarketFeedReq;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 public interface MarketFeedRepository {
 
-    public int postNewFeed(PostMarketFeedReq marketFeed);
+    public int postNewFeed(PostMarketFeedReq marketFeed, List<MultipartFile> multipartFiles);
 
     public List<GetMarketFeedRes> getFeedByCategory(String category, int userIdx, String soldout, int page);
 
