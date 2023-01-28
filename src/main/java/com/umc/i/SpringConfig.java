@@ -29,8 +29,5 @@ public class SpringConfig {
     public JwtRepository jwtRepository() {
         return new JwtDao(dataSource);
     }
-    @Bean
-    public ServerEndpointExporter serverEndpointExporter(){
-        return new ServerEndpointExporter();
-    }
+
 }
