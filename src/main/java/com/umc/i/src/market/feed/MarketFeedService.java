@@ -1,11 +1,9 @@
 package com.umc.i.src.market.feed;
 
 import com.umc.i.src.market.feed.model.GetMarketFeedRes;
-import com.umc.i.src.market.feed.model.MarketFeed;
-import com.umc.i.src.market.feed.model.PostMarketFeedReq;
+import com.umc.i.src.market.feed.model.GetMarketFeedReq;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -15,11 +13,15 @@ public class MarketFeedService {
 
     private final MarketFeedDao marketFeedDao;
 
-    public int postNewFeed(PostMarketFeedReq feed, List<MultipartFile> multipartFiles) {
-        return marketFeedDao.postNewFeed(feed, multipartFiles);
+    public int postNewFeed(GetMarketFeedReq feed) {
+        return marketFeedDao.postNewFeed(feed);
     }
 
-    public void updateFeed(String marketIdx, PostMarketFeedReq feed) {
+    public int postFeedImages(List<String> filesUrlList, int marketIdx) {
+        return marketFeedDao.postFeedImages(filesUrlList, marketIdx);
+    }
+
+    public void updateFeed(String marketIdx, GetMarketFeedReq feed) {
         marketFeedDao.updateFeed(marketIdx, feed);
     }
 
@@ -27,8 +29,8 @@ public class MarketFeedService {
         return marketFeedDao.getFeedByCategory(category, userIdx, soldout, page);
     }
 
-    public List<MarketFeed> getFeedByMarketIdx(String marketIdx) {
-        return marketFeedDao.getFeedByMarketIdx(marketIdx);
+    public List<GetMarketFeedRes> getFeedByMarketIdx(String marketIdx, String memIdx) {
+        return marketFeedDao.getFeedByMarketIdx(marketIdx, memIdx);
     }
 
     public void updateMarketFeedHitCount(String marketIdx) {
@@ -37,6 +39,10 @@ public class MarketFeedService {
 
     public void deleteFeed(String marketIdx) {
         marketFeedDao.deleteFeed(marketIdx);
+    }
+
+    public void deleteImages(int marketIdx) {
+        marketFeedDao.deleteImages(marketIdx);
     }
 
     public void feedLike(int userIdx, int marketIdx) {
@@ -51,5 +57,9 @@ public class MarketFeedService {
     public int getFeedUserIdx(String marketIdx) {
         int feedUserIdx = marketFeedDao.getFeedUserIdx(marketIdx);
         return feedUserIdx;
+    }
+
+    public void postCoverImage(List<String> filesUrlList, String marketIdx) {
+        marketFeedDao.postCoverImage(filesUrlList, marketIdx);
     }
 }

@@ -7,11 +7,9 @@ import java.util.Optional;
 
 import javax.sql.DataSource;
 
-import com.umc.i.config.BaseException;
 import com.umc.i.src.member.model.patch.PatchMemReq;
 import com.umc.i.src.member.model.post.PostAuthNumberReq;
 import com.umc.i.src.member.model.post.PostJoinReq;
-import com.umc.i.utils.ValidationRegex;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;

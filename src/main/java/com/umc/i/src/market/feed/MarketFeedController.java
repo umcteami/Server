@@ -5,8 +5,9 @@ import com.umc.i.config.BaseResponseStatus;
 import com.umc.i.config.Constant;
 import com.umc.i.src.market.feed.model.GetMarketFeedRes;
 import com.umc.i.src.market.feed.model.MarketFeed;
-import com.umc.i.src.market.feed.model.PostMarketFeedReq;
+import com.umc.i.src.market.feed.model.GetMarketFeedReq;
 import com.umc.i.src.market.feed.model.PostMarketFeedRes;
+import com.umc.i.utils.S3Storage.S3Uploader;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -23,12 +24,14 @@ public class MarketFeedController {
 
     private final MarketFeedService marketFeedService;
 
+    private final S3Uploader s3Uploader;
+
 //    private final JwtServiceImpl jwtService;
 
     @PostMapping("/market")
     public BaseResponse<PostMarketFeedRes> postNewsFeed(@RequestHeader Map<String, String> headers,
-                                                        @RequestParam("request") PostMarketFeedReq marketFeedReq,
-                                                        @RequestParam("images") List<MultipartFile> files) {
+                                                        @RequestPart(name = "request") GetMarketFeedReq marketFeedReq,
+                                                        @RequestPart(required = false, name = "images") List<MultipartFile> files) {
         /**
          * TODO
          * jwt access token으로 사용자 판별
@@ -43,27 +46,27 @@ public class MarketFeedController {
 //        log.info("memberId={}", memberId);
 //        marketFeedReq.setUserId(memberId);
 
-        int userIdx = marketFeedService.postNewFeed(marketFeedReq, files);
-        PostMarketFeedRes res = new PostMarketFeedRes(userIdx);
-        if (userIdx == -1) {
+        int marketIdx = marketFeedService.postNewFeed(marketFeedReq);
+        log.info("markedIdx={}", marketIdx);
+
+        if (marketIdx == -1) {
             return new BaseResponse<>(BaseResponseStatus.POST_MARKET_FEED_FAILED);
         }
 
-        return new BaseResponse<>(res);
+        List<String> filesUrlList = s3Uploader.upload(files);
+        log.info("fileUrlList={}", filesUrlList);
+
+        marketFeedService.postFeedImages(filesUrlList, marketIdx);
+        marketFeedService.postCoverImage(filesUrlList, String.valueOf(marketIdx));
+
+        return new BaseResponse<>(new PostMarketFeedRes(marketFeedReq.getUserId()));
     }
 
     @GetMapping("/market/latest")
     public BaseResponse<GetMarketFeedRes> getNewsFeed(@RequestParam String category,
                                                       @RequestParam(defaultValue = "0") String soldout,
                                                       @RequestParam(defaultValue = "0") int page,
-                                                      @RequestBody PostMarketFeedReq req) throws RuntimeException {
-        /**
-         * TODO
-         * market 테이블 시간 순으로 가져오기
-         * market_like 테이블 useridx에 맞게 가져오기
-         * 두 테이블 join
-         * 보내기
-         */
+                                                      @RequestBody GetMarketFeedReq req) throws RuntimeException {
         // query string 값 오류
         String[] marketGoodCategories = Constant.MARKET_GOOD_CATEGORIES;
         String[] booleans = Constant.BOOLEANS;
@@ -72,23 +75,23 @@ public class MarketFeedController {
         log.info("category={}", category);
         log.info("soldout={}", soldout);
         log.info("userIdx={}", userIdx);
-
-        log.info("{}", Arrays.asList(marketGoodCategories).contains(category));
+        log.info("isValidCategory={}", Arrays.asList(marketGoodCategories).contains(category));
 
         if (!Arrays.asList(marketGoodCategories).contains(category) || !Arrays.asList(booleans).contains(soldout)) {
             return new BaseResponse<>(BaseResponseStatus.GET_MARKET_FEED_BY_PARAM_FAILED);
         }
 
         List<GetMarketFeedRes> feedByCategory = marketFeedService.getFeedByCategory(category, userIdx, soldout, page);
-        log.info("{}", feedByCategory);
+        log.info("feedByCategory={}", feedByCategory);
 
         return new BaseResponse<>(feedByCategory);
     }
 
     @GetMapping("/market/detail")
-    public BaseResponse<MarketFeed> getFeedDetail(@RequestParam String marketIdx) {
+    public BaseResponse<GetMarketFeedRes> getFeedDetail(@RequestParam String marketIdx,
+                                                  @RequestBody String memIdx) {
 
-        List<MarketFeed> result = marketFeedService.getFeedByMarketIdx(marketIdx);
+        List<GetMarketFeedRes> result = marketFeedService.getFeedByMarketIdx(marketIdx, memIdx);
         marketFeedService.updateMarketFeedHitCount(marketIdx);
 
         return new BaseResponse<>(result);
@@ -96,7 +99,8 @@ public class MarketFeedController {
 
     @PutMapping("/market/edit")
     public BaseResponse updateFeedDetail(@RequestParam String marketIdx,
-                                         @RequestBody PostMarketFeedReq marketFeedReq) {
+                                         @RequestPart("images") List<MultipartFile> multipartFiles,
+                                         @RequestPart("request") GetMarketFeedReq marketFeedReq) {
 
         int feedUserIdx = marketFeedService.getFeedUserIdx(marketIdx);
         if (marketFeedReq.getUserId() != feedUserIdx) {
@@ -104,13 +108,20 @@ public class MarketFeedController {
         }
 
         marketFeedService.updateFeed(marketIdx, marketFeedReq);
+        marketFeedService.deleteImages(Integer.parseInt(marketIdx));
+
+        List<String> filesUrlList = s3Uploader.upload(multipartFiles);
+        log.info("fileUrlList={}", filesUrlList);
+
+        int uploadedImagesCnt = marketFeedService.postFeedImages(filesUrlList, Integer.parseInt(marketIdx));
+        marketFeedService.postCoverImage(filesUrlList, marketIdx);
 
         return new BaseResponse<>(marketFeedReq.getUserId());
     }
 
     @DeleteMapping("/market/delete")
     public BaseResponse deleteFeed(@RequestParam String marketIdx,
-                                   @RequestBody PostMarketFeedReq marketFeedReq) {
+                                   @RequestBody GetMarketFeedReq marketFeedReq) {
 
         int feedUserIdx = marketFeedService.getFeedUserIdx(marketIdx);
         if (marketFeedReq.getUserId() != feedUserIdx) {
@@ -118,12 +129,14 @@ public class MarketFeedController {
         }
 
         marketFeedService.deleteFeed(marketIdx);
+        marketFeedService.deleteImages(Integer.parseInt(marketIdx));
+
         return new BaseResponse<>();
     }
 
     @PutMapping("/market/soldout")
     public BaseResponse updateFeedSoldoutStatus(@RequestParam String marketIdx,
-                                                @RequestBody PostMarketFeedReq marketFeedReq) {
+                                                @RequestBody GetMarketFeedReq marketFeedReq) {
 
         int feedUserIdx = marketFeedService.getFeedUserIdx(marketIdx);
         if (marketFeedReq.getUserId() != feedUserIdx) {

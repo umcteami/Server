@@ -9,7 +9,7 @@ import java.util.Date;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class PostMarketFeedReq {
+public class GetMarketFeedReq {
     private int userId;
     private String title;
     private String category;

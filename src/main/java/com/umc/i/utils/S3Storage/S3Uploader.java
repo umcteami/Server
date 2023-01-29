@@ -34,10 +34,10 @@ public class S3Uploader {
             objectMetadata.setContentType(file.getContentType());
             objectMetadata.setContentLength(file.getSize());
 
-            String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+            String fileName = "i-image/" + UUID.randomUUID() + "_" + file.getOriginalFilename();
 
             try {
-                InputStream inputStream = new FileInputStream(convert(file));
+                InputStream inputStream = new FileInputStream(convertMultipartFileToFile(file));
                 amazonS3.putObject(new PutObjectRequest(bucket, fileName, inputStream, objectMetadata)
                         .withCannedAcl(CannedAccessControlList.PublicRead));
 
@@ -50,7 +50,7 @@ public class S3Uploader {
         return urlList;
     }
 
-    private File convert(MultipartFile multipartFile) throws IOException {
+    private File convertMultipartFileToFile(MultipartFile multipartFile) throws IOException {
         File file = new File(multipartFile.getOriginalFilename());
         file.createNewFile();
         FileOutputStream fileOutputStream = new FileOutputStream(file);
