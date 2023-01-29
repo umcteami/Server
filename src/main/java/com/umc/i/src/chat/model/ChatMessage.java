@@ -1,4 +1,4 @@
-package com.umc.i.src.chat;
+package com.umc.i.src.chat.model;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -10,7 +10,7 @@ public class ChatMessage {
         ENTER,TALK
     }
     private MessageType type;
-    private String roomId;
+    private int roomIdx;
     private String sender;
     private String message;
 }
