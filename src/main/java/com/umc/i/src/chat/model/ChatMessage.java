@@ -10,7 +10,7 @@ public class ChatMessage {
         ENTER,TALK
     }
     private MessageType type;
-    private int roomIdx;
-    private String sender;
+    private int roomId;
+    private int sender;
     private String message;
 }

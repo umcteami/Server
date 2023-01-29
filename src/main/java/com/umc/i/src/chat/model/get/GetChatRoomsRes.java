@@ -1,4 +1,4 @@
-package com.umc.i.src.chat.model.post;
+package com.umc.i.src.chat.model.get;
 
 import lombok.*;
 
@@ -6,7 +6,8 @@ import lombok.*;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class PostChatRoomReq {
+public class GetChatRoomsRes {
+    private int roomIdx;
     private int memIdx1;
     private int memIdx2;
 }

@@ -23,14 +23,16 @@
         <div class="input-group-prepend">
             <label class="input-group-text">방제목</label>
         </div>
-        <input type="text" class="form-control" v-model="room_name" v-on:keyup.enter="createRoom">
+        <input type="text" class="form-control" v-model="memIdx1" v-on:keyup.enter="createRoom">
+        <input type="text" class="form-control" v-model="memIdx2" v-on:keyup.enter="createRoom">
+
         <div class="input-group-append">
             <button class="btn btn-primary" type="button" @click="createRoom">채팅방 개설</button>
         </div>
     </div>
     <ul class="list-group">
-        <li class="list-group-item list-group-item-action" v-for="item in chatrooms" v-bind:key="item.roomId" v-on:click="enterRoom(item.roomId)">
-            {{item.name}}
+        <li class="list-group-item list-group-item-action" v-for="item in chatrooms" v-bind:key="item.roomIdx" v-on:click="enterRoom(item.roomIdx)">
+            {{item.roomIdx}}
         </li>
     </ul>
 </div>
@@ -41,7 +43,8 @@
     var vm = new Vue({
         el: '#app',
         data: {
-            room_name : '',
+            memIdx1 : 0,
+            memIdx2 : 0,
             chatrooms: [
             ]
         },
@@ -53,16 +56,22 @@
                 axios.get('/chat/rooms').then(response => { this.chatrooms = response.data; });
             },
             createRoom: function() {
-                if("" === this.room_name) {
+                if(0 === this.memIdx1) {
                     alert("방 제목을 입력해 주십시요.");
                     return;
                 } else {
-                    var params = new URLSearchParams();
-                    params.append("name",this.room_name);
-                    axios.post('/chat/room', params)
+                    var params = new FormData();
+                    params.append("memIdx1", this.memIdx1);
+                    params.append("memIdx2",this.memIdx2);
+                    const config = {
+                        headers: {
+                            "content-type": "multipart/form-data",
+                        }
+                    };
+                    axios.post('/chat/room', params, config)
                         .then(
                             response => {
-                                alert(response.data.name+"방 개설에 성공하였습니다.")
+                                alert(response.data.roomIdx+"방 개설에 성공하였습니다.")
                                 this.room_name = '';
                                 this.findAllRoom();
                             }
@@ -71,7 +80,7 @@
                 }
             },
             enterRoom: function(roomId) {
-                var sender = prompt('대화명을 입력해 주세요.');
+                var sender = prompt('대화명을 입력해 주세요.'); //memIdx1 인지 2인지
                 if(sender != "") {
                     localStorage.setItem('wschat.sender',sender);
                     localStorage.setItem('wschat.roomId',roomId);
