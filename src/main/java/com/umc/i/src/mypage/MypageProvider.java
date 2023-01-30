@@ -44,7 +44,7 @@ public class MypageProvider {
             return f1.getFeedCreateAt().compareTo(f2.getFeedCreateAt());
         }
     }
-    //전체 대상 작성 글 조회
+    //전체 대상 작성 글 조회 - 수정필요
     public List<GetComuWriteRes> getWrite(int memIdx)throws BaseException{
         try {
             List<GetComuWriteRes> RSDList = mypageDao.getDiaryWrite(memIdx,false);
@@ -58,7 +58,7 @@ public class MypageProvider {
             throw new BaseException(INTERNET_ERROR);
         }
     }
-    // 장터후기 스토리 대상 조회
+    // 장터후기 스토리 대상 조회- 수정 필요
     public List<GetComuWriteRes> getRSWrite(int memIdx)throws BaseException{
         try {
             List<GetComuWriteRes> RSList = mypageDao.getReviewWrite(memIdx,false);

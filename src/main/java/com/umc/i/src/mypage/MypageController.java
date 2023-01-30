@@ -41,14 +41,7 @@ public class MypageController {
                                                                       @PathVariable("contents")String contents) {
         try {
             end *= 3;
-            /**switch (contents) {
-                case "RSDWrite" : //RSDWrite 리뷰 스토리 일기장 대상 조회
-                    List<GetComuWriteRes> getComuWriteList = mypageProvider.getWrite(memIdx);
-                case "RSWrite"://리뷰 스토리 대상 조회
-                    getComuWriteList = mypageProvider.getRSWrite(memIdx);//결과값 이상해
-                case "SWrite": //일기장 대상 조회
-                    getComuWriteList = mypageProvider.getSWrite(memIdx);
-            }**/
+
             List<GetComuWriteRes> getComuWriteList = null;
 
             if(contents.equals("RSDWrite")){

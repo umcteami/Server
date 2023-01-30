@@ -61,7 +61,7 @@ public class MypageDao {
 
         return getMyPCountMemList;
     }
-    // 전체 대상 작성한 글 조회
+    // 일기장 조회-수정X
     public List<GetComuWriteRes> getDiaryWrite(int memIdx,boolean like){
         try {
             String getDiaryWriteQuery = "";
@@ -104,8 +104,8 @@ public class MypageDao {
             e.printStackTrace();
             return null;
         }
-
     }
+    /**장터후기 대상 조회 - 삭제 ---> 전체 대상 조회**/
     public List<GetComuWriteRes> getReviewWrite(int memIdx,boolean like){
         try{
             String getReviewWriteQuery="";
@@ -155,7 +155,8 @@ public class MypageDao {
             return null;
         }
     }
-    //이야기방 조회
+
+    /**이야기방 대상 조회 ----> 이야기방 장터후기 대상 조회**/
     public List<GetComuWriteRes> getStoryWrite(int memIdx,boolean like){
         try{
             String getStoryWriteQuery="";
@@ -198,10 +199,10 @@ public class MypageDao {
             return null;
         }
     }
-    //나눔장터 조회
+    //나눔장터 조회 - 수정X
     public List<GetMarketWriteRes> getMarketWrite(int memIdx){
         try {
-            String getMarketWriteQuery = "select board_idx,market_idx,market_title,market_soldout,market_goods,market_like_count,market_image " +
+            String getMarketWriteQuery = "select board_idx,market_idx,market_title,market_soldout,market_image " +
                     "from Market where mem_idx = ?";
 
             return this.jdbcTemplate.query(getMarketWriteQuery,
@@ -313,7 +314,7 @@ public class MypageDao {
     //나눔장터 - 찜한 게시글 조회
     public List<GetWantMarketRes> getWantMarket(int memIdx){
         try {
-            String getWantFeedQuery = "select board_idx,m.market_idx,market_price,market_goods,TIMEDIFF(market_created_at,CURRENT_TIMESTAMP()) as createAt ,market_hit,market_soldout,\n" +
+            String getWantFeedQuery = "select board_idx,m.market_idx,market_price,TIMEDIFF(market_created_at,CURRENT_TIMESTAMP()) as createAt ,market_hit,market_soldout,\n" +
                     "       image_url " +
                     "from Market m join Image_url i\n" +
                     "    on m.board_idx = i.content_category and market_idx = content_idx\n" +
