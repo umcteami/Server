@@ -39,17 +39,17 @@ public class MemberController {
     //회원가입
     @ResponseBody
     @PostMapping("/join")
-    public BaseResponse<String> createMem(@RequestPart("request") PostJoinReq postJoinReq,
+    public BaseResponse<BaseException> createMem(@RequestPart("request") PostJoinReq postJoinReq,
                                            @RequestPart("profile") MultipartFile profile){
         try {
             String result = "";
 
             if (postJoinReq.getNick().length() > 10){
-                result = "닉네임 길이 제한";
+                result = "닉네임 길이 초과";
             } else if(ValidationRegex.isRegexNick(postJoinReq.getNick())) {
                 result = "닉네임 특수문자 포함";
             } else if(postJoinReq.getIntro().length() > 50){
-                result = "한줄소개 제한";
+                result = "한줄소개 길이 제한";
             } else if(postJoinReq.getPw().length() > 15 || postJoinReq.getPw().length() < 7){
                 result = "비밀번호 길이 제한";
             } else if(ValidationRegex.isRegexPw(postJoinReq.getPw())){
@@ -58,7 +58,7 @@ public class MemberController {
                 result = memberService.createMem(postJoinReq, profile);
             }
 
-            return new BaseResponse<>(result);
+            return new BaseResponse<>(BaseResponseStatus.SUCCESS);
         } catch (BaseException exception) {
             return new BaseResponse<>((exception.getStatus()));
         }
@@ -66,22 +66,22 @@ public class MemberController {
     //회원 정보 수정
     @ResponseBody
     @PatchMapping("/{memIdx}")
-    public BaseResponse<String> editMem(@PathVariable("memIdx") int memIdx, @RequestPart("request") PatchMemReq patchMemReq,
+    public BaseResponse<BaseResponseStatus> editMem(@PathVariable("memIdx") int memIdx, @RequestPart("request") PatchMemReq patchMemReq,
                                         @RequestPart("profile") MultipartFile profile) {
         try {
-            String result = "";
+            BaseResponseStatus baseResponseStatus = null;
 
             if (patchMemReq.getNick().length() > 10){
-                result = "닉네임 길이 제한";
+                baseResponseStatus = BaseResponseStatus.POST_MEMBER_JOIN_NICKLEN;
             } else if(ValidationRegex.isRegexNick(patchMemReq.getNick())) {
-                result = "닉네임 특수문자 포함";
+                baseResponseStatus = BaseResponseStatus.POST_MEMBER_ISREGEX_NICK;
             } else if(patchMemReq.getIntro().length() > 50){
-                result = "한줄소개 제한";
+                baseResponseStatus = BaseResponseStatus.POST_MEMBER_JOIN_INTROLEN;
             } else{
-                result = memberService.editMem(memIdx,patchMemReq, profile);
+                baseResponseStatus = memberService.editMem(memIdx,patchMemReq, profile);
             }
 
-            return new BaseResponse<>(result);
+            return new BaseResponse<>(baseResponseStatus);
         } catch (BaseException exception) {
             return new BaseResponse<>((exception.getStatus()));
         } catch (IOException e) {
@@ -92,17 +92,17 @@ public class MemberController {
     //비밀 번호 수정
     @ResponseBody
     @PatchMapping("/{memIdx}/pw")
-    public BaseResponse<String> editPw(@PathVariable("memIdx") int memIdx,String pw) throws BaseException {
+    public BaseResponse<BaseResponseStatus> editPw(@PathVariable("memIdx") int memIdx,String pw) {
         try {
-            String result = "";
+            BaseResponseStatus baseResponseStatus = null;
             if(pw.length() > 15 || pw.length() < 7){
-                result = "비밀번호 길이 제한";
+                baseResponseStatus = BaseResponseStatus.POST_MEMBER_JOIN_PWLEN;
             }else if(ValidationRegex.isRegexPw(pw)){
-                result = "비밀번호 형식 제한";
+                baseResponseStatus = BaseResponseStatus.POST_MEMBER_ISREGEX_NICK;
             } else{
-                result = memberService.editPw(memIdx,pw);
+                baseResponseStatus = memberService.editPw(memIdx,pw);
             }
-            return new BaseResponse<>(result);
+            return new BaseResponse<>(baseResponseStatus);
         }catch (BaseException e){
             return new BaseResponse<>((e.getStatus()));
         }
@@ -111,7 +111,7 @@ public class MemberController {
     //유저 조회
     @ResponseBody
     @GetMapping("/{memIdx}")
-    public BaseResponse<GetMemRes> getMem(@PathVariable("memIdx") int memIdx) throws BaseException{
+    public BaseResponse<GetMemRes> getMem(@PathVariable("memIdx") int memIdx){
         try {
             GetMemRes getMemRes = memberService.getMem(memIdx);
             return new BaseResponse<>(getMemRes);

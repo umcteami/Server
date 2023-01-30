@@ -260,15 +260,15 @@ public class MemberService {
     }
 
     //회원 정보 수정
-    public String editMem(int memIdx,PatchMemReq patchMemReq,MultipartFile profile) throws BaseException, IOException {
+    public BaseResponseStatus editMem(int memIdx,PatchMemReq patchMemReq,MultipartFile profile) throws BaseException, IOException {
         try {
             int editNickNum = memberDao.editNickNum(memIdx);
             if(editNickNum > 2){
-                return "닉네임 변경 횟수 초과";
+                return PATCH_MEMBER_NICKNUM_OVER;
             }
 
             int checkNick = memberDao.checkNick(patchMemReq.getNick());
-            if(checkNick != 0){return "닉네임 중복";}
+            if(checkNick != 0){return PATCH_MEMBER_NICK_DOUBLE;}
 
             //이미지 수정
             String saveFilePath = "";
@@ -285,20 +285,20 @@ public class MemberService {
             }
 
             memberDao.editMem(memIdx,patchMemReq,saveFilePath); // 해당 과정이 무사히 수행되면 True(1), 그렇지 않으면 False(0)입니다.
-            return "성공";
+            return SUCCESS;
         } catch (Exception exception) { // 인터넷 오류
             exception.printStackTrace();
             throw new BaseException(INTERNET_ERROR);
         }
     }
     //비밀번호 변경
-    public String editPw(int memIdx,String pw)throws BaseException{
+    public BaseResponseStatus editPw(int memIdx,String pw)throws BaseException{
         try {
             //암호화
             String encryptPwd = UserSha256.encrypt(pw);
 
             memberDao.editPw(encryptPwd,memIdx);
-            return "비밀번호 변경 성공";
+            return SUCCESS;
         }catch (Exception e){
             e.printStackTrace();
             throw new BaseException(INTERNET_ERROR);
