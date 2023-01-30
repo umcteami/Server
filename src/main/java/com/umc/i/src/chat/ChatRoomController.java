@@ -1,5 +1,6 @@
 package com.umc.i.src.chat;
 
+import com.umc.i.src.chat.model.get.GetChatRoomRes;
 import com.umc.i.src.chat.model.get.GetChatRoomsRes;
 import com.umc.i.src.chat.model.post.PostChatRoom;
 import lombok.*;
@@ -41,9 +42,9 @@ public class ChatRoomController {
         return "roomdetail";
     }
     // 특정 채팅방 조회
-    @GetMapping("/room/{roomId}")
+    @GetMapping("/room/{roomIdx}")
     @ResponseBody
-    public PostChatRoom roomInfo(@PathVariable String roomId) {
-        return chatRoomRepository.findRoomById(roomId);
+    public GetChatRoomRes roomInfo(@PathVariable int roomIdx) {
+        return chatRoomRepository.getChatRoomIdx(roomIdx);
     }
 }

@@ -40,9 +40,9 @@
   var vm = new Vue({
     el: '#app',
     data: {
-      roomId: '',
+      roomId: 0,
       room: {},
-      sender: '',
+      sender: 0,
       message: '',
       messages: []
     },
@@ -53,7 +53,7 @@
     },
     methods: {
       findRoom: function() {
-        axios.get('/chat/room/'+this.roomId).then(response => { this.room = response.data; });
+        axios.get('/chat/room/'+this.roomIdx).then(response => { this.room = response.data; });
       },
       sendMessage: function() {
         ws.send("/pub/chat/message", {}, JSON.stringify({type:'TALK', roomId:this.roomId, sender:this.sender, message:this.message}));

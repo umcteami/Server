@@ -1,6 +1,7 @@
 package com.umc.i.src.chat;
 
 import com.umc.i.src.chat.model.ChatMessage;
+import com.umc.i.src.chat.model.get.GetChatRoomRes;
 import com.umc.i.src.chat.model.get.GetChatRoomsRes;
 import com.umc.i.src.chat.model.post.PostChatRoom;
 import lombok.extern.slf4j.Slf4j;
@@ -40,13 +41,12 @@ public class ChatDao {
                             rs.getInt("mem2_idx")
                     ));
     }
-    /*public ChatRoom findRoomIdx(int roomIdx) {
-        String findRoomIdxQuery = "select mem1_idx,mem2_idx from Chatting_room where room_idx = ?";
+    public GetChatRoomRes getChatRoomIdx(int roomIdx) {
+        String findRoomIdxQuery = "select room_idx,mem1_idx,mem2_idx from Chatting_room where room_idx = ?";
 
         return this.jdbcTemplate.queryForObject(findRoomIdxQuery,
-                (rs, rowNum) -> new ChatRoom(
-                        rs.getInt("mem1_idx"),
-                        rs.getInt("mem2_idx")
+                (rs, rowNum) -> new GetChatRoomRes(
+                        rs.getInt("room_idx")
                 ),roomIdx);
-    }*/
+    }
 }

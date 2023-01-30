@@ -79,12 +79,12 @@
                         .catch( response => { alert("채팅방 개설에 실패하였습니다."); } );
                 }
             },
-            enterRoom: function(roomId) {
+            enterRoom: function(roomIdx) {
                 var sender = prompt('대화명을 입력해 주세요.'); //memIdx1 인지 2인지
                 if(sender != "") {
                     localStorage.setItem('wschat.sender',sender);
-                    localStorage.setItem('wschat.roomId',roomId);
-                    location.href="/chat/room/enter/"+roomId;
+                    localStorage.setItem('wschat.roomId',roomIdx);
+                    location.href="/chat/room/enter/"+roomIdx;
                 }
             }
         }

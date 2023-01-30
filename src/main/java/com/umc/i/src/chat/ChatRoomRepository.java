@@ -1,6 +1,7 @@
 package com.umc.i.src.chat;
 
 import com.umc.i.src.chat.model.ChatMessage;
+import com.umc.i.src.chat.model.get.GetChatRoomRes;
 import com.umc.i.src.chat.model.get.GetChatRoomsRes;
 import com.umc.i.src.chat.model.post.PostChatRoom;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,8 +26,8 @@ public class ChatRoomRepository {
         return chatDao.getChatRooms();
     }
 
-    public PostChatRoom findRoomById(String id) {
-        return chatRoomMap.get(id);
+    public GetChatRoomRes getChatRoomIdx (int id) {
+        return chatDao.getChatRoomIdx(id);
     }
 
     public PostChatRoom createChatRoom(PostChatRoom postChatRoom) {
