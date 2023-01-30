@@ -25,8 +25,12 @@ public enum BaseResponseStatus {
 
     POST_AUTH_INVALID_TYPE(false, 2016, "인증 타입을 확인해주세요"),
     POST_AUTH_SEND_FAIL(false, 2017, "인증번호 발송 실패"),
+    POST_MEMBER_JOIN_NICKLEN(false,2030,"닉네임 길이 제한"),
+    POST_MEMBER_ISREGEX_NICK(false,2031,"닉네임 특수문자 포함"),
+    POST_MEMBER_JOIN_INTROLEN(false,2032,"한줄소개 길이 제한"),
+    POST_MEMBER_JOIN_PWLEN(false,2033,"비밀번호 길이 제한"),
+    POST_MEMBER_ISREGEX_PW(false,2034,"비밀번호 형식 제한"),
     POST_MEMBER_JOIN(false,2018,"회원가입 실패"),
-    POST_MEMBER_NICK_FAIL(false,2019,"닉네임 중복"),
 
     //[PATCH] /member
     PATCH_MEMBER_EDIT_INTRO(false,2020,"한줄 소개 크기 초과"),
@@ -43,9 +47,14 @@ public enum BaseResponseStatus {
 
     POST_MARKET_FEED_FAILED(false, 2022, "나눔 거래 게시물 작성 실패"),
 
+
     GET_MARKET_FEED_BY_PARAM_FAILED(false, 2100, "나눔 거래 게시물 조회 카테고리 설정 오류"),
 
-    FEED_UNAUTHORIZED(false, 2111, "게시물 수정 및 삭제 권한 없음"),;
+    FEED_UNAUTHORIZED(false, 2111, "게시물 수정 및 삭제 권한 없음"),
+
+    PATCH_MEMBER_NICKNUM_OVER(false,2040,"닉네임 변경 횟수 초과"),
+   
+    PATCH_MEMBER_NICK_DOUBLE(false,2041,"닉네임 중복"),;
 
     private final boolean isSuccess;
     private final int code;
