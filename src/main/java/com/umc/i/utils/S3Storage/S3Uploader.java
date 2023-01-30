@@ -34,11 +34,11 @@ public class S3Uploader {
             objectMetadata.setContentType(file.getContentType());
             objectMetadata.setContentLength(file.getSize());
 
-            String fileName = "i-image/" + UUID.randomUUID() + "_" + file.getOriginalFilename();
+            String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
 
             try {
-                InputStream inputStream = new FileInputStream(convertMultipartFileToFile(file));
-                amazonS3.putObject(new PutObjectRequest(bucket, fileName, inputStream, objectMetadata)
+//                InputStream inputStream = new FileInputStream(convertMultipartFileToFile(file));
+                amazonS3.putObject(new PutObjectRequest(bucket, fileName, file.getInputStream(), objectMetadata)
                         .withCannedAcl(CannedAccessControlList.PublicRead));
 
                 urlList.add(amazonS3.getUrl(bucket, fileName).toString());

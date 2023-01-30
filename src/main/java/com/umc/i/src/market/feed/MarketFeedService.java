@@ -25,6 +25,10 @@ public class MarketFeedService {
         marketFeedDao.updateFeed(marketIdx, feed);
     }
 
+    public void updateFeedSoldout(String marketIdx, GetMarketFeedReq feed) {
+        marketFeedDao.updateFeedSoldout(marketIdx, feed);
+    }
+
     public List<GetMarketFeedRes> getFeedByCategory(String category, int userIdx, String soldout, int page) {
         return marketFeedDao.getFeedByCategory(category, userIdx, soldout, page);
     }
@@ -45,8 +49,8 @@ public class MarketFeedService {
         marketFeedDao.deleteImages(marketIdx);
     }
 
-    public void feedLike(int userIdx, int marketIdx) {
-        marketFeedDao.feedLike(userIdx, marketIdx);
+    public void feedLike(int userIdx, int marketIdx, String isLike, int feedUserIdx) {
+        marketFeedDao.feedLike(userIdx, marketIdx, isLike, feedUserIdx);
     }
 
     public List<GetMarketFeedRes> getFeedByUserIdx(int userIdx) {

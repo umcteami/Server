@@ -19,11 +19,13 @@ public interface MarketFeedRepository {
 
     public void updateFeed(String marketIdx, GetMarketFeedReq req);
 
+    void updateFeedSoldout(String marketIdx, GetMarketFeedReq req);
+
     public void deleteFeed(String marketIdx);
 
     public void deleteImages(int marketIdx);
 
-    public void feedLike(int userIdx, int marketIdx);
+    public void feedLike(int userIdx, int marketIdx, String isLike, int feedUserIdx);
 
     public List<GetMarketFeedRes> getFeedByUserIdx(int userIdx);
 

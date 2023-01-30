@@ -7,6 +7,7 @@ import com.umc.i.src.market.feed.model.GetMarketFeedRes;
 import com.umc.i.src.market.feed.model.MarketFeed;
 import com.umc.i.src.market.feed.model.GetMarketFeedReq;
 import com.umc.i.src.market.feed.model.PostMarketFeedRes;
+import com.umc.i.src.member.model.Member;
 import com.umc.i.utils.S3Storage.S3Uploader;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -54,56 +55,23 @@ public class MarketFeedController {
         }
 
         List<String> filesUrlList = s3Uploader.upload(files);
-        log.info("fileUrlList={}", filesUrlList);
 
         marketFeedService.postFeedImages(filesUrlList, marketIdx);
         marketFeedService.postCoverImage(filesUrlList, String.valueOf(marketIdx));
 
-        return new BaseResponse<>(new PostMarketFeedRes(marketFeedReq.getUserId()));
-    }
-
-    @GetMapping("/market/latest")
-    public BaseResponse<GetMarketFeedRes> getNewsFeed(@RequestParam String category,
-                                                      @RequestParam(defaultValue = "0") String soldout,
-                                                      @RequestParam(defaultValue = "0") int page,
-                                                      @RequestBody GetMarketFeedReq req) throws RuntimeException {
-        // query string 값 오류
-        String[] marketGoodCategories = Constant.MARKET_GOOD_CATEGORIES;
-        String[] booleans = Constant.BOOLEANS;
-        int userIdx = req.getUserId();
-
-        log.info("category={}", category);
-        log.info("soldout={}", soldout);
-        log.info("userIdx={}", userIdx);
-        log.info("isValidCategory={}", Arrays.asList(marketGoodCategories).contains(category));
-
-        if (!Arrays.asList(marketGoodCategories).contains(category) || !Arrays.asList(booleans).contains(soldout)) {
-            return new BaseResponse<>(BaseResponseStatus.GET_MARKET_FEED_BY_PARAM_FAILED);
-        }
-
-        List<GetMarketFeedRes> feedByCategory = marketFeedService.getFeedByCategory(category, userIdx, soldout, page);
-        log.info("feedByCategory={}", feedByCategory);
-
-        return new BaseResponse<>(feedByCategory);
-    }
-
-    @GetMapping("/market/detail")
-    public BaseResponse<GetMarketFeedRes> getFeedDetail(@RequestParam String marketIdx,
-                                                  @RequestBody String memIdx) {
-
-        List<GetMarketFeedRes> result = marketFeedService.getFeedByMarketIdx(marketIdx, memIdx);
-        marketFeedService.updateMarketFeedHitCount(marketIdx);
-
-        return new BaseResponse<>(result);
+        return new BaseResponse<>(new PostMarketFeedRes(marketFeedReq.getUserIdx(), marketIdx));
     }
 
     @PutMapping("/market/edit")
     public BaseResponse updateFeedDetail(@RequestParam String marketIdx,
-                                         @RequestPart("images") List<MultipartFile> multipartFiles,
-                                         @RequestPart("request") GetMarketFeedReq marketFeedReq) {
+                                         @RequestPart("request") GetMarketFeedReq marketFeedReq,
+                                         @RequestPart("images") List<MultipartFile> multipartFiles) {
 
         int feedUserIdx = marketFeedService.getFeedUserIdx(marketIdx);
-        if (marketFeedReq.getUserId() != feedUserIdx) {
+        log.info("feedUserIdx={}", feedUserIdx);
+        log.info("userIdx={}", marketFeedReq.getUserIdx());
+
+        if (marketFeedReq.getUserIdx() != feedUserIdx) {
             return new BaseResponse<>(BaseResponseStatus.FEED_UNAUTHORIZED);
         }
 
@@ -111,12 +79,11 @@ public class MarketFeedController {
         marketFeedService.deleteImages(Integer.parseInt(marketIdx));
 
         List<String> filesUrlList = s3Uploader.upload(multipartFiles);
-        log.info("fileUrlList={}", filesUrlList);
 
         int uploadedImagesCnt = marketFeedService.postFeedImages(filesUrlList, Integer.parseInt(marketIdx));
         marketFeedService.postCoverImage(filesUrlList, marketIdx);
 
-        return new BaseResponse<>(marketFeedReq.getUserId());
+        return new BaseResponse<>(new PostMarketFeedRes(marketFeedReq.getUserIdx(), Integer.parseInt(marketIdx)));
     }
 
     @DeleteMapping("/market/delete")
@@ -124,7 +91,7 @@ public class MarketFeedController {
                                    @RequestBody GetMarketFeedReq marketFeedReq) {
 
         int feedUserIdx = marketFeedService.getFeedUserIdx(marketIdx);
-        if (marketFeedReq.getUserId() != feedUserIdx) {
+        if (marketFeedReq.getUserIdx() != feedUserIdx) {
             return new BaseResponse<>(BaseResponseStatus.FEED_UNAUTHORIZED);
         }
 
@@ -139,21 +106,42 @@ public class MarketFeedController {
                                                 @RequestBody GetMarketFeedReq marketFeedReq) {
 
         int feedUserIdx = marketFeedService.getFeedUserIdx(marketIdx);
-        if (marketFeedReq.getUserId() != feedUserIdx) {
+        if (marketFeedReq.getUserIdx() != feedUserIdx) {
             return new BaseResponse<>(BaseResponseStatus.FEED_UNAUTHORIZED);
         }
 
-        marketFeedService.updateFeed(marketIdx, marketFeedReq);
+        marketFeedService.updateFeedSoldout(marketIdx, marketFeedReq);
 
         return new BaseResponse<>();
     }
 
-    @PostMapping("/market/like")
-    public BaseResponse feedLikeByMember(@RequestBody MarketFeed feed) {
+    @GetMapping("/market/latest")
+    public BaseResponse<GetMarketFeedRes> getNewsFeed(@RequestParam String category,
+                                                      @RequestParam(defaultValue = "0") String soldout,
+                                                      @RequestParam(defaultValue = "0") int page,
+                                                      @RequestBody GetMarketFeedReq req) throws RuntimeException {
+        // query string 값 오류
+        String[] marketGoodCategories = Constant.MARKET_GOOD_CATEGORIES;
+        String[] booleans = Constant.BOOLEANS;
+        int userIdx = req.getUserIdx();
 
-        marketFeedService.feedLike(feed.getUserIdx(), feed.getMarketIdx());
+        if (!Arrays.asList(marketGoodCategories).contains(category) || !Arrays.asList(booleans).contains(soldout)) {
+            return new BaseResponse<>(BaseResponseStatus.GET_MARKET_FEED_BY_PARAM_FAILED);
+        }
 
-        return new BaseResponse<>();
+        List<GetMarketFeedRes> feedByCategory = marketFeedService.getFeedByCategory(category, userIdx, soldout, page);
+
+        return new BaseResponse<>(feedByCategory);
+    }
+
+    @GetMapping("/market/detail")
+    public BaseResponse<GetMarketFeedRes> getFeedDetail(@RequestParam String marketIdx,
+                                                        @RequestBody MarketFeed feed) {
+
+        List<GetMarketFeedRes> result = marketFeedService.getFeedByMarketIdx(marketIdx, String.valueOf(feed.getUserIdx()));
+        marketFeedService.updateMarketFeedHitCount(marketIdx);
+
+        return new BaseResponse<>(result);
     }
 
     @GetMapping("/market/list")
@@ -162,5 +150,15 @@ public class MarketFeedController {
         List<GetMarketFeedRes> result = marketFeedService.getFeedByUserIdx(userIdx);
 
         return new BaseResponse<>(result);
+    }
+
+    @PostMapping("/market/like")
+    public BaseResponse feedLikeByMember(@RequestBody PostMarketFeedRes feed) {
+
+        int feedUserIdx = marketFeedService.getFeedUserIdx(String.valueOf(feed.getMarketIdx()));
+
+        marketFeedService.feedLike(feed.getUserIdx(), feed.getMarketIdx(), feed.getIsLike(), feedUserIdx);
+
+        return new BaseResponse<>();
     }
 }

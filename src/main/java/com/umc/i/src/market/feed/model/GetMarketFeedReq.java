@@ -10,7 +10,7 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 public class GetMarketFeedReq {
-    private int userId;
+    private int userIdx;
     private String title;
     private String category;
     private int price;
