@@ -153,4 +153,3 @@ public class MypageController {
         return new BaseResponse<>(mypageProvider.getBlameFeed(memIdx));
     }
 }
-
