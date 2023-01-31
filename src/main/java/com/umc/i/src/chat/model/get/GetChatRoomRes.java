@@ -10,5 +10,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class GetChatRoomRes { //방하나 조회
-    private int roomIdx;
+    private int sender;
+    private String message;
+    private String chatTime;
 }

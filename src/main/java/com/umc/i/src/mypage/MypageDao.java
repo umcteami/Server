@@ -201,7 +201,7 @@ public class MypageDao {
     //나눔장터 조회
     public List<GetMarketWriteRes> getMarketWrite(int memIdx){
         try {
-            String getMarketWriteQuery = "select board_idx,market_idx,market_title,market_soldout,market_goods,market_like_count,market_image " +
+            String getMarketWriteQuery = "select board_idx,market_idx,market_title,market_soldout,market_image " +
                     "from Market where mem_idx = ?";
 
             return this.jdbcTemplate.query(getMarketWriteQuery,
@@ -313,7 +313,7 @@ public class MypageDao {
     //나눔장터 - 찜한 게시글 조회
     public List<GetWantMarketRes> getWantMarket(int memIdx){
         try {
-            String getWantFeedQuery = "select board_idx,m.market_idx,market_price,market_goods,TIMEDIFF(market_created_at,CURRENT_TIMESTAMP()) as createAt ,market_hit,market_soldout,\n" +
+            String getWantFeedQuery = "select board_idx,m.market_idx,market_price,TIMEDIFF(market_created_at,CURRENT_TIMESTAMP()) as createAt ,market_hit,market_soldout,\n" +
                     "       image_url " +
                     "from Market m join Image_url i\n" +
                     "    on m.board_idx = i.content_category and market_idx = content_idx\n" +

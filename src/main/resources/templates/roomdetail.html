@@ -7,7 +7,7 @@
 <body>
 <div class="container" id="app" v-cloak>
   <div>
-    <h2>{{room.Idx}}</h2>
+    <h2>{{sender}}</h2>
   </div>
   <div class="input-group">
     <div class="input-group-prepend">
@@ -40,23 +40,23 @@
   var vm = new Vue({
     el: '#app',
     data: {
-      roomId: 0,
-      room: {},
+      roomIdx: 0,
+      room: [] ,
       sender: 0,
       message: '',
       messages: []
     },
     created() {
-      this.roomId = localStorage.getItem('wschat.roomId');
+      this.roomIdx = localStorage.getItem('wschat.roomIdx');
       this.sender = localStorage.getItem('wschat.sender');
       this.findRoom();
     },
     methods: {
       findRoom: function() {
-        axios.get('/chat/room/'+this.roomIdx).then(response => { this.room = response.data; });
+        axios.get('/chat/room/'+this.roomIdx).then(response => { this.messages = response.data.result;});
       },
       sendMessage: function() {
-        ws.send("/pub/chat/message", {}, JSON.stringify({type:'TALK', roomId:this.roomId, sender:this.sender, message:this.message}));
+        ws.send("/pub/chat/message", {}, JSON.stringify({type:'TALK', roomIdx:this.roomIdx, sender:this.sender, message:this.message}));
         this.message = '';
       },
       recvMessage: function(recv) {
@@ -68,11 +68,11 @@
   function connect() {
     // pub/sub event
     ws.connect({}, function(frame) {
-      ws.subscribe("/sub/chat/room/"+vm.$data.roomId, function(message) {
+      ws.subscribe("/sub/chat/room/"+vm.$data.roomIdx, function(message) {
         var recv = JSON.parse(message.body);
         vm.recvMessage(recv);
       });
-      ws.send("/pub/chat/message", {}, JSON.stringify({type:'ENTER', roomId:vm.$data.roomId, sender:vm.$data.sender}));
+      ws.send("/pub/chat/message", {}, JSON.stringify({type:'ENTER', roomIdx:vm.$data.roomIdx, sender:vm.$data.sender}));
     }, function(error) {
       if(reconnect++ <= 5) {
         setTimeout(function() {

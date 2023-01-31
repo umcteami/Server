@@ -43,8 +43,8 @@
     var vm = new Vue({
         el: '#app',
         data: {
-            memIdx1 : 0,
-            memIdx2 : 0,
+            memIdx1 : 1,
+            memIdx2 : 10,
             chatrooms: [
             ]
         },
@@ -53,7 +53,8 @@
         },
         methods: {
             findAllRoom: function() {
-                axios.get('/chat/rooms').then(response => { this.chatrooms = response.data; });
+                axios.get('/chat/rooms/'+ this.memIdx1).then(response => { this.chatrooms = response.data.result;
+                console.log(response.data);});
             },
             createRoom: function() {
                 if(0 === this.memIdx1) {
@@ -83,7 +84,7 @@
                 var sender = prompt('대화명을 입력해 주세요.'); //memIdx1 인지 2인지
                 if(sender != "") {
                     localStorage.setItem('wschat.sender',sender);
-                    localStorage.setItem('wschat.roomId',roomIdx);
+                    localStorage.setItem('wschat.roomIdx',roomIdx);
                     location.href="/chat/room/enter/"+roomIdx;
                 }
             }

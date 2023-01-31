@@ -22,11 +22,11 @@ public class ChatRoomRepository {
         chatRoomMap = new LinkedHashMap<>();
     }
 
-    public List<GetChatRoomsRes> findAllRoom() {
-        return chatDao.getChatRooms();
+    public List<GetChatRoomsRes> findAllRoom(int memIdx) {
+        return chatDao.getChatRooms(memIdx);
     }
 
-    public GetChatRoomRes getChatRoomIdx (int id) {
+    public List<GetChatRoomRes> getChatRoomIdx (int id) {
         return chatDao.getChatRoomIdx(id);
     }
 

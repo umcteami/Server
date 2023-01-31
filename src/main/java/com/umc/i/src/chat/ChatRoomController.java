@@ -1,5 +1,6 @@
 package com.umc.i.src.chat;
 
+import com.umc.i.config.BaseResponse;
 import com.umc.i.src.chat.model.get.GetChatRoomRes;
 import com.umc.i.src.chat.model.get.GetChatRoomsRes;
 import com.umc.i.src.chat.model.post.PostChatRoom;
@@ -23,28 +24,29 @@ public class ChatRoomController {
     public String rooms(Model model) {
         return "room";
     }
-    // 모든 채팅방 목록 반환
-    @GetMapping("/rooms")
+    // 모든 채팅방 목록 반환-clear
+    @GetMapping("/rooms/{memIdx}")
     @ResponseBody
-    public List<GetChatRoomsRes> room() {
-        return chatRoomRepository.findAllRoom();
+    public BaseResponse<List<GetChatRoomsRes>> room(@PathVariable int memIdx) {
+        return new BaseResponse<>(chatRoomRepository.findAllRoom(memIdx));
     }
-    // 채팅방 생성
+    // 채팅방 생성-clear
     @PostMapping("/room")
     @ResponseBody
     public PostChatRoom createRoom(@ModelAttribute PostChatRoom postChatRoom) {
         return chatRoomRepository.createChatRoom(postChatRoom);
     }
     // 채팅방 입장 화면
-    @GetMapping("/room/enter/{roomId}")
-    public String roomDetail(Model model, @PathVariable String roomId) {
-        model.addAttribute("roomId", roomId);
+    @GetMapping("/room/enter/{roomIdx}")
+    public String roomDetail(Model model, @PathVariable String roomIdx) {
+        model.addAttribute("roomIdx", roomIdx);
         return "roomdetail";
     }
-    // 특정 채팅방 조회
+    // 특정 채팅방 조회-clear
     @GetMapping("/room/{roomIdx}")
     @ResponseBody
-    public GetChatRoomRes roomInfo(@PathVariable int roomIdx) {
-        return chatRoomRepository.getChatRoomIdx(roomIdx);
+    public BaseResponse<List<GetChatRoomRes>> roomInfo(@PathVariable int roomIdx) {
+
+        return new BaseResponse<>(chatRoomRepository.getChatRoomIdx(roomIdx));
     }
 }

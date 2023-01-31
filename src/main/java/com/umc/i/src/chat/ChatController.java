@@ -16,9 +16,11 @@ public class ChatController {
     //서버에서 보내는 메세지
     @MessageMapping("/chat/message")
     public void message(ChatMessage message) {
-        chatRoomRepository.sendMsg(message);
-      //  if (ChatMessage.MessageType.ENTER.equals(message.getType()))
-        //    message.setMessage(message.getSender() + "님이 입장하셨습니다.");
-        messagingTemplate.convertAndSend("/sub/chat/room/" + message.getRoomId(), message);
+        if (ChatMessage.MessageType.TALK.equals(message.getType())){
+            chatRoomRepository.sendMsg(message);
+        }
+        if (ChatMessage.MessageType.ENTER.equals(message.getType()))
+            message.setMessage(message.getSender() + "님이 입장하셨습니다.");
+        messagingTemplate.convertAndSend("/sub/chat/room/" + message.getRoomIdx(), message);
     }
 }

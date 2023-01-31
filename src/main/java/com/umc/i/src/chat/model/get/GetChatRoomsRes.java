@@ -6,8 +6,17 @@ import lombok.*;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@RequiredArgsConstructor
 public class GetChatRoomsRes { // 방 여러개 조회
+    @NonNull
     private int roomIdx;
-    private int memIdx1;
-    private int memIdx2;
+    @NonNull
+    private int sender;
+    @NonNull
+    private String profile;
+    @NonNull
+    private String nick;
+    private String recentChat;
+    private String recentTime;
+    //private int noReadNum;
 }
