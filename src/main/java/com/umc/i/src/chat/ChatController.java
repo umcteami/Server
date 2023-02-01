@@ -16,11 +16,11 @@ public class ChatController {
 
     private final com.umc.i.src.chat.ChatRoomRepository chatRoomRepository;
     private final SimpMessageSendingOperations messagingTemplate;
-    @EventListener
+    /*@EventListener
     public void handleWebSocketConnectListener(SessionDisconnectEvent event){
         log.info("{}","나감");
         log.info("{}",event);
-    }
+    }*/
     //서버에서 보내는 메세지
     @MessageMapping("/chat/message")
     public void message(ChatMessage message) {

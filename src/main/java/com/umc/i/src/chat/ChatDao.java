@@ -75,5 +75,8 @@ public class ChatDao {
                 ,roomIdx);
     }
     //채팅방 나간 시점 등록
+    //채팅방 삭제 -- db 논의 필요 누가 방을 삭제했는지 표시해야함
+    public void delChatRoom(int romIdx){
 
+    }
 }
