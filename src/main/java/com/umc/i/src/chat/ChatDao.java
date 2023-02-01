@@ -74,4 +74,6 @@ public class ChatDao {
                 )
                 ,roomIdx);
     }
+    //채팅방 나간 시점 등록
+
 }
