@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 public class FeedsController {
     @Autowired
     private final FeedsService feedsService;
+    //게시글 신고하기 - clear
     @ResponseBody
     @PostMapping("/blame")
     public BaseResponse<BaseException> postBlame(@RequestBody PostBlameReq postBlameReq){

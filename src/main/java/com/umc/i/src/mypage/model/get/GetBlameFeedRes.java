@@ -14,10 +14,4 @@ public class GetBlameFeedRes {
     private String profile;
     private String nick;
     private String createAt;
-
-    public GetBlameFeedRes(String profile,String nick,String createAt){
-        this.profile = profile;
-        this.nick = nick;
-        this.createAt = createAt;
-    }
 }

@@ -11,18 +11,18 @@ public class GetWantMarketRes {
     private int comuIdx;
     private String image;
     private int price;
-    private int goods;
+    private String title;
     private String createAt;
     private int hits;
     private int wantCount;
     private int soldout;
 
-    public GetWantMarketRes(int boardIdx,int comuIdx,String image,int price,int goods,String createAt,int hits,int soldout){
+    public GetWantMarketRes(int boardIdx,int comuIdx,String image,int price,String title,String createAt,int hits,int soldout){
         this.boardIdx = boardIdx;
         this.comuIdx = comuIdx;
         this.image = image;
         this.price = price;
-        this.goods = goods;
+        this.title = title;
         this.createAt = createAt;
         this.hits = hits;
         this.soldout = soldout;

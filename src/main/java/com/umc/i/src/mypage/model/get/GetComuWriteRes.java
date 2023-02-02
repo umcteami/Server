@@ -12,7 +12,7 @@ import org.springframework.scheduling.support.SimpleTriggerContext;
 public class GetComuWriteRes {
     @NonNull
     private int boarIdx;
-    private int roomType; //장터후기 nullexception없애기
+    private Integer roomType; //장터후기 nullexception없애기
     @NonNull
     private int comuIdx;
     private String title; //boarIdx 가 장터후기면 필터링
@@ -25,12 +25,14 @@ public class GetComuWriteRes {
     private String  createAt;
 
 
-    public GetComuWriteRes(int boarIdx, int roomType, int comuIdx,String title,int hit,String createAt){
+    public GetComuWriteRes(int boarIdx, int roomType, int comuIdx,String title,int hit,int countLike,int countComment,String createAt){
         this.boarIdx = boarIdx;
         this.roomType = roomType;
         this.comuIdx = comuIdx;
         this.title = title;
         this.hit = hit;
+        this.countLike = countLike;
+        this.countComment = countComment;
         this.createAt = createAt;
     }
 }

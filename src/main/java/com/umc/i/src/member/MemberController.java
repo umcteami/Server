@@ -142,23 +142,28 @@ public class MemberController {
         }
         return new BaseResponse<>(BaseResponseStatus.POST_AUTH_INVALID_TYPE);
     }
-    //유저 탈퇴
+    //유저 차단-clear
     @ResponseBody
     @PostMapping("/withdraw")
     public BaseResponse<BaseException> postWithdraw(@RequestPart("memIdx") int memIdx) throws BaseException {
         try {
             memberService.postWithdraw(memIdx);
             return new BaseResponse<>(BaseResponseStatus.SUCCESS);
-        }catch (Exception e){
+        }catch (BaseException e){
+            return new BaseResponse<>(BaseResponseStatus.POST_MEMBER_WITHDRAW);
+        } catch (Exception e){
             return new BaseResponse<>(BaseResponseStatus.INTERNET_ERROR);
         }
     }
+    //유저 탈퇴 - clear
     @ResponseBody
     @PostMapping("/block")
     public BaseResponse<BaseException> postBlock(@RequestBody PostMemblockReq postMemblockReq)throws BaseException{
         try {
             memberService.postMemblock(postMemblockReq);
             return new BaseResponse<>(BaseResponseStatus.SUCCESS);
+        }catch (BaseException e){
+            return new BaseResponse<>(BaseResponseStatus.POST_NEMBER_BLOCK_DOUBLE);
         }catch (Exception e){
             return new BaseResponse<>(BaseResponseStatus.INTERNET_ERROR);
         }

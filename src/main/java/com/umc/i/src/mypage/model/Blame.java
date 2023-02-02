@@ -7,6 +7,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Blame {
+
     private int boardIdx;
     private int comuIdx;
     private String createAt;

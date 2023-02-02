@@ -322,18 +322,16 @@ public class MemberService {
     public void postWithdraw(int memIdx)throws BaseException{
         try {
             memberDao.postWithdraw(memIdx);
-        }catch (Exception exception) {
-            exception.printStackTrace();
-            throw new BaseException(INTERNET_ERROR);
+        }catch (BaseException exception){
+            throw new BaseException(POST_MEMBER_WITHDRAW);
         }
     }
     //유저 차단
     public void postMemblock(PostMemblockReq postMemblockReq)throws BaseException{
         try {
             memberDao.postMemblock(postMemblockReq);
-        }catch (Exception exception) {
-            exception.printStackTrace();
-            throw new BaseException(INTERNET_ERROR);
+        }catch (BaseException exception){
+            throw new BaseException(POST_NEMBER_BLOCK_DOUBLE);
         }
     }
 }
