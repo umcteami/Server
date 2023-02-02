@@ -48,18 +48,14 @@ public enum BaseResponseStatus {
     //[GET] /mypage
     GET_WRITE_FEED_FAILED(false,2024,"조회 실패"),
     GET_WRITE_FEED_EMPTY(false,2025,"조회 대상 없음"),
-    GET_WRITE_FEED_TYPERROR(false,2026,"path 오류"),;
+    GET_WRITE_FEED_TYPERROR(false,2026,"path 오류"),
 
 
 
 
     GET_MARKET_FEED_BY_PARAM_FAILED(false, 2100, "나눔 거래 게시물 조회 카테고리 설정 오류"),
 
-    FEED_UNAUTHORIZED(false, 2111, "게시물 수정 및 삭제 권한 없음"),
-
-    PATCH_MEMBER_NICKNUM_OVER(false,2040,"닉네임 변경 횟수 초과"),
-
-    PATCH_MEMBER_NICK_DOUBLE(false,2041,"닉네임 중복"),;
+    FEED_UNAUTHORIZED(false, 2111, "게시물 수정 및 삭제 권한 없음"),;
 
     private final boolean isSuccess;
     private final int code;
