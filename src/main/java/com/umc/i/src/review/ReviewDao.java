@@ -10,6 +10,8 @@ import org.springframework.stereotype.Repository;
 
 import com.umc.i.config.BaseException;
 import com.umc.i.config.BaseResponseStatus;
+import com.umc.i.src.feeds.model.patch.PatchFeedsReq;
+import com.umc.i.src.review.model.patch.PatchReviewsReq;
 import com.umc.i.src.review.model.post.PostReviewReq;
 import com.umc.i.utils.S3Storage.Image;
 
@@ -55,6 +57,43 @@ public class ReviewDao {
             Object[] createReviewsImageParams = new Object[] {img.get(i).getCategory(), reviewIdx, img.get(i).getUploadFilePath(), i};
             this.jdbcTemplate.update(createReviewsImageQuery, createReviewsImageParams);
         }
+    }
+
+
+    // 장터 후기 수정
+    public int editReviews(PatchReviewsReq patchReviewsReq, List<Image> img){
+        // 게시글 수정
+        String editReviewsQuery = "update Market_review set review_goods = ?, review_content = ?, review_image = ? where review_idx = ?";
+        Object[] editReviewsParams = new Object[] {patchReviewsReq.getGoods(), patchReviewsReq.getContent(), patchReviewsReq.getImgCnt(), patchReviewsReq.getReviewIdx()};
+
+        this.jdbcTemplate.update(editReviewsQuery, editReviewsParams);
+
+        // 이미지 수정(삭제 후 추가)
+        editReviewsQuery = "delete from Image_url where content_category = 3 && content_idx = ?";
+        this.jdbcTemplate.update(editReviewsQuery, patchReviewsReq.getReviewIdx());
+
+        if(img != null) {       // 이미지가 있으면
+            editReviewsQuery = "insert into Image_url (content_category, content_idx, image_url, image_order) values (?, ?, ?, ?)";
+            for (int i = 0; i < img.size(); i++) {
+                Object[] editReviewsImageParams = new Object[] {3, patchReviewsReq.getReviewIdx(), img.get(i).getUploadFilePath(), i};
+                this.jdbcTemplate.update(editReviewsQuery, editReviewsImageParams);
+            }
+        }
+
+        return patchReviewsReq.getReviewIdx();
+    }
+
+    // 이미지 조회
+    public List<Image> getReviewsImage(int reviewIdx) {
+        String getReviewsImageQuery = "select * from Image_url where content_category = 3 && content_idx = ?";
+        
+        return this.jdbcTemplate.query(getReviewsImageQuery, 
+        (rs, rowNum) -> new Image(
+            rs.getString("image_url"), 
+            rs.getString("image_url"),
+            rs.getInt("content_category"), 
+            rs.getInt("content_idx")), 
+            reviewIdx);
     }
 
     

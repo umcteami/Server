@@ -7,12 +7,16 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.text.DateFormatter;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.umc.i.config.BaseException;
 import com.umc.i.config.BaseResponseStatus;
+import com.umc.i.src.review.model.patch.PatchReviewsReq;
+import com.umc.i.src.review.model.patch.PatchReviewsRes;
 import com.umc.i.src.review.model.post.PostReviewReq;
 import com.umc.i.src.review.model.post.PostReviewRes;
 import com.umc.i.utils.S3Storage.Image;
@@ -28,6 +32,7 @@ public class ReviewService {
     @Autowired
     private final UploadImageS3 uploadImageS3;
 
+    // 장터후기 작성
     public PostReviewRes writeReviews(PostReviewReq postReviewReq, List<MultipartFile> file) throws BaseException {
         try {
             int reviewIdx;
@@ -65,6 +70,28 @@ public class ReviewService {
             // 파일 업로드 오류
             e.printStackTrace();
             throw new BaseException(BaseResponseStatus.POST_UPLOAD_IMAGE_FAIL);
+        }
+    }
+
+    // 장터후기 수정
+    public PatchReviewsRes editReviews(PatchReviewsReq patchReviewsReq, List<MultipartFile> file) throws BaseException {
+        try {
+            List<Image> img = reviewDao.getReviewsImage(patchReviewsReq.getReviewIdx());
+            List<Image> newImg = new ArrayList<Image>();
+            for(int i = 0; i < img.size(); i++) {
+                uploadImageS3.remove(img.get(i).getUploadFilePath());       // s3에 있는 기존 이미지 삭제
+            }
+            if(!file.get(0).isEmpty()) {    // 이미지가 있으면
+                String fileName = "image" + File.separator + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMM"));
+                for(int i = 0; i < file.size(); i++) {
+                    newImg.add(createAndUploadFile(file.get(i), fileName, 3, i));
+                }
+            }
+
+            return new PatchReviewsRes(reviewDao.editReviews(patchReviewsReq, newImg));
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BaseException(BaseResponseStatus.PATCH_EDIT_FEEDS_FAIL);
         }
     }
     
