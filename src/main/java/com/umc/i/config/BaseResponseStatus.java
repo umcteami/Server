@@ -52,6 +52,8 @@ public enum BaseResponseStatus {
 
     FEED_UNAUTHORIZED(false, 2111, "게시물 수정 및 삭제 권한 없음"),
 
+    FEED_NOT_EXIST(false, 2112, "게시물이 존재하지 않음"),
+
     PATCH_MEMBER_NICKNUM_OVER(false,2040,"닉네임 변경 횟수 초과"),
    
     PATCH_MEMBER_NICK_DOUBLE(false,2041,"닉네임 중복"),;
@@ -65,4 +67,4 @@ public enum BaseResponseStatus {
         this.code = code;
         this.message = message;
     }
-    }
+}
