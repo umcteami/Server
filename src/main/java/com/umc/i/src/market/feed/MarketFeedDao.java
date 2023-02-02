@@ -243,7 +243,7 @@ public class MarketFeedDao implements MarketFeedRepository {
         try {
             List<GetMarketFeedRes> result = jdbcTemplate.query(query,
                     marketFeedByCategoryRowMapper(),
-                    userIdx, soldout, page * 9, (page * 9) + Constant.FEED_PER_PAGE);
+                    userIdx, soldout, page * 9, Constant.FEED_PER_PAGE);
             return result;
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -287,7 +287,7 @@ public class MarketFeedDao implements MarketFeedRepository {
         try {
             List<GetMarketFeedRes> result = jdbcTemplate.query(query,
                     marketFeedByCategoryRowMapper(),
-                    userIdx, category, soldout, page * 9, (page * 9) + Constant.FEED_PER_PAGE);
+                        userIdx, category, soldout, page * 9, Constant.FEED_PER_PAGE);
             return result;
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -335,7 +335,7 @@ public class MarketFeedDao implements MarketFeedRepository {
         try {
             List<GetMarketFeedRes> result = jdbcTemplate.query(query,
                     marketFeedByCategoryRowMapper(),
-                    page * 9, (page * 9) + Constant.FEED_PER_PAGE, userIdx);
+                    page * 9, Constant.FEED_PER_PAGE, userIdx);
             return result;
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -384,7 +384,7 @@ public class MarketFeedDao implements MarketFeedRepository {
         try {
             List<GetMarketFeedRes> result = jdbcTemplate.query(query,
                     marketFeedByCategoryRowMapper(),
-                    categoryIdx, page * 9, (page * 9) + Constant.FEED_PER_PAGE, userIdx);
+                    categoryIdx, page * 9, Constant.FEED_PER_PAGE, userIdx);
             return result;
         } catch (Exception e) {
             log.error(e.getMessage());
