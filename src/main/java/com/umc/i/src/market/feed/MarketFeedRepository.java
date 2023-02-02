@@ -4,32 +4,39 @@ import com.umc.i.src.market.feed.model.GetMarketFeedRes;
 import com.umc.i.src.market.feed.model.GetMarketFeedReq;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface MarketFeedRepository {
 
-    public int postNewFeed(GetMarketFeedReq marketFeed);
+    int postNewFeed(GetMarketFeedReq marketFeed);
 
-    public int postFeedImages(List<String> filesUrlList, int marketIdx);
+    int postFeedImages(List<String> filesUrlList, int marketIdx);
 
-    public List<GetMarketFeedRes> getFeedByCategory(String category, int userIdx, String soldout, int page);
+    List<GetMarketFeedRes> getAllFeed(int userIdx, String soldout, int page);
 
-    public List<GetMarketFeedRes> getFeedByMarketIdx(String marketIdx, String memIdx);
+    List<GetMarketFeedRes> getFeedByCategory(String category, int userIdx, String soldout, int page);
 
-    public void updateFeedHitCount(String marketIdx);
+    Optional<GetMarketFeedRes> getFeedByMarketIdx(String marketIdx, String memIdx);
 
-    public void updateFeed(String marketIdx, GetMarketFeedReq req);
+    void updateFeedHitCount(int category, String marketIdx);
+
+    void updateFeed(String marketIdx, GetMarketFeedReq req);
 
     void updateFeedSoldout(String marketIdx, GetMarketFeedReq req);
 
-    public void deleteFeed(String marketIdx);
+    void deleteFeed(String marketIdx);
 
-    public void deleteImages(int marketIdx);
+    void deleteImages(int marketIdx);
 
-    public void feedLike(int userIdx, int marketIdx, String isLike, int feedUserIdx);
+    void feedLike(int userIdx, int marketIdx, String isLike, int feedUserIdx);
 
-    public List<GetMarketFeedRes> getFeedByUserIdx(int userIdx);
+    List<GetMarketFeedRes> getFeedByUserIdx(int userIdx);
 
-    public int getFeedUserIdx(String marketIdx);
+    int getFeedUserIdx(String marketIdx);
 
-    public void postCoverImage(List<String> filesUrlList, String marketIdx);
+    void postCoverImage(List<String> filesUrlList, String marketIdx);
+
+    List<GetMarketFeedRes> getAllHotFeed(int userIdx, String soldout, int page);
+
+    List<GetMarketFeedRes> getHotFeedByCategory(String categoryIdx, int userIdx, String soldout, int page);
 }
