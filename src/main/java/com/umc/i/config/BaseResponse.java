@@ -16,7 +16,6 @@ public class BaseResponse<T> {
     private final Boolean isSuccess;
     private final String message;
     private final int code;
-    private int size;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private T result;
 
@@ -33,14 +32,6 @@ public class BaseResponse<T> {
         this.isSuccess = status.isSuccess();
         this.message = status.getMessage();
         this.code = status.getCode();
-    }
-
-    public BaseResponse(int size,T result) {
-        this.isSuccess = SUCCESS.isSuccess();
-        this.message = SUCCESS.getMessage();
-        this.code = SUCCESS.getCode();
-        this.size = size;
-        this.result = result;
     }
 }
 

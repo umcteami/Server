@@ -1,9 +1,13 @@
 package com.umc.i.src.chat;
 
+import com.fasterxml.jackson.databind.ser.Serializers;
+import com.umc.i.config.BaseException;
 import com.umc.i.config.BaseResponse;
+import com.umc.i.config.BaseResponseStatus;
 import com.umc.i.src.chat.model.get.GetChatRoomRes;
 import com.umc.i.src.chat.model.get.GetChatRoomsRes;
 import com.umc.i.src.chat.model.post.PostChatRoom;
+import com.umc.i.src.chat.model.post.PostChatRoomOutReq;
 import lombok.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -49,4 +53,18 @@ public class ChatRoomController {
 
         return new BaseResponse<>(chatRoomRepository.getChatRoomIdx(roomIdx));
     }
+    // 채팅방 나감 + 메세지 읽음 확인
+    @PostMapping("/room/out")
+    @ResponseBody
+    public BaseResponse<BaseException> roomOut(@RequestBody PostChatRoomOutReq roomOut){
+        try {
+            chatRoomRepository.postRoomOut(roomOut);
+            return new BaseResponse<>(BaseResponseStatus.SUCCESS);
+        }catch (Exception e){
+            e.printStackTrace();
+            return new BaseResponse<>(BaseResponseStatus.INTERNET_ERROR);
+        }
+    }
+    //알람
+    //채팅 삭제
 }

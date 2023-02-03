@@ -44,6 +44,7 @@
       room: [] ,
       sender: 0,
       message: '',
+      files:[],
       messages: []
     },
     created() {
@@ -56,7 +57,7 @@
         axios.get('/chat/room/'+this.roomIdx).then(response => { this.messages = response.data.result;});
       },
       sendMessage: function() {
-        ws.send("/pub/chat/message", {}, JSON.stringify({type:'TALK', roomIdx:this.roomIdx, sender:this.sender, message:this.message}));
+        ws.send("/pub/chat/message", {}, JSON.stringify({type:'TALK', roomIdx:this.roomIdx, sender:this.sender, files:this.files}));
         this.message = '';
       },
       recvMessage: function(recv) {
