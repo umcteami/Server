@@ -1,5 +1,6 @@
 package com.umc.i.src.chat;
 
+import com.umc.i.config.BaseException;
 import com.umc.i.src.chat.model.ChatImg;
 import com.umc.i.src.chat.model.ChatMessage;
 import com.umc.i.src.chat.model.get.GetChatRoomRes;
@@ -32,11 +33,11 @@ public class ChatRoomRepository {
         return chatDao.getChatRooms(memIdx);
     }
 
-    public List<GetChatRoomRes> getChatRoomIdx (int roomIdx,int memIdx) {
+    public List<GetChatRoomRes> getChatRoomIdx (int roomIdx,int memIdx) throws BaseException{
         return chatDao.getChatRoomIdx(roomIdx,memIdx);
     }
 
-    public PostChatRoom createChatRoom(PostChatRoom postChatRoom) {
+    public PostChatRoom createChatRoom(PostChatRoom postChatRoom) throws BaseException {
         chatDao.postChatRoom(postChatRoom);
         return postChatRoom;
     }

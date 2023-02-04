@@ -18,9 +18,4 @@ public class ChatMessage {
     private int roomIdx;
     private int sender;
     private String message;
-    public ChatMessage(int roomId,int sender,String message){
-        this.roomIdx = roomId;
-        this.sender = sender;
-        this.message = message;
-    }
 }

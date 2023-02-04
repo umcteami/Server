@@ -55,7 +55,9 @@ public enum BaseResponseStatus {
 
     GET_MARKET_FEED_BY_PARAM_FAILED(false, 2100, "나눔 거래 게시물 조회 카테고리 설정 오류"),
 
-    FEED_UNAUTHORIZED(false, 2111, "게시물 수정 및 삭제 권한 없음"),;
+    FEED_UNAUTHORIZED(false, 2111, "게시물 수정 및 삭제 권한 없음"),
+    //chatting
+    CHATTING_BLAME_NOTABLE(false,2050,"차단 당했습니다."),;
 
     private final boolean isSuccess;
     private final int code;

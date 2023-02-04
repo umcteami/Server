@@ -43,7 +43,9 @@ public class ChatRoomController {
     public BaseResponse<PostChatRoom> createRoom(@ModelAttribute PostChatRoom postChatRoom){
         try {
             return new BaseResponse<>(chatRoomRepository.createChatRoom(postChatRoom));
-        }catch (Exception e){
+        }catch (BaseException e){
+            return new BaseResponse<>(BaseResponseStatus.CHATTING_BLAME_NOTABLE);
+        } catch (Exception e){
             return new BaseResponse(BaseResponseStatus.INTERNET_ERROR);
         }
     }
@@ -53,14 +55,16 @@ public class ChatRoomController {
         model.addAttribute("roomIdx", roomIdx);
         return "roomdetail";
     }
-    // 특정 채팅방 조회- img 전송 문제
+    // 특정 채팅방 조회
     @GetMapping("/room/{roomIdx}/{memIdx}")
     @ResponseBody
     public BaseResponse<List<GetChatRoomRes>> roomInfo(@PathVariable int roomIdx,
                                                        @PathVariable int memIdx){
         try {
             return new BaseResponse<>(chatRoomRepository.getChatRoomIdx(roomIdx,memIdx));
-        }catch (Exception e){
+        }catch(BaseException e){
+            return new BaseResponse<>(BaseResponseStatus.CHATTING_BLAME_NOTABLE);
+        } catch (Exception e){
             return new BaseResponse<>(BaseResponseStatus.INTERNET_ERROR);
         }
     }

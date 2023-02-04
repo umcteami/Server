@@ -1,4 +1,6 @@
 package com.umc.i.src.chat;
+import com.umc.i.config.BaseException;
+import com.umc.i.config.BaseResponseStatus;
 import com.umc.i.src.chat.model.ChatImg;
 import com.umc.i.src.chat.model.ChatMessage;
 import com.umc.i.src.chat.model.get.GetChatRoomRes;
@@ -25,9 +27,17 @@ public class ChatDao {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
     //방생성
-    public void postChatRoom(PostChatRoom postChatRoom){
-        String postChatRoomQuery = "insert into Chatting_room(mem1_idx, mem2_idx,room_created_at,room_quit1,room_quit2) values (?,?,now(),0,0)";
-        this.jdbcTemplate.update(postChatRoomQuery, postChatRoom.getMemIdx1(), postChatRoom.getMemIdx2());
+    public void postChatRoom(PostChatRoom postChatRoom) throws BaseException {
+        String blockCheckQuery = "select count(*) from Member_block where (mem_idx = ? and blocked_mem_idx = ?) or\n" +
+                "                                        (mem_idx = ? and blocked_mem_idx = ?)";
+        int block = this.jdbcTemplate.queryForObject(blockCheckQuery,int.class,postChatRoom.getMemIdx1(),postChatRoom.getMemIdx2(),
+                postChatRoom.getMemIdx2(),postChatRoom.getMemIdx1());
+        if(block !=0){
+            throw new BaseException(BaseResponseStatus.CHATTING_BLAME_NOTABLE);
+        }else{
+            String postChatRoomQuery = "insert into Chatting_room(mem1_idx, mem2_idx,room_created_at,room_quit1,room_quit2) values (?,?,now(),0,0)";
+            this.jdbcTemplate.update(postChatRoomQuery, postChatRoom.getMemIdx1(), postChatRoom.getMemIdx2());
+        }
     }
     //메세지 보내기
     public void sendMsg(ChatMessage chatMsg){
@@ -58,10 +68,18 @@ public class ChatDao {
                 },memIdx,memIdx,memIdx,memIdx);
     }
     //하나의 채팅방 보기+ 이미지(미완)
-    public List<GetChatRoomRes> getChatRoomIdx(int roomIdx,int memIdx) {
+    public List<GetChatRoomRes> getChatRoomIdx(int roomIdx,int memIdx) throws BaseException {
         String findRoomIdxQuery = "select C.chat_idx,mem_send_idx,chat_content,chat_time,chat_read,chat_image,if(C.mem_send_idx != ?,mem_profile_url,null) as profile,if(C.mem_send_idx != ?,mem_nickname,null) as nick \n" +
 "from Chatting C join Member M on C.mem_send_idx = M.mem_idx where room_idx = ?";
         String findChatImgsQuery = "select image_url from Image_url join Chatting C on content_idx = C.chat_idx and content_category = 5 where C.chat_idx = ?";
+
+
+        String blockCheckQuery = "select count(*) from Member_block join Chatting_room Cr on (mem_idx = Cr.mem1_idx and blocked_mem_idx = Cr.mem2_idx) or\n" +
+                "                                        (mem_idx = Cr.mem2_idx and blocked_mem_idx = Cr.mem1_idx) where Cr.room_idx = ?;";
+        int block = this.jdbcTemplate.queryForObject(blockCheckQuery,int.class,roomIdx);
+        if(block != 0){
+            throw new BaseException(BaseResponseStatus.CHATTING_BLAME_NOTABLE);
+        }
         return this.jdbcTemplate.query(findRoomIdxQuery,
                 (rs, rowNum) -> {
 
@@ -75,7 +93,7 @@ public class ChatDao {
                                 rs.getString("nick"));
                     }else {
                         List<String> listImg = this.jdbcTemplate.query(findChatImgsQuery,
-                              /**이부분 이상**/  (rs1, rowNum1) -> String.valueOf(String.class),rs.getInt("C.chat_idx"));
+                               (rs1, rowNum1) -> String.valueOf(rs1.getString("image_url")),rs.getInt("C.chat_idx"));
                         getChatRoomRes = new GetChatRoomRes(
                                 rs.getInt("mem_send_idx"),
                                 rs.getString("chat_time"),
