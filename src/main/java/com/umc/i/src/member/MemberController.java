@@ -4,18 +4,15 @@ import static com.umc.i.utils.ValidationRegex.*;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.List;
 
 import javax.mail.MessagingException;
 
-import com.fasterxml.jackson.databind.ser.Serializers;
-import com.umc.i.src.member.model.Member;
 import com.umc.i.src.member.model.get.GetMemRes;
 import com.umc.i.src.member.model.patch.PatchMemReq;
 import com.umc.i.src.member.model.post.*;
 import com.umc.i.utils.ValidationRegex;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.umc.i.config.BaseException;
@@ -28,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/member")
 @RequiredArgsConstructor
+@Slf4j
 public class MemberController {
     @Autowired
     private final MemberService memberService;
@@ -143,6 +141,7 @@ public class MemberController {
         return new BaseResponse<>(BaseResponseStatus.POST_AUTH_INVALID_TYPE);
     }
 
+
     @GetMapping("/join/auth")
     public BaseResponse<PostAuthNumberRes> checkAuthNumber(@RequestBody PostAuthNumberReq postAuthNumberReq) {
         int authIdx = postAuthNumberReq.getAuthIdx();
@@ -159,5 +158,32 @@ public class MemberController {
         }
 
         return new BaseResponse<>(BaseResponseStatus.POST_NUMBER_AUTH_TIME_FAILED);
+    }
+
+    //유저 차단-clear
+    @ResponseBody
+    @PostMapping("/withdraw")
+    public BaseResponse<BaseException> postWithdraw(@RequestPart("memIdx") int memIdx) throws BaseException {
+        try {
+            memberService.postWithdraw(memIdx);
+            return new BaseResponse<>(BaseResponseStatus.SUCCESS);
+        }catch (BaseException e){
+            return new BaseResponse<>(BaseResponseStatus.POST_MEMBER_WITHDRAW);
+        } catch (Exception e){
+            return new BaseResponse<>(BaseResponseStatus.INTERNET_ERROR);
+        }
+    }
+    //유저 탈퇴 - clear
+    @ResponseBody
+    @PostMapping("/block")
+    public BaseResponse<BaseException> postBlock(@RequestBody PostMemblockReq postMemblockReq)throws BaseException{
+        try {
+            memberService.postMemblock(postMemblockReq);
+            return new BaseResponse<>(BaseResponseStatus.SUCCESS);
+        }catch (BaseException e){
+            return new BaseResponse<>(BaseResponseStatus.POST_NEMBER_BLOCK_DOUBLE);
+        }catch (Exception e){
+            return new BaseResponse<>(BaseResponseStatus.INTERNET_ERROR);
+        }
     }
 }

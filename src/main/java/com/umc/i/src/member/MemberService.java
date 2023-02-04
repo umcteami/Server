@@ -25,9 +25,11 @@ import com.umc.i.src.member.model.patch.PatchMemReq;
 import com.umc.i.src.member.model.post.PostAuthNumberReq;
 import com.umc.i.src.member.model.post.PostJoinReq;
 import com.umc.i.src.member.model.post.PostJoinRes;
+import com.umc.i.src.member.model.post.PostMemblockReq;
 import com.umc.i.utils.S3Storage.UploadImageS3;
 
 import com.umc.i.utils.UserSha256;
+import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +52,7 @@ import static com.umc.i.config.BaseResponseStatus.*;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MemberService {
     @Autowired
     private final UploadImageS3 uploadImageS3;
@@ -330,6 +333,23 @@ public class MemberService {
         } catch (Exception exception) {
             exception.printStackTrace();
             throw new BaseException(INTERNET_ERROR);
+        }
+    }
+
+    //유저 탈퇴
+    public void postWithdraw(int memIdx)throws BaseException{
+        try {
+            memberDao.postWithdraw(memIdx);
+        }catch (BaseException exception){
+            throw new BaseException(POST_MEMBER_WITHDRAW);
+        }
+    }
+    //유저 차단
+    public void postMemblock(PostMemblockReq postMemblockReq)throws BaseException{
+        try {
+            memberDao.postMemblock(postMemblockReq);
+        }catch (BaseException exception){
+            throw new BaseException(POST_NEMBER_BLOCK_DOUBLE);
         }
     }
 }

@@ -33,12 +33,8 @@ public enum BaseResponseStatus {
     POST_MEMBER_JOIN(false,2018,"회원가입 실패"),
 
     //[PATCH] /member
-    PATCH_MEMBER_EDIT_INTRO(false,2020,"한줄 소개 크기 초과"),
-
-    PATCH_MEMBER_EDIT_NICK(false,2021,"닉네임 수정 횟수 초과"),
-    PATCH_MEMBER_SPECIAL_NICK(false,2022,"닉네임 특수문자 포함"),
-    POST_NUMBER_AUTH_FAILED(false, 2018, "번호 인증을 실패"),
-
+    PATCH_MEMBER_NICKNUM_OVER(false,2040,"닉네임 변경 횟수 초과"),
+    PATCH_MEMBER_NICK_DOUBLE(false,2041,"닉네임 중복"),
     POST_NUMBER_AUTH_TIME_FAILED(false, 2019, "시간 초과"),
 
     POST_AUTH_JWT_TOKEN_INVALID(false, 2020, "jwt 토큰 만료"),
@@ -46,17 +42,28 @@ public enum BaseResponseStatus {
     POST_AUTH_MEMBER_NOT_EXIST(false, 2021, "회원 정보가 존재하지 않음"),
 
     POST_MARKET_FEED_FAILED(false, 2022, "나눔 거래 게시물 작성 실패"),
+    POST_FEED_BLAME_DOUBLE(false,2023,"이미 신고한 게시글 입니다"),
+    POST_NEMBER_BLOCK_DOUBLE(false,2027,"이미 차단한 멤버입니다."),
+    POST_MEMBER_WITHDRAW(false,2028,"유저가 존재하지 않음"),
+    //[GET] /mypage
+    GET_WRITE_FEED_FAILED(false,2024,"조회 실패"),
+    GET_WRITE_FEED_EMPTY(false,2025,"조회 대상 없음"),
+    GET_WRITE_FEED_TYPERROR(false,2026,"path 오류"),
 
 
-    GET_MARKET_FEED_BY_PARAM_FAILED(false, 2100, "나눔 거래 게시물 조회 카테고리 설정 오류"),
 
-    FEED_UNAUTHORIZED(false, 2111, "게시물 수정 및 삭제 권한 없음"),
+
 
     FEED_NOT_EXIST(false, 2112, "게시물이 존재하지 않음"),
 
     PATCH_MEMBER_NICKNUM_OVER(false,2040,"닉네임 변경 횟수 초과"),
    
-    PATCH_MEMBER_NICK_DOUBLE(false,2041,"닉네임 중복"),;
+    PATCH_MEMBER_NICK_DOUBLE(false,2041,"닉네임 중복"),
+
+    GET_MARKET_FEED_BY_PARAM_FAILED(false, 2100, "나눔 거래 게시물 조회 카테고리 설정 오류"),
+
+    FEED_UNAUTHORIZED(false, 2111, "게시물 수정 및 삭제 권한 없음"),;
+
 
     private final boolean isSuccess;
     private final int code;
