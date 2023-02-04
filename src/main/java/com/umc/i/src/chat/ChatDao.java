@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.sql.DataSource;
+import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -25,21 +26,22 @@ public class ChatDao {
     }
     //방생성
     public void postChatRoom(PostChatRoom postChatRoom){
-        String postChatRoomQuery = "insert into Chatting_room(mem1_idx, mem2_idx,room_created_at) values (?,?,now())";
+        String postChatRoomQuery = "insert into Chatting_room(mem1_idx, mem2_idx,room_created_at,room_quit1,room_quit2) values (?,?,now(),0,0)";
         this.jdbcTemplate.update(postChatRoomQuery, postChatRoom.getMemIdx1(), postChatRoom.getMemIdx2());
     }
     //메세지 보내기
     public void sendMsg(ChatMessage chatMsg){
-        String sendMsgQuery = "insert into Chatting(room_idx,mem_send_idx,chat_content,chat_time,chat_image) values(?,?,?,now(),0)";
+        String sendMsgQuery = "insert into Chatting(room_idx,mem_send_idx,chat_content,chat_time,chat_image,chat_read) values(?,?,?,now(),0,1)";
         this.jdbcTemplate.update(sendMsgQuery,chatMsg.getRoomIdx(),chatMsg.getSender(),chatMsg.getMessage());
         String moveChatRoomQuery = "update Chatting_room set room_recent_time = now(),room_recent_chat = ? where room_idx = ?";
         this.jdbcTemplate.update(moveChatRoomQuery,chatMsg.getMessage(),chatMsg.getRoomIdx());
     }
     //모든 채팅방 보기
     public List<GetChatRoomsRes> getChatRooms(int memIdx){
-        String getChatRoomsQuery = "select room_idx,if(mem1_idx = ?,mem1_idx,mem2_idx) as sender,room_recent_time,room_recent_chat,mem_nickname,mem_profile_url\n" +
+        String getChatRoomsQuery = "select room_idx,if(mem1_idx = ?,mem2_idx,mem1_idx) as sender,room_recent_time,room_recent_chat,mem_nickname,mem_profile_url\n" +
                 "from Chatting_room join Member M on mem1_idx = ? or mem2_idx = ? where M.mem_idx = if(mem1_idx = ?,mem2_idx,mem1_idx)";
-
+        String getReadNumQuery = "select count(*)from Chatting C join Chatting_room Cr on C.room_idx = Cr.room_idx\n" +
+                "                        where if(Cr.mem1_idx = ?,Cr.mem2_idx,Cr.mem1_idx) = C.mem_send_idx and chat_read = 1 and C.room_idx = ?";
         return this.jdbcTemplate.query(getChatRoomsQuery,
                 (rs, rowNum) -> {
                     GetChatRoomsRes getChatRoomsRes = new GetChatRoomsRes(
@@ -51,26 +53,53 @@ public class ChatDao {
 
                     getChatRoomsRes.setRecentChat(rs.getString("room_recent_chat"));
                     getChatRoomsRes.setRecentTime(rs.getString("room_recent_time"));
-
+                    getChatRoomsRes.setNoReadNum(this.jdbcTemplate.queryForObject(getReadNumQuery,int.class,memIdx,getChatRoomsRes.getRoomIdx()));
                     return getChatRoomsRes;
                 },memIdx,memIdx,memIdx,memIdx);
     }
     //하나의 채팅방 보기+ 이미지(미완)
-    public List<GetChatRoomRes> getChatRoomIdx(int roomIdx) {
-        String findRoomIdxQuery = "select mem_send_idx,chat_content,chat_time from Chatting where room_idx = ?";
-
+    public List<GetChatRoomRes> getChatRoomIdx(int roomIdx,int memIdx) {
+        String findRoomIdxQuery = "select C.chat_idx,mem_send_idx,chat_content,chat_time,chat_read,chat_image,if(C.mem_send_idx != ?,mem_profile_url,null) as profile,if(C.mem_send_idx != ?,mem_nickname,null) as nick \n" +
+"from Chatting C join Member M on C.mem_send_idx = M.mem_idx where room_idx = ?";
+        String findChatImgsQuery = "select image_url from Image_url join Chatting C on content_idx = C.chat_idx and content_category = 5 where C.chat_idx = ?";
         return this.jdbcTemplate.query(findRoomIdxQuery,
-                (rs, rowNum) -> new GetChatRoomRes(
-                        rs.getInt("mem_send_idx"),
-                        rs.getString("chat_content"),
-                        rs.getString("chat_time")
-                ),roomIdx);
+                (rs, rowNum) -> {
+
+                    GetChatRoomRes getChatRoomRes = null;
+                    if(rs.getInt("chat_image") == 0){
+                        getChatRoomRes = new GetChatRoomRes(
+                                rs.getInt("mem_send_idx"),
+                                rs.getString("chat_content"),
+                                rs.getString("chat_time"),
+                                rs.getString("profile"),
+                                rs.getString("nick"));
+                    }else {
+                        List<String> listImg = this.jdbcTemplate.query(findChatImgsQuery,
+                              /**이부분 이상**/  (rs1, rowNum1) -> String.valueOf(String.class),rs.getInt("C.chat_idx"));
+                        getChatRoomRes = new GetChatRoomRes(
+                                rs.getInt("mem_send_idx"),
+                                rs.getString("chat_time"),
+                                rs.getString("profile"),
+                                rs.getString("nick"));
+                        getChatRoomRes.setChatImg(listImg);
+                    }
+
+                    return getChatRoomRes;
+                },memIdx,memIdx,roomIdx);
     }
 
     //채팅방 나간 시점 등록 + 읽음여부 판단
     public void postRoomOut(PostChatRoomOutReq roomOut){
-        String outChatRoomQuery = "update Chatting_room set if(mem1_idx = ?,room_quit1_time,room_quit2_time) = now() where room_idx = ?";
-        this.jdbcTemplate.update(outChatRoomQuery,roomOut.getMemIdx(),roomOut.getRoomIdx());
+        int mem1Idx = this.jdbcTemplate.queryForObject("select count(*)from Chatting_room C where C.room_idx = ? and C.mem1_idx = ?",
+                int.class,roomOut.getRoomIdx(),roomOut.getMemIdx());
+        //mysql 문법 오류
+        if (mem1Idx == 1){
+            String outChatRoomQuery = "update Chatting_room set room_quit1_time = now() where room_idx = ?";
+            this.jdbcTemplate.update(outChatRoomQuery,roomOut.getRoomIdx());
+        }else{
+            String outChatRoomQuery = "update Chatting_room set room_quit2_time = now() where room_idx = ?";
+            this.jdbcTemplate.update(outChatRoomQuery,roomOut.getRoomIdx());
+        }
 
         String readChatQuery = "update Chatting set chat_read = if(chat_time <\n" +
                 "                                   (select if(mem1_idx = ?,room_quit1_time,room_quit2_time)from Chatting_room R where R.room_idx = ? ) ,0,1) where room_idx = ? and mem_send_idx = (select if(mem1_idx = ?,mem2_idx,mem1_idx) from Chatting_room where Chatting_room.room_idx = ?)";
@@ -78,10 +107,22 @@ public class ChatDao {
         this.jdbcTemplate.update(readChatQuery,roomOut.getMemIdx(),roomOut.getRoomIdx(),roomOut.getRoomIdx(),roomOut.getMemIdx(),roomOut.getRoomIdx());
 
     }
-    //채팅방 삭제 -- db 논의 필요 누가 방을 삭제했는지 표시해야함
-    public void delChatRoom(int romIdx) {
-
+    //채팅방 삭제
+    public void delChatRoom(PostChatRoomOutReq roomOut) {
+        int mem1Idx = this.jdbcTemplate.queryForObject("select count(*)from Chatting_room C where C.room_idx = ? and C.mem1_idx = ?",
+                int.class,roomOut.getRoomIdx(),roomOut.getMemIdx());
+        if(mem1Idx == 1){
+            String delChatRoomQuery = "update Chatting_room set room_quit1 = 1 where room_idx = ?";
+            this.jdbcTemplate.update(delChatRoomQuery,roomOut.getRoomIdx());
+        }else{
+            String delChatRoomQuery = "update Chatting_room set room_quit2 = 1 where room_idx = ?";
+            this.jdbcTemplate.update(delChatRoomQuery,roomOut.getRoomIdx());
+        }
+        String deleteChat = "delete Cr,C from Chatting_room Cr join Chatting C on Cr.room_idx = C.room_idx\n" +
+                "          where C.room_idx = ? and Cr.room_quit1 = 1 and Cr.room_quit2 = 1";
+        this.jdbcTemplate.update(deleteChat,roomOut.getRoomIdx());
     }
+
     //이미지 저장-unchecked
     public void sendImg(ChatImg img){
         String sendMsgQuery = "insert into Chatting(room_idx,mem_send_idx,chat_content,chat_time,chat_image) values(?,?,null,now(),?)";

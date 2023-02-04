@@ -18,5 +18,5 @@ public class GetChatRoomsRes { // 방 여러개 조회
     private String nick;
     private String recentChat;
     private String recentTime;
-    //private int noReadNum;
+    private int noReadNum;
 }

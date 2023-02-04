@@ -12,7 +12,7 @@ import static com.umc.i.config.BaseResponseStatus.SUCCESS;
 
 @Getter
 @AllArgsConstructor
-@JsonPropertyOrder({"isSuccess", "code", "message", "result","size"})
+@JsonPropertyOrder({"isSuccess", "code", "message", "result"})
 public class BaseResponse<T> {
     @JsonProperty("isSuccess")
     private final Boolean isSuccess;
@@ -49,5 +49,6 @@ public class BaseResponse<T> {
         this.message = status.getMessage();
         this.code = status.getCode();
     }
+
 }
 

@@ -32,8 +32,8 @@ public class ChatRoomRepository {
         return chatDao.getChatRooms(memIdx);
     }
 
-    public List<GetChatRoomRes> getChatRoomIdx (int id) {
-        return chatDao.getChatRoomIdx(id);
+    public List<GetChatRoomRes> getChatRoomIdx (int roomIdx,int memIdx) {
+        return chatDao.getChatRoomIdx(roomIdx,memIdx);
     }
 
     public PostChatRoom createChatRoom(PostChatRoom postChatRoom) {
@@ -48,4 +48,6 @@ public class ChatRoomRepository {
     public void sendImg(ChatImg img) { chatDao.sendImg(img);}
     //채팅 나감 과 동시에 읽음여부 db에 저장
     public void postRoomOut(PostChatRoomOutReq roomOut){ chatDao.postRoomOut(roomOut);}
+    //채팅방 삭제
+    public void delChatRoom(PostChatRoomOutReq roomOut){chatDao.delChatRoom(roomOut);}
 }
