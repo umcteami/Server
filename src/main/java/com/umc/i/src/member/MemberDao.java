@@ -155,9 +155,10 @@ public class MemberDao {
     //탈퇴하기
     public void postWithdraw(int memIdx)throws BaseException{
         try{
-            String selectMemQuery = "select mem_email,mem_phone,mem_nickname from Member where mem_idx = ?";
+            String selectMemQuery = "select mem_idx, mem_email,mem_phone,mem_nickname from Member where mem_idx = ?";
             Member member = this.jdbcTemplate.queryForObject(selectMemQuery,
                     (rs, rowNum) -> new Member(
+                            rs.getInt("mem_idx"),
                             rs.getString("mem_email"),
                             rs.getString("mem_phone"),
                             rs.getString("mem_nickname")

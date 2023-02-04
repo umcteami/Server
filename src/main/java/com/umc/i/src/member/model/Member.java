@@ -8,6 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Member {
+    private int memIdx;
     private String email;
     private String phone;
     private String nickname;
