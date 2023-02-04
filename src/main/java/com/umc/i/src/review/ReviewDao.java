@@ -96,5 +96,18 @@ public class ReviewDao {
             reviewIdx);
     }
 
+    // 장터 후기 삭제
+    public void delteReview(int reviewIdx) {
+        try {
+            String deleteReviewQuery = "delete from Market_review where review_idx = ?";
+            this.jdbcTemplate.update(deleteReviewQuery, reviewIdx);
+
+            deleteReviewQuery = "delete from Image_url where content_category = 3 && content_idx = ?";
+            this.jdbcTemplate.update(deleteReviewQuery, reviewIdx);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return;
+    }
     
 }

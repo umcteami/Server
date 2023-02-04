@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.umc.i.config.BaseException;
 import com.umc.i.config.BaseResponseStatus;
+import com.umc.i.src.review.model.patch.PatchReviewsDeleteReq;
 import com.umc.i.src.review.model.patch.PatchReviewsReq;
 import com.umc.i.src.review.model.patch.PatchReviewsRes;
 import com.umc.i.src.review.model.post.PostReviewReq;
@@ -93,6 +94,31 @@ public class ReviewService {
             e.printStackTrace();
             throw new BaseException(BaseResponseStatus.PATCH_EDIT_FEEDS_FAIL);
         }
+    }
+
+
+    // 장터 후기 삭제
+    public void deleteReview(int reviewIdx) throws BaseException {
+        try {
+            List<Image> img = reviewDao.getReviewsImage(reviewIdx);
+            if(img != null) {
+                for (int i = 0; i < img.size(); i++) {
+                    uploadImageS3.remove(img.get(i).getUploadFilePath());       // s3에 있는 이미지 삭제
+                }
+            }
+            
+        } catch (Exception e) {
+            throw new BaseException(BaseResponseStatus.DELETE_IMAGE_FAIL);
+        }
+        
+        try {
+            reviewDao.delteReview(reviewIdx);
+        } catch (Exception e) {
+            throw new BaseException(BaseResponseStatus.PATCH_DELETE_FEEDS_FAIL);
+        }
+
+        return;
+
     }
     
 }

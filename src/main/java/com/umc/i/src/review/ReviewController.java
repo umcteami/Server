@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -13,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.umc.i.config.BaseException;
 import com.umc.i.config.BaseResponse;
+import com.umc.i.src.review.model.patch.PatchReviewsDeleteReq;
 import com.umc.i.src.review.model.patch.PatchReviewsReq;
 import com.umc.i.src.review.model.patch.PatchReviewsRes;
 import com.umc.i.src.review.model.post.PostReviewReq;
@@ -46,6 +48,18 @@ public class ReviewController {
         try {
             return new BaseResponse<> (reviewService.editReviews(patchReviewsReq, file));
         } catch(BaseException e) {
+            throw e;
+        }
+    }
+
+    @ResponseBody
+    @PatchMapping("/delete")     // 장터 후기 삭제
+    public BaseResponse deleteReviews(@RequestBody PatchReviewsDeleteReq patchReviewsDeleteReq) throws BaseException{
+        int reviewIdx = patchReviewsDeleteReq.getReviewIdx();
+        try {
+            reviewService.deleteReview(reviewIdx);
+            return new BaseResponse<>("장터 후기를 삭제했습니다");
+        } catch (BaseException e) {
             throw e;
         }
     }
