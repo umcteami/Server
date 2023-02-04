@@ -19,8 +19,10 @@ import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.umc.i.config.Constant;
 import com.umc.i.src.member.model.get.GetMemRes;
 import com.umc.i.src.member.model.patch.PatchMemReq;
+import com.umc.i.src.member.model.post.PostAuthNumberReq;
 import com.umc.i.src.member.model.post.PostJoinReq;
 import com.umc.i.src.member.model.post.PostJoinRes;
 import com.umc.i.utils.S3Storage.UploadImageS3;
@@ -226,6 +228,22 @@ public class MemberService {
         return encodeBase64String;
     }
 
+    // 인증번호 가져오기
+    public PostAuthNumberReq getSignAuthNumberObject(int authIdx) {
+        return memberDao.findByAuthIdx(authIdx)
+                .filter(o -> o.getAuthIdx() == authIdx)
+                .orElse(null);
+    }
+
+    // 인증번호 만료 기간 확인
+    public static boolean isExpired(PostAuthNumberReq postAuthNumberReq) {
+        Date createdAt = postAuthNumberReq.getCreatedAt();
+        Date date = new Date();
+
+        long diffSec = (date.getTime() - createdAt.getTime()) / (1000);
+
+        return diffSec <= Constant.NUMBER_AUTH_TIME_LIMIT;
+    }
 
     //회원가입
     public BaseResponseStatus createMem(PostJoinReq postJoinReq, MultipartFile profile) throws BaseException {
