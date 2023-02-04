@@ -6,7 +6,9 @@ import lombok.*;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class MypageFeed {
-    private String goods;
-    private String nick;
+public class Blame {
+
+    private int boardIdx;
+    private int comuIdx;
+    private String createAt;
 }
