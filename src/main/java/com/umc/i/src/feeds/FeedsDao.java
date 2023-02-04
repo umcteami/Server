@@ -20,7 +20,7 @@ public class FeedsDao {
         int doubleProtect = this.jdbcTemplate.queryForObject(doubleProtectQuery,int.class,postBlameReq.getMemIdx(),postBlameReq.getBoardIdx(),postBlameReq.getComuIdx());
 
         if(doubleProtect == 0){
-            String postBlameQuery = "insert into Blame(mem_idx,target_type,target_idx)VALUES(?,?,?)";
+            String postBlameQuery = "insert into Blame(mem_idx,target_type,target_idx,blame_time)VALUES(?,?,?,now())";
             this.jdbcTemplate.update(postBlameQuery,postBlameReq.getMemIdx(),postBlameReq.getBoardIdx(),postBlameReq.getComuIdx());
             return doubleProtect;
         }

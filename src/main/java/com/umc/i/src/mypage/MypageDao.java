@@ -1,6 +1,10 @@
 package com.umc.i.src.mypage;
 
+import com.fasterxml.jackson.databind.ser.Serializers;
+import com.umc.i.config.BaseException;
+import com.umc.i.config.BaseResponseStatus;
 import com.umc.i.src.mypage.model.Blame;
+import com.umc.i.src.mypage.model.Count;
 import com.umc.i.src.mypage.model.MypageFeed;
 import com.umc.i.src.mypage.model.get.*;
 import com.umc.i.src.mypage.model.post.PostAskReq;
@@ -61,275 +65,288 @@ public class MypageDao {
 
         return getMyPCountMemList;
     }
-    // 전체 대상 작성한 글 조회
-    public List<GetComuWriteRes> getDiaryWrite(int memIdx,boolean like){
+    // 일기장 조회
+    public List<GetComuWriteRes> getDiaryWrite(int memIdx,int page){
         try {
-            String getDiaryWriteQuery = "";
-            if(like){
-                getDiaryWriteQuery = "select df.board_idx,diary_roomType,df.diary_idx,diary_title,diary_hit,diary_created_at,diary_image from Diary_feed df join Diary_feed_like dl on df.diary_idx = dl.diary_idx where dl.mem_idx = ?";
-            }else{
-                getDiaryWriteQuery = "select board_idx,diary_roomType,diary_idx,diary_title,diary_hit,diary_created_at,diary_image from Diary_feed where mem_idx = ?";
-            }
+            String getDiaryWriteQuery = "select D.board_idx, diary_idx as idx,diary_roomType as roomType,diary_title as title,diary_image as countImg,diary_hit as hit,diary_created_at as createAt\n" +
+                    ",(select count(*) from Diary_feed_like Dfl where D.diary_idx = Dfl.diary_idx) as likeCount\n" +
+                    ",(select count(*) from Diary_comment Dc where D.diary_idx = Dc.diary_idx) as commentCount\n" +
+                    "from Diary_feed D\n" +
+                    "where D.mem_idx = ? order by createAt desc limit ?,?";
+
+            int startPoint = page-10;
             return this.jdbcTemplate.query(getDiaryWriteQuery,
                     (rs, rowNum) -> {
                         GetComuWriteRes getDiaryWriteRes = new GetComuWriteRes(
-                                rs.getInt("board_idx"),
-                                rs.getInt("diary_roomType"),
-                                rs.getInt("diary_idx"),
-                                rs.getString("diary_title"),
-                                rs.getInt("diary_hit"),
-                                rs.getString("diary_created_at")
+                                rs.getInt("D.board_idx"),
+                                rs.getInt("roomType"),
+                                rs.getInt("idx"),
+                                rs.getString("title"),
+                                rs.getInt("hit"),
+                                rs.getInt("likeCount"),
+                                rs.getInt("commentCount"),
+                                rs.getString("createAt")
                         );
                         //이미지 없을 경우
-                        if(rs.getInt("diary_image") != 0){
+                        if(rs.getInt("countImg") != 0){
                             String getDiaryImgQuery = "select image_url from Image_url where content_category = ? and content_idx = ? and image_order = 0";
                             String diaryImg = this.jdbcTemplate.queryForObject(getDiaryImgQuery,String.class,getDiaryWriteRes.getBoarIdx(),getDiaryWriteRes.getComuIdx());
                             getDiaryWriteRes.setFeedImg(diaryImg);
                         }else{
                             getDiaryWriteRes.setFeedImg(null);
                         }
-                        //count
-                        String getCountLikeQuery = "select count(*) from Diary_feed_like where diary_idx = ?";
-                        int countLike = this.jdbcTemplate.queryForObject(getCountLikeQuery,int.class,getDiaryWriteRes.getComuIdx());
-                        String getCountComment = "select count(*) from Diary_comment where diary_idx = ?";
-                        int countComment = this.jdbcTemplate.queryForObject(getCountComment,int.class,getDiaryWriteRes.getComuIdx());
 
-                        getDiaryWriteRes.setCountComment(countComment);
-                        getDiaryWriteRes.setCountLike(countLike);
                         return getDiaryWriteRes;
                     },
-                    memIdx);
+                    memIdx,startPoint,page);
 
         } catch (EmptyResultDataAccessException e) {
             e.printStackTrace();
             return null;
         }
-
     }
-    public List<GetComuWriteRes> getReviewWrite(int memIdx,boolean like){
+
+    //전체 대상 조회
+    public List<GetComuWriteRes> getAllWrite(int memIdx,int page,boolean like) throws BaseException {
         try{
-            String getReviewWriteQuery="";
+            String getAllWriteQuery = "";
             if(like){
-                getReviewWriteQuery = "select board_idx,review_idx,review_hit,review_created_at,review_image from Market_review mr join Market_review_like mrl on mr.review_idx = mrl.market_re_idx where buy_mem_idx = ?";
+                getAllWriteQuery = "select board_idx, review_idx as idx,null as roomType,concat(sell_mem_idx,'님과 ',review_goods,'을 거래했습니다') as title,review_image as countImg,review_hit as hit,review_created_at as createAt\n" +
+                        ",(select count(*) from Market_review_like where Mr.review_idx = market_re_idx) as likeCount\n" +
+                        ",(select count(*) from Market_review_comment Mrc where Mr.review_idx = Mrc.review_idx) as commentCount\n" +
+                        "from Market_review Mr join Market_review_like Mrl on Mr.review_idx = Mrl.market_re_idx\n" +
+                        "where buy_mem_idx = ?\n" +
+                        "union\n" +
+                        "select board_idx, S.story_idx as idx,story_roomType as roomType,story_title as title,story_image as countImg,story_hit as hit,story_created_at as createAt\n" +
+                        ",(select count(*) from Story_feed_like SFL where S.story_idx = SFL.story_idx) as likeCount\n" +
+                        ",(select count(*) from Story_feed_comment Sfc where S.story_idx = Sfc.story_idx) as commentCount\n" +
+                        "from Story_feed S join Story_feed_like l on S.story_idx = l.story_idx\n" +
+                        "where S.mem_idx =?\n" +
+                        "union\n" +
+                        "select board_idx, D.diary_idx as idx,diary_roomType as roomType,diary_title as title,diary_image as countImg,diary_hit as hit,diary_created_at as createAt\n" +
+                        ",(select count(*) from Diary_feed_like Dfl where D.diary_idx = Dfl.diary_idx) as likeCount\n" +
+                        ",(select count(*) from Diary_comment Dc where D.diary_idx = Dc.diary_idx) as commentCount\n" +
+                        "from Diary_feed D join Diary_feed_like l on D.diary_idx = l.diary_idx\n" +
+                        "where D.mem_idx = ? order by createAt desc limit ?,?";
             }else{
-                getReviewWriteQuery = "select board_idx,review_idx,review_hit,review_created_at,review_image from Market_review where buy_mem_idx = ?";
+                getAllWriteQuery = "select board_idx, review_idx as idx,null as roomType,concat(sell_mem_idx,'님과 ',review_goods,'을 거래했습니다') as title,review_image as countImg,review_hit as hit,review_created_at as createAt\n" +
+                        ",(select count(*) from Market_review_like where Mr.review_idx = market_re_idx) as likeCount\n" +
+                        ",(select count(*) from Market_review_comment Mrc where Mr.review_idx = Mrc.review_idx) as commentCount\n" +
+                        "from Market_review Mr\n" +
+                        "where buy_mem_idx = ?\n" +
+                        "union\n" +
+                        "select board_idx, story_idx as idx,story_roomType as roomType,story_title as title,story_image as countImg,story_hit as hit,story_created_at as createAt\n" +
+                        ",(select count(*) from Story_feed_like SFL where S.story_idx = SFL.story_idx) as likeCount\n" +
+                        ",(select count(*) from Story_feed_comment Sfc where S.story_idx = Sfc.story_idx) as commentCount\n" +
+                        "from Story_feed S " +
+                        "where S.mem_idx =? " +
+                        "union " +
+                        "select board_idx, diary_idx as idx,diary_roomType as roomType,diary_title as title,diary_image as countImg,diary_hit as hit,diary_created_at as createAt\n" +
+                        ",(select count(*) from Diary_feed_like Dfl where D.diary_idx = Dfl.diary_idx) as likeCount\n" +
+                        ",(select count(*) from Diary_comment Dc where D.diary_idx = Dc.diary_idx) as commentCount\n" +
+                        "from Diary_feed D\n" +
+                        "where D.mem_idx = ? order by createAt desc limit ?,?";
             }
-            return this.jdbcTemplate.query(getReviewWriteQuery,
+            int startPoint = page-10;
+            return this.jdbcTemplate.query(getAllWriteQuery,
                     (rs, rowNum) -> {
-                        GetComuWriteRes getReviewWriteRes = new GetComuWriteRes(
+                        GetComuWriteRes getComuWriteRes = new GetComuWriteRes(
                                 rs.getInt("board_idx"),
-                                rs.getInt("review_idx"),
-                                rs.getInt("review_hit"),
-                                rs.getString("review_created_at")
+                                rs.getInt("roomType"),
+                                rs.getInt("idx"),
+                                rs.getString("title"),
+                                rs.getInt("hit"),
+                                rs.getInt("likeCount"),
+                                rs.getInt("commentCount"),
+                                rs.getString("createAt")
                         );
-                        //title - 굿즈 차우 변경예정
-                        String getReviewIdxQuery = "select review_goods,m.mem_nickname from Market_review join Member as m where board_idx = ? and review_idx = ? and sell_mem_idx = m.mem_idx and buy_mem_idx = ?";
-
-                        MypageFeed mypageFeed = this.jdbcTemplate.queryForObject(getReviewIdxQuery,
-                                (myrs, myrowNum) -> new MypageFeed(
-                                        myrs.getString("review_goods"),
-                                        myrs.getString("mem_nickname")), getReviewWriteRes.getBoarIdx(),getReviewWriteRes.getComuIdx(),memIdx);
-                        String diaryTitle = mypageFeed.getNick() + "님과" + mypageFeed.getGoods() + "을 거래했습니다";
-
-                        getReviewWriteRes.setTitle(diaryTitle);
-                        //feedImg(1)
-                        if (rs.getInt("review_image") != 0) {
+                        //이미지 없을 경우
+                        if (rs.getInt("countImg") != 0) {
                             String getDiaryImgQuery = "select image_url from Image_url where content_category = ? and content_idx = ? and image_order = 0";
-                            String diaryImg = this.jdbcTemplate.queryForObject(getDiaryImgQuery, String.class, getReviewWriteRes.getBoarIdx(), getReviewWriteRes.getComuIdx());
-                            getReviewWriteRes.setFeedImg(diaryImg);
+                            String img = this.jdbcTemplate.queryForObject(getDiaryImgQuery, String.class, getComuWriteRes.getBoarIdx(), getComuWriteRes.getComuIdx());
+                            getComuWriteRes.setFeedImg(img);
                         } else {
-                            getReviewWriteRes.setFeedImg(null);
+                            getComuWriteRes.setFeedImg(null);
                         }
-                        String getCountLikeQuery = "select count(*) from Market_review_like where market_re_idx = ?";
-                        int countLike = this.jdbcTemplate.queryForObject(getCountLikeQuery, int.class, getReviewWriteRes.getComuIdx());
-                        String getCountComment = "select count(*) from Market_review_comment where review_idx = ?";
-                        int countComment = this.jdbcTemplate.queryForObject(getCountComment, int.class, getReviewWriteRes.getComuIdx());
-
-                        getReviewWriteRes.setCountComment(countComment);
-                        getReviewWriteRes.setCountLike(countLike);
-                        return getReviewWriteRes;
-                    },
-                    memIdx);
-        } catch (EmptyResultDataAccessException e) {
+                        return getComuWriteRes;
+                    }, memIdx, memIdx, memIdx,startPoint,page);
+        }catch (EmptyResultDataAccessException e) {
             e.printStackTrace();
-            return null;
+            throw new BaseException(BaseResponseStatus.GET_WRITE_FEED_EMPTY);
         }
     }
-    //이야기방 조회
-    public List<GetComuWriteRes> getStoryWrite(int memIdx,boolean like){
-        try{
-            String getStoryWriteQuery="";
-            if(like){
-                getStoryWriteQuery = "select board_idx,story_roomType,sf.story_idx,story_title,story_hit,story_created_at,story_image from Story_feed sf join Story_feed_like sl on sf.story_idx = sl.story_idx where sl.mem_idx = ?";
-            }else{
-                getStoryWriteQuery = "select board_idx,story_roomType,story_idx,story_title,story_hit,story_created_at,story_image from Story_feed where mem_idx = ?";
-            }
-            return this.jdbcTemplate.query(getStoryWriteQuery,
-                    (rs, rowNum) -> {
-                        GetComuWriteRes getStoryWriteRes = new GetComuWriteRes(
-                                rs.getInt("board_idx"),
-                                rs.getInt("story_roomType"),
-                                rs.getInt("story_idx"),
-                                rs.getString("story_title"),
-                                rs.getInt("story_hit"),
-                                rs.getString("story_created_at")
-                        );
-                        //feedImg(1)
-                        if(rs.getInt("story_image") != 0){
-                            String getStoryImgQuery = "select image_url from Image_url where content_category = ? and content_idx = ? and image_order = 0";
-                            String diaryImg = this.jdbcTemplate.queryForObject(getStoryImgQuery,String.class,getStoryWriteRes.getBoarIdx(),getStoryWriteRes.getComuIdx());
-                            getStoryWriteRes.setFeedImg(diaryImg);
-                        }else{
-                            getStoryWriteRes.setFeedImg(null);
-                        }
-                        //CountLike Comment
-                        String getCountLikeQuery = "select count(*) from Story_feed_like where story_idx = ?";
-                        int countLike = this.jdbcTemplate.queryForObject(getCountLikeQuery,int.class,getStoryWriteRes.getComuIdx());
-                        String getCountComment = "select count(*) from Story_feed_comment where story_idx = ?";
-                        int countComment = this.jdbcTemplate.queryForObject(getCountComment,int.class,getStoryWriteRes.getComuIdx());
 
-                        getStoryWriteRes.setCountComment(countComment);
-                        getStoryWriteRes.setCountLike(countLike);
-                        return getStoryWriteRes;
-                    },
-                    memIdx);
-        } catch (EmptyResultDataAccessException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-    //나눔장터 조회
-    public List<GetMarketWriteRes> getMarketWrite(int memIdx){
+    //이야기방 장터 후기 대상 조회
+    public List<GetComuWriteRes> getRSWrite(int memIdx,int page) throws BaseException {
         try {
-            String getMarketWriteQuery = "select board_idx,market_idx,market_title,market_soldout,market_image " +
-                    "from Market where mem_idx = ?";
-
-            return this.jdbcTemplate.query(getMarketWriteQuery,
+            String getRSWriteQuery = "select board_idx, review_idx as idx,null as roomType,concat(sell_mem_idx,'님과 ',review_goods,'을 거래했습니다') as title,review_image as countImg,review_hit as hit,review_created_at as createAt\n" +
+                    ",(select count(*) from Market_review_like where Mr.review_idx = market_re_idx and mrl_staus = 1) as likeCount\n" +
+                    ",(select count(*) from Market_review_comment Mrc where Mr.review_idx = Mrc.review_idx) as commentCount\n" +
+                    "from Market_review Mr\n" +
+                    "where buy_mem_idx = ?\n" +
+                    "union\n" +
+                    "select board_idx, story_idx as idx,story_roomType as roomType,story_title as title,story_image as countImg,story_hit as hit,story_created_at as createAt\n" +
+                    ",(select count(*) from Story_feed_like SFL where S.story_idx = SFL.story_idx and sfl_status = 1) as likeCount\n" +
+                    ",(select count(*) from Story_feed_comment Sfc where S.story_idx = Sfc.story_idx) as commentCount\n" +
+                    "from Story_feed S\n" +
+                    "where S.mem_idx =? order by createAt desc limit ?,?";
+            int startPoint = page-10;
+            return this.jdbcTemplate.query(getRSWriteQuery,
                     (rs, rowNum) -> {
-                        GetMarketWriteRes getMarketWriteRes = new GetMarketWriteRes(
+                        GetComuWriteRes getComuWriteRes = new GetComuWriteRes(
+                                rs.getInt("board_idx"),
+                                rs.getInt("roomType"),
+                                rs.getInt("idx"),
+                                rs.getString("title"),
+                                rs.getInt("hit"),
+                                rs.getInt("likeCount"),
+                                rs.getInt("commentCount"),
+                                rs.getString("createAt")
+                        );
+                        //이미지 없을 경우
+                        if (rs.getInt("countImg") != 0) {
+                            String getDiaryImgQuery = "select image_url from Image_url where content_category = ? and content_idx = ? and image_order = 0";
+                            String img = this.jdbcTemplate.queryForObject(getDiaryImgQuery, String.class, getComuWriteRes.getBoarIdx(), getComuWriteRes.getComuIdx());
+                            getComuWriteRes.setFeedImg(img);
+                        } else {
+                            getComuWriteRes.setFeedImg(null);
+                        }
+                        return getComuWriteRes;
+                    }, memIdx, memIdx,startPoint,page);
+        }catch (EmptyResultDataAccessException e) {
+            e.printStackTrace();
+            throw new BaseException(BaseResponseStatus.GET_WRITE_FEED_FAILED);
+        }
+    }
+
+    //나눔장터 조회
+    public List<GetMarketWriteRes> getMarketWrite(int memIdx,int page) throws BaseException {
+        try {
+            String getMarketWriteQuery = "select board_idx,M.market_idx,market_title,market_soldout,market_image, " +
+                    "(select count(*) from Market_like Ml where Ml.market_idx = M.market_idx and ml_status = 1) as reserveCount " +
+                    "from Market M where mem_idx = ? order by market_created_at desc limit ?,?";
+            int startPoint = page-10;
+            return this.jdbcTemplate.query(getMarketWriteQuery,
+                    (rs, rowNum) -> new GetMarketWriteRes(
                                 rs.getInt("board_idx"),
                                 rs.getInt("market_idx"),
                                 rs.getString("market_title"),
+                                rs.getString("market_image"),
                                 rs.getInt("market_soldout"),
-                                rs.getInt("market_goods")
-                        );
-                        String getStoryImgQuery = "select image_url from Image_url where content_category = ? and content_idx = ? and image_order = 0";
-                        String marketImg = this.jdbcTemplate.queryForObject(getStoryImgQuery,String.class,getMarketWriteRes.getBoarIdx(),getMarketWriteRes.getComuIdx());
-                        getMarketWriteRes.setFeedImg(marketImg);
-
-                        String getCountReserve = "select count(*) from Market_like where market_idx = ? and ml_status = 1 ";
-                        int marketCountReserve = this.jdbcTemplate.queryForObject(getCountReserve,int.class,getMarketWriteRes.getComuIdx());
-                        getMarketWriteRes.setCountReserve(marketCountReserve);
-
-                        return getMarketWriteRes;
-                    },
-                    memIdx);
+                                rs.getInt("reserveCount"))
+                    ,memIdx,startPoint,page);
         }catch (EmptyResultDataAccessException e){
             e.printStackTrace();
-            return null;
+            throw new BaseException(BaseResponseStatus.GET_WRITE_FEED_FAILED);
         }
     }
+    //count
+    public Integer getSWriteCount(int memIdx){
+        String getSWriteCountQuery = "select count(*) from Story_feed where mem_idx = ?";
+        return this.jdbcTemplate.queryForObject(getSWriteCountQuery,Integer.class,memIdx);
+    }
+    public Integer getRWriteCount(int memIdx){
+        String getSWriteCountQuery = "select count(*) from Market_review where buy_mem_idx = ?";
+        return this.jdbcTemplate.queryForObject(getSWriteCountQuery,Integer.class,memIdx);
+    }
+    public Integer getDWriteCount(int memIdx){
+        String getSWriteCountQuery = "select count(*) from Diary_feed where mem_idx = ?";
+        return this.jdbcTemplate.queryForObject(getSWriteCountQuery,Integer.class,memIdx);
+    }
+    public Integer getMWriteCount(int memIdx){
+        String getSWriteCountQuery = "select count(*) from Market where mem_idx = ?";
+        return this.jdbcTemplate.queryForObject(getSWriteCountQuery,Integer.class,memIdx);
+    }
+
     /** ===================inquiryRecord================================= **/
-    //작성한 댓글 조회-일기장
-    public List<GetComentWriteRes> getComentDWrite(int memIdx){
+    //작성한 댓글 조회
+    public List<GetComentWriteRes> getComentWrite(int memIdx,int page)throws BaseException{
         try {
-            String getComentWriteQuery ="select df.board_idx,df.diary_idx,diary_title,df.mem_idx,diary_cmt_created_at,diary_hit,diary_cmt_content,m.mem_nickname " +
-                    "from Diary_feed as df join Diary_comment as dc " +
-                    "on df.diary_idx = dc.diary_idx left join Member as m on m.mem_idx = df.mem_idx " +
-                    "where df.mem_idx = ?";
-
+            String getComentWriteQuery = "select board_idx,S.story_idx as comuIdx,story_title as title, M.mem_nickname as writeNick,story_cmt_created_at as feedCreateAt,story_hit as hit,story_cmt_content as coment,story_cmt_created_at as comentCreateAt\n" +
+                    "from Story_feed S join Story_feed_comment Sfc on S.story_idx = Sfc.story_idx\n" +
+                    "    join Member M on M.mem_idx = Sfc.mem_idx\n" +
+                    "where Sfc.mem_idx = ?\n" +
+                    "union all\n" +
+                    "select board_idx,mr.review_idx as comuIdx,concat(sell_mem_idx,'님과 ',review_goods,'을 거래했습니다') as title,m.mem_nickname as writenick,review_created_at as feedCreateAt,review_hit as hit,market_re_cmt_content as coment,market_re_cmt_create_at as comentCreateAt\n" +
+                    "from Market_review as mr join Market_review_comment as mrc on mr.review_idx = mrc.review_idx left join Member m\n" +
+                    "                                                                                                       on buy_mem_idx = m.mem_idx\n" +
+                    "where mrc.mem_idx = ?\n" +
+                    "union all\n" +
+                    "select board_idx,df.diary_idx as comuIdx,diary_title as title,diary_cmt_created_at as feedCreateAt,m.mem_nickname as writeNick,diary_hit as hit,diary_cmt_content as coment,diary_cmt_created_at as comentCreateAt\n" +
+                    "from Diary_feed as df join Diary_comment as dc\n" +
+                    "                           on df.diary_idx = dc.diary_idx left join Member as m on m.mem_idx = df.mem_idx\n" +
+                    "where dc.mem_idx = ? order by comentCreateAt desc limit ?,?";
+            int startPoint = page-10;
             return this.jdbcTemplate.query(getComentWriteQuery,
-                    (rs, rowNum) -> {
-                        GetComentWriteRes getComentWriteRes = new GetComentWriteRes(
-                                rs.getInt("df.board_idx"),
-                                rs.getInt("df.diary_idx"),
-                                rs.getString("diary_cmt_content"),
-                                rs.getString("diary_title"),
-                                rs.getString("m.mem_nickname"),
-                                rs.getString("diary_cmt_created_at"),
-                                rs.getInt("diary_hit")
-                        );
-
-                        return getComentWriteRes;
-                    },memIdx);
-        }catch (EmptyResultDataAccessException e){
-            return null;
-        }
-    }
-    //작성한 댓글 조회-이야기방
-    public List<GetComentWriteRes> getComentSWrite(int memIdx){
-        try {
-            String getComentSWriteQuery ="select sf.board_idx,sf.story_idx,story_title,sf.mem_idx,story_cmt_created_at,story_hit,story_cmt_content,m.mem_nickname " +
-                    "from Story_feed as sf join Story_feed_comment as sc " +
-                    "on sf.story_idx = sc.story_idx left join Member as m on m.mem_idx = sf.mem_idx "+
-                    "where sc.mem_idx = ?";
-
-            return this.jdbcTemplate.query(getComentSWriteQuery,
                     (rs, rowNum) -> new GetComentWriteRes(
-                                rs.getInt("sf.board_idx"),
-                                rs.getInt("sf.story_idx"),
-                                rs.getString("story_cmt_content"),
-                                rs.getString("story_title"),
-                                rs.getString("m.mem_nickname"),
-                                rs.getString("story_cmt_created_at"),
-                                rs.getInt("story_hit")
-                        )
-                    ,memIdx);
+                            rs.getInt("board_idx"),
+                            rs.getInt("comuIdx"),
+                            rs.getString("coment"),
+                            rs.getString("title"),
+                            rs.getString("writeNick"),
+                            rs.getString("feedCreateAt"),
+                            rs.getInt("hit")
+                    ),memIdx,memIdx,memIdx,startPoint,page);
         }catch (EmptyResultDataAccessException e){
-            return null;
+            e.printStackTrace();
+            throw new BaseException(BaseResponseStatus.GET_WRITE_FEED_FAILED);
         }
     }
-    //작성한 댓글 조회 - 장터후기
-    public List<GetComentWriteRes> getComentRWrite(int memIdx){
-        try {
-            String getComentRWriteQuery ="select mr.board_idx,mr.review_idx,sell_mem_idx,buy_mem_idx,m.mem_nickname,review_created_at,review_hit,market_re_cmt_content,review_goods\n" +
-                    "from Market_review as mr join Market_review_comment as mrc\n" +
-                    "    on mr.review_idx = mrc.review_idx\n" +
-                    "                         left join Member as m\n" +
-                    "                             on buy_mem_idx = m.mem_idx\n" +
-                    "where mrc.mem_idx = ?;";
-            String getsellNickQuery = "select mem_nickname from Member where mem_idx = ?";
-            return this.jdbcTemplate.query(getComentRWriteQuery,
-                    (rs, rowNum) -> {
-                        GetComentWriteRes getComentWriteRes = new GetComentWriteRes(
-                                rs.getInt("mr.board_idx"),
-                                rs.getInt("mr.review_idx"),
-                                rs.getString("market_re_cmt_content"),
-                                rs.getString("mem_nickname"),
-                                rs.getString("review_created_at"),
-                                rs.getInt("review_hit")
-                        );
-                        String sellNickParam = this.jdbcTemplate.queryForObject(getsellNickQuery,String.class,rs.getInt("sell_mem_idx"));
-
-                        String title = sellNickParam+"님과 "+rs.getString("review_goods")+"을 거래했습니다";
-                        getComentWriteRes.setFeedTitle(title);
-                        return getComentWriteRes;
-                    },memIdx);
-        }catch (EmptyResultDataAccessException e){
-            return null;
-        }
+    //count-댓글
+    public Integer getComentWriteCount(int memIdx){
+        String getComentWriteCountQuery = "select count(*) as S ,(select count(*) from Market_review Mr join Market_review_comment Mrc on Mr.review_idx = Mrc.review_idx where Mrc.mem_idx = ?) as Mr," +
+                "(select count(*) as S from Diary_feed D join Diary_comment Dc on D.diary_idx = Dc.diary_idx where Dc.mem_idx = ?) as D" +
+                " from Story_feed S join Story_feed_comment Sfc on S.story_idx = Sfc.story_idx where Sfc.mem_idx = ?";
+        return this.jdbcTemplate.queryForObject(getComentWriteCountQuery,
+                (rs,rowNum)-> {
+                    Count count = new Count(
+                            rs.getInt("S"),
+                            rs.getInt("Mr"),
+                            rs.getInt("D")
+                    );
+                    int result = count.getD()+count.getR()+count.getS();
+                    return result;
+                },memIdx,memIdx,memIdx);
     }
+    //count-좋아요
+    public Integer getLikeCount(int memIdx){
+        String getLikeCountQuery = "select count(*) as Mr ,(select count(*) as S from Story_feed S join Story_feed_like l on S.story_idx = l.story_idx where S.mem_idx =?) as S," +
+                "(select count(*) as D from Diary_feed D join Diary_feed_like l on D.diary_idx = l.diary_idx where D.mem_idx = ? ) as D " +
+                " from Market_review Mr join Market_review_like Mrl on Mr.review_idx = Mrl.market_re_idx where buy_mem_idx = ?";
 
+        return this.jdbcTemplate.queryForObject(getLikeCountQuery,
+                (rs,rowNum)-> {
+                    Count count = new Count(
+                            rs.getInt("S"),
+                            rs.getInt("Mr"),
+                            rs.getInt("D")
+                    );
+                    int result = count.getD()+count.getR()+count.getS();
+                    return result;
+                },memIdx,memIdx,memIdx);
+    }
+    //나눔장터 - 찜한 게시글 개수
+    public Integer getWantMarketCount(int memIdx){
+        String getWantMarketCountQuery = "select count(*) from Market m join Market_like Ml on m.market_idx = Ml.market_idx where Ml.mem_idx = ? and ml_status = 1";
+        return this.jdbcTemplate.queryForObject(getWantMarketCountQuery,Integer.class,memIdx);
+    }
     //나눔장터 - 찜한 게시글 조회
-    public List<GetWantMarketRes> getWantMarket(int memIdx){
+    public List<GetWantMarketRes> getWantMarket(int memIdx,int page) throws BaseException {
         try {
-            String getWantFeedQuery = "select board_idx,m.market_idx,market_price,TIMEDIFF(market_created_at,CURRENT_TIMESTAMP()) as createAt ,market_hit,market_soldout,\n" +
-                    "       image_url " +
-                    "from Market m join Image_url i\n" +
-                    "    on m.board_idx = i.content_category and market_idx = content_idx\n" +
-                    "    join Market_like ml\n" +
+            String getWantFeedQuery = "select board_idx,m.market_idx,market_price,TIMEDIFF(market_created_at,CURRENT_TIMESTAMP()) as createAt ,market_hit,market_soldout,market_image,market_title\n" +
+                    "from Market m join Market_like ml\n" +
                     "        on ml.market_idx = m.market_idx\n" +
-                    "where ml.mem_idx = ? and ml_status = 1";
+                    "where ml.mem_idx = ? and ml_status = 1 limit ?,?";
             String getWantCountQuery = "select count(*) from Market_like where market_idx = ?";
-
+            int startPoint = page-10;
             return this.jdbcTemplate.query(getWantFeedQuery,
                     (rs, rowNum) ->{
                         GetWantMarketRes getWantMarketRes = new GetWantMarketRes(
                                 rs.getInt("board_idx"),
                                 rs.getInt("m.market_idx"),
-                                rs.getString("image_url"),
+                                rs.getString("market_image"),
                                 rs.getInt("market_price"),
-                                rs.getInt("market_goods"),
+                                rs.getString("market_title"),
                                 rs.getString("createAt"),
                                 rs.getInt("market_hit"),
                                 rs.getInt("market_soldout")
@@ -337,14 +354,14 @@ public class MypageDao {
                         int wantCount = this.jdbcTemplate.queryForObject(getWantCountQuery,int.class,getWantMarketRes.getComuIdx());
                         getWantMarketRes.setWantCount(wantCount);
                         return getWantMarketRes;
-                    },memIdx);
+                    },memIdx,startPoint,page);
         }catch (EmptyResultDataAccessException e){
-            return null;
+            e.printStackTrace();
+            throw new BaseException(BaseResponseStatus.GET_WRITE_FEED_FAILED);
         }
     }
-    //신고한 게시글 조회
     //차단한 사용자 조회
-    public List<GetBlockMemRes> getBlockMem(int memIdx){
+    public List<GetBlockMemRes> getBlockMem(int memIdx) throws BaseException {
         try {
             String getBlockMemQuery = "select blocked_mem_idx,mem_nickname,mem_profile_content,mem_profile_url\n" +
                     "from Member join Member_block Mb on Member.mem_idx = blocked_mem_idx where Mb.mem_idx = ?";
@@ -356,7 +373,8 @@ public class MypageDao {
                             rs.getString("mem_profile_content")
                     ),memIdx);
         }catch (EmptyResultDataAccessException e){
-            return null;
+            e.printStackTrace();
+            throw new BaseException(BaseResponseStatus.GET_WRITE_FEED_FAILED);
         }
     }
     //문의 하기
@@ -366,70 +384,36 @@ public class MypageDao {
     }
     //내가 신고한 게시글 조회하기
     public List<GetBlameFeedRes> getBlameFeed(int memIdx){
-        String getBlameQuery = "select target_type,target_idx,TIMEDIFF(blame_time,CURRENT_TIMESTAMP())as createAt from Blame where mem_idx = ?";
-
-        String getBlameStoryQuery = "select story_roomType,mem_profile_url,mem_nickname from Story_feed S join Member M " +
-                "    on S.mem_idx = M.mem_idx " +
-                "where S.board_idx = 1 and S.story_idx = ?";
-        String getBlameDiaryQuery = "select diary_roomType,mem_profile_url,M.mem_nickname from Diary_feed D join Member M" +
-                "    on D.mem_idx = M.mem_idx\n" +
-                "where D.board_idx = 2 and D.diary_idx = ?";
-
-        String getBlameReviewQuery = "select mem_profile_url,mem_nickname from Market_review MR join Member M" +
-                "    on MR.buy_mem_idx = M.mem_idx\n" +
-                "where MR.board_idx = 3 and MR.review_idx = ?";
-
-        /**룸타입 뭘로 표시할지 ? 일단 marekt_group 으로 표시**/
-        String getBlameMarketQuery = "select market_group,mem_profile_url,mem_nickname from Market join Member M " +
-                "    on Market.mem_idx = M.mem_idx\n" +
-                "where Market.board_idx = 4 and Market.market_idx = ?";
+        String getBlameQuery = "select story_roomType as roomType,mem_profile_url as profile,mem_nickname as nick,\n" +
+                "       target_type,target_idx,TIMEDIFF(blame_time,CURRENT_TIMESTAMP())as createAt\n" +
+                "from Story_feed S join Member M on S.mem_idx = M.mem_idx\n" +
+                "join Blame B on S.story_idx = B.target_idx and S.board_idx = B.target_type\n" +
+                "where B.mem_idx = ?\n" +
+                "union all\n" +
+                "select diary_roomType as roomType ,mem_profile_url as profile,M.mem_nickname as nick,\n" +
+                "       target_type,target_idx,TIMEDIFF(blame_time,CURRENT_TIMESTAMP())as createAt\n" +
+                "from Diary_feed D join Member M on D.mem_idx = M.mem_idx\n" +
+                "join Blame B on D.diary_idx = B.target_idx and D.board_idx = B.target_type\n" +
+                "where B.mem_idx = ?\n" +
+                "union all\n" +
+                "select null as roomType,mem_profile_url as profile,mem_nickname as nick,\n" +
+                "       target_type,target_idx,TIMEDIFF(blame_time,CURRENT_TIMESTAMP())as createAt\n" +
+                "from Market_review MR join Member M on MR.buy_mem_idx = M.mem_idx\n" +
+                "join Blame B on MR.review_idx = B.target_idx and MR.board_idx = B.target_type\n" +
+                "where B.mem_idx = ?\n" +
+                "union all\n" +
+                "select market_group as roomType,mem_profile_url as profile,mem_nickname as nick,\n" +
+                "       target_type,target_idx,TIMEDIFF(blame_time,CURRENT_TIMESTAMP())as createAt\n" +
+                "from Market join Member M on Market.mem_idx = M.mem_idx\n" +
+                "join Blame B on Market.market_idx = B.target_idx and Market.board_idx = B.target_type\n" +
+                "where B.mem_idx = ? order by createAt desc";
 
         return this.jdbcTemplate.query(getBlameQuery,
-                (rs, rowNum) -> {
-                    Blame blame = new Blame(
-                            rs.getInt("target_type"),
-                            rs.getInt("target_idx"),
-                            rs.getString("createAt")
-                    );
-                    GetBlameFeedRes getBlameFeedRes = null;
-                    if(blame.getBoardIdx() == 1){
-                       getBlameFeedRes = this.jdbcTemplate.queryForObject(getBlameStoryQuery,
-                               (rs2,rowNum2) -> new GetBlameFeedRes(
-                                       rs2.getInt("story_roomType"),
-                                       rs2.getString("mem_profile_url"),
-                                       rs2.getString("mem_nickname"),
-                                       blame.getCreateAt()
-                               )
-                               ,blame.getComuIdx());
-                    } else if (blame.getBoardIdx() == 2) {
-                        getBlameFeedRes = this.jdbcTemplate.queryForObject(getBlameDiaryQuery,
-                                (rs2,rowNum2) -> new GetBlameFeedRes(
-                                        rs2.getInt("diary_roomType"),
-                                        rs2.getString("mem_profile_url"),
-                                        rs2.getString("mem_nickname"),
-                                        blame.getCreateAt()
-                                )
-                                ,blame.getComuIdx());
-                    } else if(blame.getBoardIdx() == 3){
-                        getBlameFeedRes = this.jdbcTemplate.queryForObject(getBlameReviewQuery,
-                            (rs2,rowNum2) -> new GetBlameFeedRes(
-                                    rs2.getString("mem_profile_url"),
-                                    rs2.getString("mem_nickname"),
-                                    blame.getCreateAt()
-                            )
-                            ,blame.getComuIdx());
-                    } else if(blame.getBoardIdx() == 4){
-                        getBlameFeedRes = this.jdbcTemplate.queryForObject(getBlameMarketQuery,
-                                (rs2,rowNum2) -> new GetBlameFeedRes(
-                                        rs2.getInt("market_group"),
-                                        rs2.getString("mem_profile_url"),
-                                        rs2.getString("mem_nickname"),
-                                        blame.getCreateAt()
-                                )
-                                ,blame.getComuIdx());
-                    }
-
-                    return getBlameFeedRes;
-                },memIdx);
+                (rs, rowNum) -> new GetBlameFeedRes(
+                        rs.getInt("roomType"),
+                        rs.getString("profile"),
+                        rs.getString("nick"),
+                        rs.getString("createAt")
+                ),memIdx,memIdx,memIdx,memIdx);
     }
 }
