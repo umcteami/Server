@@ -18,8 +18,6 @@ import org.springframework.web.bind.annotation.*;
 import com.umc.i.config.BaseException;
 import com.umc.i.config.BaseResponse;
 import com.umc.i.config.BaseResponseStatus;
-import com.umc.i.src.member.model.post.PostAuthReq;
-import com.umc.i.src.member.model.post.PostAuthRes;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
@@ -142,6 +140,26 @@ public class MemberController {
         }
         return new BaseResponse<>(BaseResponseStatus.POST_AUTH_INVALID_TYPE);
     }
+
+
+    @GetMapping("/join/auth")
+    public BaseResponse<PostAuthNumberRes> checkAuthNumber(@RequestBody PostAuthNumberReq postAuthNumberReq) {
+        int authIdx = postAuthNumberReq.getAuthIdx();
+
+        PostAuthNumberReq res = memberService.getSignAuthNumberObject(authIdx);
+
+        if (res == null) {
+            return new BaseResponse<>(BaseResponseStatus.POST_NUMBER_AUTH_FAILED);
+        }
+
+        if (memberService.isExpired(res)) {
+            PostAuthNumberRes postAuthNumberRes = new PostAuthNumberRes(res.getAuthNumber());
+            return new BaseResponse<>(postAuthNumberRes);
+        }
+
+        return new BaseResponse<>(BaseResponseStatus.POST_NUMBER_AUTH_TIME_FAILED);
+    }
+
     //유저 차단-clear
     @ResponseBody
     @PostMapping("/withdraw")

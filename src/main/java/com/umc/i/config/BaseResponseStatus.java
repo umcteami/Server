@@ -53,9 +53,17 @@ public enum BaseResponseStatus {
 
 
 
+
+    FEED_NOT_EXIST(false, 2112, "게시물이 존재하지 않음"),
+
+    PATCH_MEMBER_NICKNUM_OVER(false,2040,"닉네임 변경 횟수 초과"),
+   
+    PATCH_MEMBER_NICK_DOUBLE(false,2041,"닉네임 중복"),
+
     GET_MARKET_FEED_BY_PARAM_FAILED(false, 2100, "나눔 거래 게시물 조회 카테고리 설정 오류"),
 
     FEED_UNAUTHORIZED(false, 2111, "게시물 수정 및 삭제 권한 없음"),;
+
 
     private final boolean isSuccess;
     private final int code;
@@ -66,4 +74,4 @@ public enum BaseResponseStatus {
         this.code = code;
         this.message = message;
     }
-    }
+}
