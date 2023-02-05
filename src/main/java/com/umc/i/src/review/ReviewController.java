@@ -3,7 +3,9 @@ package com.umc.i.src.review;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.databind.JsonSerializable.Base;
 import com.umc.i.config.BaseException;
 import com.umc.i.config.BaseResponse;
 import com.umc.i.src.review.model.patch.PatchReviewsDeleteReq;
@@ -28,6 +31,8 @@ import lombok.RequiredArgsConstructor;
 public class ReviewController {
     @Autowired
     private final ReviewService reviewService;
+    @Autowired
+    private final ReivewProvider reivewProvider;
 
     @ResponseBody
     @PostMapping("/write")     // 장터 후기 작성
@@ -63,4 +68,12 @@ public class ReviewController {
             throw e;
         }
     }
+
+    @ResponseBody
+    @GetMapping("/{reviewIdx}")     // 장터 후기 조회
+    public BaseResponse getReview(@PathVariable("reviewIdx") int reviewIdx) throws BaseException{
+        return new BaseResponse<>(reivewProvider.getReview(reviewIdx));
+    }
+
+
 }

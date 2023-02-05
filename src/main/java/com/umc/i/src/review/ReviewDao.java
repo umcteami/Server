@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import com.umc.i.config.BaseException;
 import com.umc.i.config.BaseResponseStatus;
 import com.umc.i.src.feeds.model.patch.PatchFeedsReq;
+import com.umc.i.src.review.model.Review;
 import com.umc.i.src.review.model.patch.PatchReviewsReq;
 import com.umc.i.src.review.model.post.PostReviewReq;
 import com.umc.i.utils.S3Storage.Image;
@@ -108,6 +109,28 @@ public class ReviewDao {
             e.printStackTrace();
         }
         return;
+    }
+
+    // 장터 후기 하나 조회
+    public Review getReview(int reviewIdx) {
+        String getReviewQuery = "update Market_review set review_hit = review_hit + 1";
+        this.jdbcTemplate.update(getReviewQuery);
+
+        getReviewQuery = "select review_idx, sell_mem_idx, A.mem_nickname as seller_nick, buy_mem_idx, B.mem_nickname as buyer_nick, review_goods, review_content, review_hit, review_created_at";
+        getReviewQuery += " from Market_review, Member A, Member B where review_idx = ? && sell_mem_idx = A.mem_idx && buy_mem_idx = B.mem_idx";
+    
+        return this.jdbcTemplate.queryForObject(getReviewQuery, 
+        (rs, rowNum) -> new Review(
+            rs.getInt("review_idx"),
+            rs.getInt("buy_mem_idx"),
+            rs.getInt("sell_mem_idx"),
+            rs.getString("buyer_nick"),
+            rs.getString("seller_nick"),
+            rs.getString("review_goods"),
+            rs.getString("review_content"),
+            rs.getInt("review_hit"),
+            rs.getString("review_created_at")), 
+            reviewIdx);
     }
     
 }
