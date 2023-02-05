@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.umc.i.config.BaseException;
 import com.umc.i.config.BaseResponseStatus;
 import com.umc.i.src.review.model.Review;
+import com.umc.i.src.review.model.get.GetAllReviewsRes;
 import com.umc.i.src.review.model.get.GetReviewRes;
 import com.umc.i.utils.S3Storage.Image;
 import com.umc.i.utils.S3Storage.UploadImageS3;
@@ -24,7 +25,7 @@ public class ReivewProvider {
     private final UploadImageS3 uploadImageS3;
 
 
-    // 장터 후기 하나 조회
+    // 장터 후기 상세 조회
     public GetReviewRes getReview(int reviewIdx) throws BaseException {
         try {
             List<Image> img = reviewDao.getReviewsImage(reviewIdx);
@@ -41,5 +42,12 @@ public class ReivewProvider {
             throw new BaseException(BaseResponseStatus.GET_REVIEW_FAIL);
         }
     }
+
+    // 장터후기 전체 조회
+    public List<GetAllReviewsRes> getAllReviews() {
+        return reviewDao.getAllReviews();
+
+    }
+
     
 }

@@ -17,6 +17,8 @@ import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.databind.JsonSerializable.Base;
 import com.umc.i.config.BaseException;
 import com.umc.i.config.BaseResponse;
+import com.umc.i.config.BaseResponseStatus;
+import com.umc.i.src.review.model.get.GetAllReviewsRes;
 import com.umc.i.src.review.model.patch.PatchReviewsDeleteReq;
 import com.umc.i.src.review.model.patch.PatchReviewsReq;
 import com.umc.i.src.review.model.patch.PatchReviewsRes;
@@ -73,6 +75,17 @@ public class ReviewController {
     @GetMapping("/{reviewIdx}")     // 장터 후기 조회
     public BaseResponse getReview(@PathVariable("reviewIdx") int reviewIdx) throws BaseException{
         return new BaseResponse<>(reivewProvider.getReview(reviewIdx));
+    }
+
+    @ResponseBody
+    @GetMapping("")     // 장터 후기 전체 조회
+    public BaseResponse<List<GetAllReviewsRes>> getAllReviews() throws BaseException {
+        try {
+            return new BaseResponse<>(reivewProvider.getAllReviews());
+        } catch (Exception e) {
+            e.getStackTrace();
+            throw new BaseException(BaseResponseStatus.GET_REVIEW_FAIL);
+        }
     }
 
 

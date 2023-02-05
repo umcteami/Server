@@ -12,6 +12,7 @@ import com.umc.i.config.BaseException;
 import com.umc.i.config.BaseResponseStatus;
 import com.umc.i.src.feeds.model.patch.PatchFeedsReq;
 import com.umc.i.src.review.model.Review;
+import com.umc.i.src.review.model.get.GetAllReviewsRes;
 import com.umc.i.src.review.model.patch.PatchReviewsReq;
 import com.umc.i.src.review.model.post.PostReviewReq;
 import com.umc.i.utils.S3Storage.Image;
@@ -111,7 +112,7 @@ public class ReviewDao {
         return;
     }
 
-    // 장터 후기 하나 조회
+    // 장터 후기 상세 조회
     public Review getReview(int reviewIdx) {
         String getReviewQuery = "update Market_review set review_hit = review_hit + 1";
         this.jdbcTemplate.update(getReviewQuery);
@@ -133,4 +134,24 @@ public class ReviewDao {
             reviewIdx);
     }
     
+    
+    // 장터후기 전체 조회
+    public List<GetAllReviewsRes> getAllReviews() {
+        String getAllReviewQuery = "select review_idx, sell_mem_idx, A.mem_nickname as seller_nick, buy_mem_idx, B.mem_nickname as buyer_nick, ";
+        getAllReviewQuery += " I.Market_review.review_goods, review_content, review_hit, review_created_at ";
+        getAllReviewQuery += " from Market_review, Member A, Member B";
+        getAllReviewQuery += " where Market_review.sell_mem_idx = A.mem_idx && Market_review.buy_mem_idx = B.mem_idx";
+        getAllReviewQuery += " order by review_created_at desc limit 20 offset 0";
+    
+        return this.jdbcTemplate.query(getAllReviewQuery, 
+        (rs, rowNum) -> new GetAllReviewsRes(
+            rs.getInt("review_idx"),
+            rs.getInt("buy_mem_idx"),
+            rs.getInt("sell_mem_idx"),
+            rs.getString("buyer_nick"),
+            rs.getString("seller_nick"),
+            rs.getString("review_goods"),
+            rs.getInt("review_hit"),
+            rs.getString("review_created_at")));
+    }
 }
