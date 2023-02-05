@@ -47,10 +47,13 @@ public enum BaseResponseStatus {
 
     POST_MARKET_FEED_FAILED(false, 2022, "나눔 거래 게시물 작성 실패"),
 
-
     GET_MARKET_FEED_BY_PARAM_FAILED(false, 2100, "나눔 거래 게시물 조회 카테고리 설정 오류"),
 
     FEED_UNAUTHORIZED(false, 2111, "게시물 수정 및 삭제 권한 없음"),
+
+    SEARCH_KEYWORD_NULL_EXCEPTION(false, 2112, "검색 키워드 오류"),
+
+    MARKET_FEED_BY_CATEGORY_FAILED(false, 2113, "존재하지 않는 카테고리"),
 
     PATCH_MEMBER_NICKNUM_OVER(false,2040,"닉네임 변경 횟수 초과"),
    
