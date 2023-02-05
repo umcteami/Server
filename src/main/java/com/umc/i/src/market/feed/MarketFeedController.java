@@ -7,7 +7,6 @@ import com.umc.i.src.market.feed.model.GetMarketFeedRes;
 import com.umc.i.src.market.feed.model.MarketFeed;
 import com.umc.i.src.market.feed.model.GetMarketFeedReq;
 import com.umc.i.src.market.feed.model.PostMarketFeedRes;
-import com.umc.i.src.member.model.Member;
 import com.umc.i.utils.S3Storage.S3Uploader;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -121,11 +121,11 @@ public class MarketFeedController {
                                                       @RequestParam(defaultValue = "0") int page,
                                                       @RequestBody GetMarketFeedReq req) throws RuntimeException {
         // query string 값 오류
-        String[] marketGoodCategories = Constant.MARKET_GOOD_CATEGORIES;
+        HashMap<String, String> marketGoodCategories = Constant.MARKET_GOOD_CATEGORIES;
         String[] booleans = Constant.BOOLEANS;
         int userIdx = req.getUserIdx();
 
-        if (!Arrays.asList(marketGoodCategories).contains(category) || !Arrays.asList(booleans).contains(soldout)) {
+        if (!marketGoodCategories.containsKey(category) || !Arrays.asList(booleans).contains(soldout)) {
             return new BaseResponse<>(BaseResponseStatus.GET_MARKET_FEED_BY_PARAM_FAILED);
         }
 
