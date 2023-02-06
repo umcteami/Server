@@ -28,7 +28,11 @@ public class BaseResponse<T> {
         this.code = SUCCESS.getCode();
         this.result = result;
     }
-
+    public BaseResponse() {
+        this.isSuccess = SUCCESS.isSuccess();
+        this.message = SUCCESS.getMessage();
+        this.code = SUCCESS.getCode();
+    }
 
     // 요청에 실패한 경우
     public BaseResponse(BaseResponseStatus status) {
