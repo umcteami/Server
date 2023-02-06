@@ -55,8 +55,8 @@ public class MarketFeedService {
         marketFeedDao.feedLike(userIdx, marketIdx, isLike, feedUserIdx);
     }
 
-    public List<GetMarketFeedRes> getFeedByUserIdx(int userIdx) {
-        List<GetMarketFeedRes> result = marketFeedDao.getFeedByUserIdx(userIdx);
+    public List<GetMarketFeedRes> getFeedByUserIdx(int userIdx, int page) {
+        List<GetMarketFeedRes> result = marketFeedDao.getFeedByUserIdx(userIdx, page);
         return result;
     }
 
