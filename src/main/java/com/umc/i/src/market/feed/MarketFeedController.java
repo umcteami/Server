@@ -122,7 +122,7 @@ public class MarketFeedController {
         String[] booleans = Constant.BOOLEANS;
 
         if (!marketGoodCategories.containsKey(category) || !Arrays.asList(booleans).contains(soldout)) {
-            return new BaseResponse<>(BaseResponseStatus.GET_MARKET_FEED_BY_PARAM_FAILED);
+            return new BaseResponse<>(BaseResponseStatus.MARKET_FEED_BY_CATEGORY_FAILED);
         }
 
         int userIdx = req.getUserIdx();
@@ -149,17 +149,17 @@ public class MarketFeedController {
         String[] booleans = Constant.BOOLEANS;
 
         if (!marketGoodCategories.containsKey(category) || !Arrays.asList(booleans).contains(soldout)) {
-            return new BaseResponse<>(BaseResponseStatus.GET_MARKET_FEED_BY_PARAM_FAILED);
+            return new BaseResponse<>(BaseResponseStatus.MARKET_FEED_BY_CATEGORY_FAILED);
         }
 
         int userIdx = req.getUserIdx();
         String categoryIdx = marketGoodCategories.get(category);
 
         List<GetMarketFeedRes> feedResList;
-        if (categoryIdx == null) {
-            feedResList = marketFeedService.getAllHotFeed(userIdx, soldout, page);
-        } else {
-            feedResList = marketFeedService.getHotFeedByCategory(categoryIdx, userIdx, soldout, page);
+        if (categoryIdx == null) { // category 무관
+            feedResList= marketFeedService.getAllFeed(userIdx, soldout, page);
+        } else { // category 선택
+            feedResList = marketFeedService.getFeedByCategory(categoryIdx, userIdx, soldout, page);
         }
 
         return new BaseResponse<>(feedResList);

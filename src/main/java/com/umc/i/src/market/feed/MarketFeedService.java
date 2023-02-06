@@ -80,6 +80,4 @@ public class MarketFeedService {
     public List<GetMarketFeedRes> getHotFeedByCategory(String categoryIdx, int userIdx, String soldout, int page) {
         return marketFeedDao.getHotFeedByCategory(categoryIdx, userIdx, soldout, page);
     }
-
-
-}
+}    
