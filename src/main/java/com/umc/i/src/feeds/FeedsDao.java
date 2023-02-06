@@ -460,4 +460,32 @@ public class FeedsDao {
         }
         throw new BaseException(BaseResponseStatus.POST_FEEDS_INVALID_TYPE);
     }
+
+
+
+    // 통합 조회 -> 최신순
+    public List<GetAllFeedsRes> getAllFeeds() {
+        String getAllFeedsQuery = "select 1 as boardType, S.story_idx as feedIdx, story_roomType as roomType, S.mem_idx, mem_nickname, story_title as title, story_hit as hit, story_created_at as createAt, if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt ";
+        getAllFeedsQuery += " from Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt";
+        getAllFeedsQuery += " where S.mem_idx = M.mem_idx && S.story_blame < 10 group by S.story_idx UNION";
+        getAllFeedsQuery += " select 2 as boardType, D.diary_idx as feedIdx, diary_roomType as roomType, D.mem_idx, mem_nickname, diary_title as title, diary_hit as hit, diary_created_at as createAt, if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt ";
+        getAllFeedsQuery += " from Diary_feed D, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt";
+        getAllFeedsQuery += " where D.diary_blame < 10 group by D.diary_idx UNION";
+        getAllFeedsQuery += " select 3 as boardType, review_idx as feedIdx, null as roomType, buy_mem_idx as mem_idx, B.mem_nickname as mem_nickname, concat(A.mem_nickname, '님과 ', I.Market_review.review_goods, ' 을 거래했습니다.') title, review_hit as hit, review_created_at as createAt, 0 as comment_cnt";
+        getAllFeedsQuery += " from Market_review, Member A, Member B where Market_review.sell_mem_idx = A.mem_idx && Market_review.buy_mem_idx = B.mem_idx && Market_review.review_blame < 10";
+        getAllFeedsQuery += " order by createAt desc limit 20 offset 0 ";
+
+        return this.jdbcTemplate.query(getAllFeedsQuery, 
+        (rs, rowNum) -> new GetAllFeedsRes(
+            rs.getInt("boardType"),
+            rs.getInt("roomType"),
+            rs.getInt("feedIdx"),
+            rs.getInt("mem_idx"),
+            rs.getString("mem_nickname"),
+            rs.getString("title"),
+            rs.getInt("hit"),
+            rs.getInt("comment_cnt"),
+            rs.getString("createAt")
+        ));
+    }
 }

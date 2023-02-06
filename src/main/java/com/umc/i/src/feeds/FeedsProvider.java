@@ -88,4 +88,9 @@ public class FeedsProvider {
             throw e;
         }
     }
+
+    // 아이홈 통합 조회
+    public List<GetAllFeedsRes> getFeeds() {
+        return feedsDao.getAllFeeds();
+    }
 }

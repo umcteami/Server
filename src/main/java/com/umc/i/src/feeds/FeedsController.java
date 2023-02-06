@@ -219,5 +219,15 @@ public class FeedsController {
             return new BaseResponse<>(e.getStatus());
         }
     }
+
+    @ResponseBody
+    @GetMapping("") // 아이홈 통합 조회
+    public BaseResponse getAllFeeds() {
+        try {
+            return new BaseResponse<>(feedsProvider.getFeeds());
+        } catch (Exception e) {
+            return new BaseResponse<>(BaseResponseStatus.GET_REVIEW_FAIL);
+        }
+    }
      
 }
