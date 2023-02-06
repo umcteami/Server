@@ -16,6 +16,7 @@ import com.umc.i.config.BaseResponse;
 import com.umc.i.config.BaseResponseStatus;
 import com.umc.i.src.feeds.model.patch.PatchFeedsReq;
 import com.umc.i.src.feeds.model.patch.PatchFeedsRes;
+import com.umc.i.src.feeds.model.post.PostCommentReq;
 import com.umc.i.src.feeds.model.post.PostFeedsLikeReq;
 import com.umc.i.src.feeds.model.post.PostFeedsReq;
 import com.umc.i.src.feeds.model.post.PostFeedsRes;
@@ -129,6 +130,26 @@ public class FeedsService {
                 return true;
         }
         throw new BaseException(BaseResponseStatus.POST_FEEDS_INVALID_TYPE);
+    }
+
+    // 댓글 작성
+    public void writeComment(PostCommentReq postCommentReq) throws BaseException{
+        try {
+            switch(postCommentReq.getBoardType()) {
+                case 1: // 이야기방
+                    feedsDao.writeStoryComment(postCommentReq);
+                    return;
+                case 2: // 일기장
+                    feedsDao.writeDiaryComment(postCommentReq);
+                    return;
+                case 3: // 장터후기
+                    feedsDao.writeReviewComment(postCommentReq);
+                    return;
+            }
+        } catch(BaseException e) {
+            throw e;
+        }
+
     }
 
 }

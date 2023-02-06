@@ -29,6 +29,7 @@ public enum BaseResponseStatus {
 
     // [POST] /feeds
     POST_FEEDS_INVALID_TYPE(false, 2020, "타입을 확인해주세요"),
+    POST_INVALID_IDX(false, 2022, "인덱스를 확인해주세요"),
     
 
 
@@ -46,7 +47,8 @@ public enum BaseResponseStatus {
     
     GET_REVIEW_FAIL(false, 3080, "게시물 조회에 실패했습니다"),
     
-    POST_CHANGE_LIKE_FAIL(false, 3090, "좋아요 변경에 실패했습니다");
+    POST_CHANGE_LIKE_FAIL(false, 3090, "좋아요 변경에 실패했습니다"),
+    POST_COMMENTS_UPLOAD_FAIL(false, 3091, "댓글 작성에 실패했습니다");
 
 
 

@@ -15,6 +15,7 @@ import com.umc.i.config.BaseResponseStatus;
 import com.umc.i.src.feeds.model.Feeds;
 import com.umc.i.src.feeds.model.get.GetAllFeedsRes;
 import com.umc.i.src.feeds.model.patch.PatchFeedsReq;
+import com.umc.i.src.feeds.model.post.PostCommentReq;
 import com.umc.i.src.feeds.model.post.PostFeedsReq;
 import com.umc.i.utils.S3Storage.Image;
 
@@ -325,6 +326,95 @@ public class FeedsDao {
         String postFeedsLikeQuery = "insert into Market_review_like (market_re_idx, mem_idx, mrl_status) values (?, ?, 1) ";
         postFeedsLikeQuery += " on duplicate key update market_re_idx = ?, mem_idx = ?, mrl_status = !mrl_status";
         this.jdbcTemplate.update(postFeedsLikeQuery, reviewIdx, memIdx, reviewIdx, memIdx);
+
+        return;
+    }
+
+    // 댓글 작성
+    public void writeStoryComment(PostCommentReq postCommentReq) throws BaseException{  // 이야기방
+        LocalDateTime time = LocalDateTime.now();
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String currentTime = time.format(timeFormatter);
+
+        String postCommentQuery;
+        String nickname;
+        try {
+            postCommentQuery = "select mem_nickname from Member where mem_idx = ?";
+            nickname = this.jdbcTemplate.queryForObject(postCommentQuery, String.class, postCommentReq.getMemIdx());
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BaseException(BaseResponseStatus.POST_INVALID_IDX);
+        }
+        
+        try {
+            postCommentQuery = "insert into Story_feed_comment (story_idx, mem_idx, mem_nickname, story_parent_idx, story_cmt_content, story_cmt_created_at) ";
+            postCommentQuery += " values (?, ?, ?, ?, ?, ?)";
+            Object[] postCommentParams = new Object[] {postCommentReq.getFeedIdx(), postCommentReq.getMemIdx(), nickname, postCommentReq.getParentCmt(), postCommentReq.getComment(), currentTime};
+    
+            this.jdbcTemplate.update(postCommentQuery, postCommentParams);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BaseException(BaseResponseStatus.POST_COMMENTS_UPLOAD_FAIL);
+        }
+
+        return;
+    }
+
+    public void writeDiaryComment(PostCommentReq postCommentReq) throws BaseException{  // 일기장
+        LocalDateTime time = LocalDateTime.now();
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String currentTime = time.format(timeFormatter);
+
+        String postCommentQuery;
+        String nickname;
+        try {
+            postCommentQuery = "select mem_nickname from Member where mem_idx = ?";
+            nickname = this.jdbcTemplate.queryForObject(postCommentQuery, String.class, postCommentReq.getMemIdx());
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BaseException(BaseResponseStatus.POST_INVALID_IDX);
+        }
+        
+        try {
+            postCommentQuery = "insert into Diary_comment (diary_idx, mem_idx, mem_nickname, diary_parent_idx, diary_cmt_content, diary_cmt_created_at) ";
+            postCommentQuery += " values (?, ?, ?, ?, ?, ?)";
+            Object[] postCommentParams = new Object[] {postCommentReq.getFeedIdx(), postCommentReq.getMemIdx(), nickname, postCommentReq.getParentCmt(), postCommentReq.getComment(), currentTime};
+    
+            this.jdbcTemplate.update(postCommentQuery, postCommentParams);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BaseException(BaseResponseStatus.POST_COMMENTS_UPLOAD_FAIL);
+        }
+
+        return;
+    }
+
+    public void writeReviewComment(PostCommentReq postCommentReq) throws BaseException{  // 이야기방
+        LocalDateTime time = LocalDateTime.now();
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String currentTime = time.format(timeFormatter);
+
+        String postCommentQuery;
+        String nickname;
+        try {
+            postCommentQuery = "select mem_nickname from Member where mem_idx = ?";
+            nickname = this.jdbcTemplate.queryForObject(postCommentQuery, String.class, postCommentReq.getMemIdx());
+            System.out.println(nickname);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BaseException(BaseResponseStatus.POST_INVALID_IDX);
+        }
+        
+        try {
+            postCommentQuery = "insert into Market_review_comment (review_idx, mem_idx, mem_nickname, market_re_parent_idx, market_re_cmt_content, market_re_cmt_create_at) ";
+            postCommentQuery += " values (?, ?, ?, ?, ?, ?)";
+            Object[] postCommentParams = new Object[] {postCommentReq.getFeedIdx(), postCommentReq.getMemIdx(), nickname, postCommentReq.getParentCmt(), postCommentReq.getComment(), currentTime};
+    
+            this.jdbcTemplate.update(postCommentQuery, postCommentParams);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BaseException(BaseResponseStatus.POST_COMMENTS_UPLOAD_FAIL);
+        }
 
         return;
     }

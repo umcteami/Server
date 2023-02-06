@@ -21,6 +21,7 @@ import com.umc.i.config.BaseResponseStatus;
 import com.umc.i.src.feeds.model.patch.PatchDeleteReq;
 import com.umc.i.src.feeds.model.patch.PatchFeedsReq;
 import com.umc.i.src.feeds.model.patch.PatchFeedsRes;
+import com.umc.i.src.feeds.model.post.PostCommentReq;
 import com.umc.i.src.feeds.model.post.PostFeedsLikeReq;
 import com.umc.i.src.feeds.model.post.PostFeedsReq;
 import com.umc.i.src.feeds.model.post.PostFeedsRes;
@@ -194,6 +195,17 @@ public class FeedsController {
             return new BaseResponse<>("");
         } catch (BaseException e) {
             e.printStackTrace();
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
+    @ResponseBody
+    @PostMapping("comment/write") // 댓글 작성
+    public BaseResponse writeComment(@RequestBody PostCommentReq postCommentReq) {
+        try {
+            feedsService.writeComment(postCommentReq);
+            return new BaseResponse<>("댓글을 작성했습니다");
+        } catch (BaseException e) {
             return new BaseResponse<>(e.getStatus());
         }
     }
