@@ -179,7 +179,7 @@ public class FeedsDao {
         String getAllFeedsQuery = "select S.story_idx, story_roomType, S.mem_idx, mem_nickname, story_title, story_hit, story_created_at, ";
         getAllFeedsQuery += " if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt";
         getAllFeedsQuery += " from Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt";
-        getAllFeedsQuery += " where S.mem_idx = M.mem_idx group by story_idx order by story_idx desc limit 20 offset 0";
+        getAllFeedsQuery += " where S.mem_idx = M.mem_idx && story_blame < 10 group by story_idx order by story_idx desc limit 20 offset 0";
 
         return this.jdbcTemplate.query(getAllFeedsQuery, 
         (rs, rowNum) -> new GetAllFeedsRes(
@@ -199,7 +199,7 @@ public class FeedsDao {
         String getAllFeedsQuery = "select S.story_idx, story_roomType, S.mem_idx, mem_nickname, story_title, story_hit, story_created_at, ";
         getAllFeedsQuery += " if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt";
         getAllFeedsQuery += " from Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt";
-        getAllFeedsQuery += " where story_roomType = ? && S.mem_idx = M.mem_idx group by story_idx order by story_idx desc limit 20 offset 0";
+        getAllFeedsQuery += " where story_roomType = ? && S.mem_idx = M.mem_idx && story_blame < 10 group by story_idx order by story_idx desc limit 20 offset 0";
 
         return this.jdbcTemplate.query(getAllFeedsQuery, 
         (rs, rowNum) -> new GetAllFeedsRes(
@@ -223,7 +223,7 @@ public class FeedsDao {
         getFeedQuery = "select S.story_idx, story_roomType, S.mem_idx, mem_nickname, story_title, story_content, story_hit, story_created_at, ";
         getFeedQuery += " if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt";
         getFeedQuery += " from Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt";
-        getFeedQuery += " where S.story_idx = ? && S.mem_idx = M.mem_idx";
+        getFeedQuery += " where S.story_idx = ? && S.mem_idx = M.mem_idx && story_blame < 10";
 
         return this.jdbcTemplate.query(getFeedQuery, 
         (rs, rowNum) -> new Feeds(
@@ -245,7 +245,7 @@ public class FeedsDao {
         String getAllFeedsQuery = "select D.diary_idx, diary_roomType, D.mem_idx, mem_nickname, diary_title, diary_hit, diary_created_at, ";
         getAllFeedsQuery += " if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt";
         getAllFeedsQuery += " from Diary_feed D, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt";
-        getAllFeedsQuery += " group by diary_idx order by diary_idx desc limit 20 offset 0";
+        getAllFeedsQuery += " where diary_blame < 10 group by diary_idx order by diary_idx desc limit 20 offset 0";
 
         return this.jdbcTemplate.query(getAllFeedsQuery, 
         (rs, rowNum) -> new GetAllFeedsRes(
@@ -265,7 +265,7 @@ public class FeedsDao {
         String getAllFeedsQuery = "select D.diary_idx, diary_roomType, D.mem_idx, mem_nickname, diary_title, diary_hit, diary_created_at, ";
         getAllFeedsQuery += " if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt";
         getAllFeedsQuery += " from Diary_feed D, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt";
-        getAllFeedsQuery += " where diary_roomType = ? group by diary_idx order by diary_idx desc limit 20 offset 0";
+        getAllFeedsQuery += " where diary_roomType = ? && diary_blame < 10 group by diary_idx order by diary_idx desc limit 20 offset 0";
 
         return this.jdbcTemplate.query(getAllFeedsQuery, 
         (rs, rowNum) -> new GetAllFeedsRes(
@@ -289,7 +289,7 @@ public class FeedsDao {
         getFeedQuery = "select D.diary_idx, diary_roomType, D.mem_idx, mem_nickname, diary_title, diary_content, diary_hit, diary_created_at, ";
         getFeedQuery += " if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt";
         getFeedQuery += " from Diary_feed D, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt";
-        getFeedQuery += " where D.diary_idx = ?";
+        getFeedQuery += " where D.diary_idx = ? && diary_blame < 10";
 
         return this.jdbcTemplate.query(getFeedQuery, 
         (rs, rowNum) -> new Feeds(
