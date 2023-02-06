@@ -154,12 +154,13 @@ public class MarketFeedController {
 
         int userIdx = req.getUserIdx();
         String categoryIdx = marketGoodCategories.get(category);
+        log.info("categoryIdx={}", categoryIdx);
 
         List<GetMarketFeedRes> feedResList;
         if (categoryIdx == null) { // category 무관
-            feedResList= marketFeedService.getAllFeed(userIdx, soldout, page);
+            feedResList= marketFeedService.getAllHotFeed(userIdx, soldout, page);
         } else { // category 선택
-            feedResList = marketFeedService.getFeedByCategory(categoryIdx, userIdx, soldout, page);
+            feedResList = marketFeedService.getHotFeedByCategory(categoryIdx, userIdx, soldout, page);
         }
 
         return new BaseResponse<>(feedResList);
@@ -181,9 +182,10 @@ public class MarketFeedController {
     }
 
     @GetMapping("/market/list")
-    public BaseResponse getFeedByUserIdx(@RequestParam int userIdx) {
+    public BaseResponse getFeedByUserIdx(@RequestParam int userIdx,
+                                         @RequestParam(defaultValue = "0") int page) {
 
-        List<GetMarketFeedRes> result = marketFeedService.getFeedByUserIdx(userIdx);
+        List<GetMarketFeedRes> result = marketFeedService.getFeedByUserIdx(userIdx, page);
 
         return new BaseResponse<>(result);
     }

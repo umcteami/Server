@@ -84,7 +84,7 @@ public enum BaseResponseStatus {
     FEED_UNAUTHORIZED(false, 2111, "게시물 수정 및 삭제 권한 없음"),
     
     //chatting
-    CHATTING_BLAME_NOTABLE(false,2050,"차단 당했습니다.");
+    CHATTING_BLAME_NOTABLE(false,2050,"차단 당했습니다."),
 
     // search
     SEARCH_KEYWORD_NULL_EXCEPTION(false, 2112, "검색 키워드 오류"),

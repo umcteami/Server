@@ -30,7 +30,7 @@ public interface MarketFeedRepository {
 
     void feedLike(int userIdx, int marketIdx, String isLike, int feedUserIdx);
 
-    List<GetMarketFeedRes> getFeedByUserIdx(int userIdx);
+    List<GetMarketFeedRes> getFeedByUserIdx(int userIdx, int page);
 
     int getFeedUserIdx(String marketIdx);
 
