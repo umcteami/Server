@@ -47,7 +47,7 @@ public enum BaseResponseStatus {
     POST_FEED_BLAME_DOUBLE(false,2023,"이미 신고한 게시글 입니다"),
     POST_NEMBER_BLOCK_DOUBLE(false,2027,"이미 차단한 멤버입니다."),
     POST_MEMBER_WITHDRAW(false,2028,"유저가 존재하지 않음"),
-    
+
     //[GET] /mypage
     GET_WRITE_FEED_FAILED(false,2024,"조회 실패"),
     GET_WRITE_FEED_EMPTY(false,2025,"조회 대상 없음"),
@@ -61,9 +61,9 @@ public enum BaseResponseStatus {
 
     GET_MARKET_FEED_BY_PARAM_FAILED(false, 2100, "나눔 거래 게시물 조회 카테고리 설정 오류"),
 
-    FEED_UNAUTHORIZED(false, 2111, "게시물 수정 및 삭제 권한 없음");
-    
-
+    FEED_UNAUTHORIZED(false, 2111, "게시물 수정 및 삭제 권한 없음"),
+    //chatting
+    CHATTING_BLAME_NOTABLE(false,2050,"차단 당했습니다."),;
 
     private final boolean isSuccess;
     private final int code;
