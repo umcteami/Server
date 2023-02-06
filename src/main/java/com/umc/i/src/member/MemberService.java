@@ -352,4 +352,18 @@ public class MemberService {
             throw new BaseException(POST_NEMBER_BLOCK_DOUBLE);
         }
     }
+
+    // 비밀번호 재설정
+    public BaseResponseStatus changePw(String email, String pw) throws BaseException {
+        try {
+            // 암호화
+            String encryptPwd = UserSha256.encrypt(pw);
+            memberDao.changePw(memberDao.getMemIdx(email), encryptPwd);
+            return SUCCESS;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BaseException(INTERNET_ERROR);
+        }
+
+    }
 }
