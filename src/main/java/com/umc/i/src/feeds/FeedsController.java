@@ -3,6 +3,7 @@ package com.umc.i.src.feeds;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,6 +32,8 @@ import lombok.RequiredArgsConstructor;
 public class FeedsController {
     @Autowired
     private final FeedsService feedsService;
+    @Autowired
+    private final FeedsProvider feedsProvider;
 
     @ResponseBody
     @PostMapping("/write")     // 이야기방, 일기장 게시글 작성
@@ -113,6 +116,17 @@ public class FeedsController {
             return new BaseResponse<>(e.getStatus());
         }
         return new BaseResponse<>("success!");
+    }
+
+    @ResponseBody
+    @GetMapping("/story")   // 이야기방 전체 조회
+    public BaseResponse getStories() throws BaseException {
+        try {
+            return new BaseResponse<>(feedsProvider.getAllStories());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new BaseResponse<>(BaseResponseStatus.GET_REVIEW_FAIL);
+        }
     }
     
 }

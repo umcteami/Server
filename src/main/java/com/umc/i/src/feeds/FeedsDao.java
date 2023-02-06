@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 import com.fasterxml.jackson.databind.JsonSerializable.Base;
 import com.umc.i.config.BaseException;
 import com.umc.i.config.BaseResponseStatus;
+import com.umc.i.src.feeds.model.get.GetAllFeedsRes;
 import com.umc.i.src.feeds.model.patch.PatchFeedsReq;
 import com.umc.i.src.feeds.model.post.PostFeedsReq;
 import com.umc.i.utils.S3Storage.Image;
@@ -168,5 +169,26 @@ public class FeedsDao {
              throw new BaseException(BaseResponseStatus.PATCH_DELETE_FEEDS_FAIL);
         }
         return;
+    }
+
+
+    // 이야기방 전체 조회
+    public List<GetAllFeedsRes> getAllStories() {
+        String getAllFeedsQuery = "select S.story_idx, story_roomType, S.mem_idx, mem_nickname, story_title, story_hit, story_created_at, ";
+        getAllFeedsQuery += " if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt";
+        getAllFeedsQuery += " from Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt";
+        getAllFeedsQuery += " where S.mem_idx = M.mem_idx group by story_idx order by story_idx desc limit 20 offset 0";
+
+        return this.jdbcTemplate.query(getAllFeedsQuery, 
+        (rs, rowNum) -> new GetAllFeedsRes(
+            1, 
+            rs.getInt("story_roomType"), 
+            rs.getInt("story_idx"), 
+            rs.getInt("mem_idx"),
+            rs.getString("mem_nickname"),
+            rs.getString("story_title"), 
+            rs.getInt("story_hit"),
+            rs.getInt("comment_cnt"),
+            rs.getString("story_created_at")));
     }
 }
