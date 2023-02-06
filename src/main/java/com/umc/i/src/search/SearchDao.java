@@ -131,7 +131,7 @@ public class SearchDao implements SearchRepository {
                 "\t\t\tm.market_hit,\n" +
                 "\t\t\tm.market_created_at\n" +
                 "\t\tfrom Market m \n" +
-                "        where (market_title like \"%" + search_keyword + "%\" or market_content like \"%" + search_keyword + "%\" \n" +
+                "        where 1market_title like \"%" + search_keyword + "%\" or market_content like \"%" + search_keyword + "%\" \n" +
                 "        order by market_created_at DESC\n" +
                 "        limit ?, ? ) m\n" +
                 "\tleft join (\n" +
