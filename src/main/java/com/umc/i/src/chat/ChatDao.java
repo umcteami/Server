@@ -49,7 +49,8 @@ public class ChatDao {
     //모든 채팅방 보기
     public List<GetChatRoomsRes> getChatRooms(int memIdx){
         String getChatRoomsQuery = "select room_idx,if(mem1_idx = ?,mem2_idx,mem1_idx) as sender,room_recent_time,room_recent_chat,mem_nickname,mem_profile_url\n" +
-                "from Chatting_room join Member M on mem1_idx = ? or mem2_idx = ? where M.mem_idx = if(mem1_idx = ?,mem2_idx,mem1_idx)";
+                "                from Chatting_room Cr join Member M on mem1_idx = ? or mem2_idx = ?\n" +
+                "                where M.mem_idx = if(mem1_idx = ?,mem2_idx,mem1_idx) and if(mem1_idx = ?,Cr.room_quit1,room_quit2)=0";
         String getReadNumQuery = "select count(*)from Chatting C join Chatting_room Cr on C.room_idx = Cr.room_idx\n" +
                 "                        where if(Cr.mem1_idx = ?,Cr.mem2_idx,Cr.mem1_idx) = C.mem_send_idx and chat_read = 1 and C.room_idx = ?";
         return this.jdbcTemplate.query(getChatRoomsQuery,
@@ -65,7 +66,7 @@ public class ChatDao {
                     getChatRoomsRes.setRecentTime(rs.getString("room_recent_time"));
                     getChatRoomsRes.setNoReadNum(this.jdbcTemplate.queryForObject(getReadNumQuery,int.class,memIdx,getChatRoomsRes.getRoomIdx()));
                     return getChatRoomsRes;
-                },memIdx,memIdx,memIdx,memIdx);
+                },memIdx,memIdx,memIdx,memIdx,memIdx);
     }
     //하나의 채팅방 보기+ 이미지(미완)
     public List<GetChatRoomRes> getChatRoomIdx(int roomIdx,int memIdx) throws BaseException {
@@ -132,13 +133,10 @@ public class ChatDao {
         if(mem1Idx == 1){
             String delChatRoomQuery = "update Chatting_room set room_quit1 = 1 where room_idx = ?";
             this.jdbcTemplate.update(delChatRoomQuery,roomOut.getRoomIdx());
-        }else{
+        }else {
             String delChatRoomQuery = "update Chatting_room set room_quit2 = 1 where room_idx = ?";
-            this.jdbcTemplate.update(delChatRoomQuery,roomOut.getRoomIdx());
+            this.jdbcTemplate.update(delChatRoomQuery, roomOut.getRoomIdx());
         }
-        String deleteChat = "delete Cr,C from Chatting_room Cr join Chatting C on Cr.room_idx = C.room_idx\n" +
-                "          where C.room_idx = ? and Cr.room_quit1 = 1 and Cr.room_quit2 = 1";
-        this.jdbcTemplate.update(deleteChat,roomOut.getRoomIdx());
     }
 
     //이미지 저장-unchecked
