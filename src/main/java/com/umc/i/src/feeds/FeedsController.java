@@ -120,7 +120,7 @@ public class FeedsController {
     }
 
     @ResponseBody
-    @GetMapping("/story")   // 이야기방 전체 조회
+    @GetMapping("/story/all")   // 이야기방 전체 조회
     public BaseResponse getStories() throws BaseException {
         try {
             return new BaseResponse<>(feedsProvider.getAllStories());
@@ -131,10 +131,21 @@ public class FeedsController {
     }
 
     @ResponseBody
-    @GetMapping("/story/{roomType}")   // 이야기방 카테고리별 조회
-    public BaseResponse getStoryByRoomType(@PathVariable("roomType") int roomType) throws BaseException {
+    @GetMapping("/story")   // 이야기방 카테고리별 조회
+    public BaseResponse getStoryByRoomType(@RequestParam("roomType") int roomType) throws BaseException {
         try {
             return new BaseResponse<>(feedsProvider.getStoryByRoomType(roomType));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new BaseResponse<>(BaseResponseStatus.GET_REVIEW_FAIL);
+        }
+    }
+
+    @ResponseBody
+    @GetMapping("/story/{storyIdx}")    // 이야기방 상세 조회
+    public BaseResponse getStory(@PathVariable("storyIdx") int storyIdx) throws BaseException {
+        try {
+            return new BaseResponse<>(feedsProvider.getStory(storyIdx));
         } catch (Exception e) {
             e.printStackTrace();
             return new BaseResponse<>(BaseResponseStatus.GET_REVIEW_FAIL);

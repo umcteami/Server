@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 import com.fasterxml.jackson.databind.JsonSerializable.Base;
 import com.umc.i.config.BaseException;
 import com.umc.i.config.BaseResponseStatus;
+import com.umc.i.src.feeds.model.Feeds;
 import com.umc.i.src.feeds.model.get.GetAllFeedsRes;
 import com.umc.i.src.feeds.model.patch.PatchFeedsReq;
 import com.umc.i.src.feeds.model.post.PostFeedsReq;
@@ -212,4 +213,27 @@ public class FeedsDao {
             rs.getString("story_created_at")),
             roomType);
     }
+
+    // 이야기방 상세 조회
+    public List<Feeds> getStory(int feedIdx) {
+        String getAllFeedsQuery = "select S.story_idx, story_roomType, S.mem_idx, mem_nickname, story_title, story_content, story_hit, story_created_at, ";
+        getAllFeedsQuery += " if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt";
+        getAllFeedsQuery += " from Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt";
+        getAllFeedsQuery += " where S.story_idx = ? && S.mem_idx = M.mem_idx";
+
+        return this.jdbcTemplate.query(getAllFeedsQuery, 
+        (rs, rowNum) -> new Feeds(
+            1, 
+            rs.getInt("story_roomType"), 
+            rs.getInt("story_idx"), 
+            rs.getInt("mem_idx"),
+            rs.getString("mem_nickname"),
+            rs.getString("story_title"), 
+            rs.getString("story_content"),
+            rs.getInt("story_hit"),
+            rs.getInt("comment_cnt"),
+            rs.getString("story_created_at")),
+            feedIdx);
+    }
+    
 }
