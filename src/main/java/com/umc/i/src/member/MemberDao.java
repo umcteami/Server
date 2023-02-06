@@ -185,4 +185,28 @@ public class MemberDao {
             throw new BaseException(POST_NEMBER_BLOCK_DOUBLE);
         }
     }
+
+
+    // 이메일 찾기
+    public String findEmail(String phone) throws BaseException{
+        try {
+            String findEmailQuery = "select mem_email from Member where mem_phone = ?";
+            return this.jdbcTemplate.queryForObject(findEmailQuery, String.class, phone);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BaseException(BaseResponseStatus.POST_AUTH_MEMBER_NOT_EXIST);
+        }
+    }
+
+    // 비밀번호 재설정
+    public void changePw(int memIdx, String pw) throws BaseException {
+        String changePwQuery = "update Member set mem_password = ? where mem_idx = ?";
+        this.jdbcTemplate.update(changePwQuery, pw, memIdx);
+    }
+    
+    // 유저 인덱스 조회
+    public int getMemIdx(String email) {
+        String getMemIdxQuery = "select mem_idx from Member where mem_email = ?";
+        return this.jdbcTemplate.queryForObject(getMemIdxQuery, Integer.class, email);
+    }
 }
