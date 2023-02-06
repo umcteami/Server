@@ -14,6 +14,7 @@ import com.umc.i.config.BaseException;
 import com.umc.i.config.BaseResponseStatus;
 import com.umc.i.src.feeds.model.Feeds;
 import com.umc.i.src.feeds.model.get.GetAllFeedsRes;
+import com.umc.i.src.feeds.model.get.GetCommentRes;
 import com.umc.i.src.feeds.model.patch.PatchFeedsReq;
 import com.umc.i.src.feeds.model.post.PostCommentReq;
 import com.umc.i.src.feeds.model.post.PostFeedsReq;
@@ -419,4 +420,44 @@ public class FeedsDao {
         return;
     }
     
+    // 댓글 조회
+    public List<GetCommentRes> getComments(int boardType, int feedIdx) throws BaseException {
+        String getCommentQuery;
+        switch (boardType) {
+            case 1:     // 이야기방
+                getCommentQuery = "select * from Story_feed_comment where story_idx = ?";
+                return this.jdbcTemplate.query(getCommentQuery, 
+                (rs, rowNum) -> new GetCommentRes(
+                    rs.getInt("story_cmt_idx"), 
+                    1, feedIdx,
+                    rs.getInt("story_parent_idx"),
+                    rs.getInt("mem_idx"),
+                    rs.getString("mem_nickname"),
+                    rs.getString("story_cmt_content"),
+                    rs.getString("story_cmt_created_at")), feedIdx);
+            case 2:     // 일기장
+                getCommentQuery = "select * from Diary_comment where diary_idx = ?";
+                 return this.jdbcTemplate.query(getCommentQuery, 
+                    (rs, rowNum) -> new GetCommentRes(
+                    rs.getInt("diary_cmt_idx"), 
+                    2, feedIdx,
+                    rs.getInt("diary_parent_idx"),
+                    rs.getInt("mem_idx"),
+                    rs.getString("mem_nickname"),
+                    rs.getString("diary_cmt_content"),
+                    rs.getString("diary_cmt_created_at")), feedIdx);
+            case 3:     // 장터후기
+                getCommentQuery = "select * from Market_review_comment where review_idx = ?";
+                return this.jdbcTemplate.query(getCommentQuery, 
+                (rs, rowNum) -> new GetCommentRes(
+                    rs.getInt("market_re_cmt_idx"), 
+                    3, feedIdx,
+                    rs.getInt("market_re_parent_idx"),
+                    rs.getInt("mem_idx"),
+                    rs.getString("mem_nickname"),
+                    rs.getString("market_re_cmt_content"),
+                    rs.getString("market_re_cmt_create_at")), feedIdx);
+        }
+        throw new BaseException(BaseResponseStatus.POST_FEEDS_INVALID_TYPE);
+    }
 }

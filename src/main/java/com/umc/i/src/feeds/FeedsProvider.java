@@ -6,7 +6,9 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.umc.i.config.BaseException;
 import com.umc.i.src.feeds.model.get.GetAllFeedsRes;
+import com.umc.i.src.feeds.model.get.GetCommentRes;
 import com.umc.i.src.feeds.model.get.GetFeedRes;
 import com.umc.i.utils.S3Storage.Image;
 import com.umc.i.utils.S3Storage.UploadImageS3;
@@ -76,6 +78,14 @@ public class FeedsProvider {
         
         return new GetFeedRes(feedsDao.getDiary(diaryIdx), filePath);
 
-}
+    }
     
+    // 댓글 조회
+    public List<GetCommentRes> getComments(int boardType, int feedIdx) throws BaseException {
+        try {
+            return feedsDao.getComments(boardType, feedIdx);
+        } catch (BaseException e) {
+            throw e;
+        }
+    }
 }

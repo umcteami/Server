@@ -209,5 +209,15 @@ public class FeedsController {
             return new BaseResponse<>(e.getStatus());
         }
     }
+
+    @ResponseBody
+    @GetMapping("comment")  // 댓글 조회
+    public BaseResponse getComments(@RequestParam("boardType") int boardType, @RequestParam("feedIdx") int feedIdx) {
+        try {
+            return new BaseResponse<>(feedsProvider.getComments(boardType, feedIdx));
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
      
 }
