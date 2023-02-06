@@ -153,10 +153,21 @@ public class FeedsController {
     }
 
     @ResponseBody
-    @GetMapping("/diary/all")   // 이야기방 전체 조회
+    @GetMapping("/diary/all")   // 일기장 전체 조회
     public BaseResponse getDiaries() throws BaseException {
         try {
             return new BaseResponse<>(feedsProvider.getAllDiaries());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new BaseResponse<>(BaseResponseStatus.GET_REVIEW_FAIL);
+        }
+    }
+
+    @ResponseBody
+    @GetMapping("/diary")   // 일기장 카테고리별 조회
+    public BaseResponse getDiariesByRoomType(@RequestParam("roomType") int roomType) throws BaseException {
+        try {
+            return new BaseResponse<>(feedsProvider.getDiariesByRoomType(roomType));
         } catch (Exception e) {
             e.printStackTrace();
             return new BaseResponse<>(BaseResponseStatus.GET_REVIEW_FAIL);
