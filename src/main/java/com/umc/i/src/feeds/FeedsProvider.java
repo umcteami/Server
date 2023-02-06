@@ -31,6 +31,11 @@ public class FeedsProvider {
         return feedsDao.getAllStories();
     }
 
+    // 일기장 전체 조회
+    public List<GetAllFeedsRes> getAllDiaries() {
+        return feedsDao.getAllDiaries();
+    }
+
     // 이야기방 카테고리별 조회
     public List<GetAllFeedsRes> getStoryByRoomType(int roomType) {
         return feedsDao.getStoryRoomType(roomType);

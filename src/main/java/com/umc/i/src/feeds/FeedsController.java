@@ -151,5 +151,16 @@ public class FeedsController {
             return new BaseResponse<>(BaseResponseStatus.GET_REVIEW_FAIL);
         }
     }
+
+    @ResponseBody
+    @GetMapping("/diary/all")   // 이야기방 전체 조회
+    public BaseResponse getDiaries() throws BaseException {
+        try {
+            return new BaseResponse<>(feedsProvider.getAllDiaries());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new BaseResponse<>(BaseResponseStatus.GET_REVIEW_FAIL);
+        }
+    }
     
 }

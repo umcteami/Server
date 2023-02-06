@@ -235,5 +235,25 @@ public class FeedsDao {
             rs.getString("story_created_at")),
             feedIdx);
     }
+
+    // 일기장 전체 조회
+    public List<GetAllFeedsRes> getAllDiaries() {
+        String getAllFeedsQuery = "select D.diary_idx, diary_roomType, D.mem_idx, mem_nickname, diary_title, diary_hit, diary_created_at, ";
+        getAllFeedsQuery += " if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt";
+        getAllFeedsQuery += " from Diary_feed D, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt";
+        getAllFeedsQuery += " group by diary_idx order by diary_idx desc limit 20 offset 0";
+
+        return this.jdbcTemplate.query(getAllFeedsQuery, 
+        (rs, rowNum) -> new GetAllFeedsRes(
+            1, 
+            rs.getInt("diary_roomType"), 
+            rs.getInt("diary_idx"), 
+            rs.getInt("mem_idx"),
+            rs.getString("mem_nickname"),
+            rs.getString("diary_title"), 
+            rs.getInt("diary_hit"),
+            rs.getInt("comment_cnt"),
+            rs.getString("diary_created_at")));
+    }
     
 }
