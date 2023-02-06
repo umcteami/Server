@@ -43,7 +43,7 @@ public class MarketFeedDao implements MarketFeedRepository {
 
     @Override
     public void postCoverImage(List<String> filesUrlList, String marketIdx) {
-        String query = "update market set market_image = ? where market_idx = ?";
+        String query = "update Market set market_image = ? where market_idx = ?";
 
         try {
             jdbcTemplate.update(query, filesUrlList.get(0), marketIdx);
@@ -61,7 +61,7 @@ public class MarketFeedDao implements MarketFeedRepository {
             log.error(e.getMessage());
         }
 
-        query = "update market set market_hit = market_hit + 1 where market_idx = ?;";
+        query = "update Market set market_hit = market_hit + 1 where market_idx = ?;";
         try {
             jdbcTemplate.update(query, marketIdx);
         } catch (Exception e) {
@@ -71,7 +71,7 @@ public class MarketFeedDao implements MarketFeedRepository {
 
     @Override
     public void updateFeed(String marketIdx, GetMarketFeedReq req) {
-        String query = "update market set market_group = ?, market_price = ?, market_title = ?, market_content = ?, market_soldout = ? where market_idx = ?";
+        String query = "update Market set market_group = ?, market_price = ?, market_title = ?, market_content = ?, market_soldout = ? where market_idx = ?";
 
         try {
             jdbcTemplate.update(query, req.getCategory(), req.getPrice(), req.getTitle(), req.getContent(), req.getSoldout(), marketIdx);
@@ -82,7 +82,7 @@ public class MarketFeedDao implements MarketFeedRepository {
 
     @Override
     public void updateFeedSoldout(String marketIdx, GetMarketFeedReq req) {
-        String query = "update market set market_soldout = ? where market_idx = ?";
+        String query = "update Market set market_soldout = ? where market_idx = ?";
 
         try {
             jdbcTemplate.update(query, req.getSoldout(), marketIdx);
