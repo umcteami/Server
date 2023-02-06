@@ -63,7 +63,7 @@
     },
     methods: {
       findRoom: function() {
-        axios.get('/chat/room/'+this.roomIdx+'/'+this.sender).then(response => { this.messages = response.data.list;
+        axios.get('/chat/room/'+this.roomIdx+'/'+this.sender).then(response => { this.messages = response.data.result;
         console.log(response.data)});
       },
       sendMessage: function() {

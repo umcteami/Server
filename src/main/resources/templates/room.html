@@ -53,7 +53,7 @@
         },
         methods: {
             findAllRoom: function() {
-                axios.get('/chat/rooms/'+ this.memIdx1).then(response => { this.chatrooms = response.data.list;
+                axios.get('/chat/rooms/'+this.memIdx1).then(response => { this.chatrooms = response.data.result;
                 console.log(response.data);});
             },
             createRoom: function() {

@@ -19,15 +19,8 @@ import java.util.*;
 @RequiredArgsConstructor
 public class ChatRoomRepository {
 
-
-    private Map<String, PostChatRoom> chatRoomMap;
     @Autowired
     private ChatDao chatDao;
-
-    @PostConstruct
-    private void init() {
-        chatRoomMap = new LinkedHashMap<>();
-    }
 
     public List<GetChatRoomsRes> findAllRoom(int memIdx) {
         return chatDao.getChatRooms(memIdx);
