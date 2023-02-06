@@ -180,7 +180,7 @@ public class MypageDao {
     public List<GetComuWriteRes> getRSWrite(int memIdx,int page) throws BaseException {
         try {
             String getRSWriteQuery = "select board_idx, review_idx as idx,null as roomType,concat(sell_mem_idx,'님과 ',review_goods,'을 거래했습니다') as title,review_image as countImg,review_hit as hit,review_created_at as createAt\n" +
-                    ",(select count(*) from Market_review_like where Mr.review_idx = market_re_idx and mrl_staus = 1) as likeCount\n" +
+                    ",(select count(*) from Market_review_like where Mr.review_idx = market_re_idx and mrl_status = 1) as likeCount\n" +
                     ",(select count(*) from Market_review_comment Mrc where Mr.review_idx = Mrc.review_idx) as commentCount\n" +
                     "from Market_review Mr\n" +
                     "where buy_mem_idx = ?\n" +

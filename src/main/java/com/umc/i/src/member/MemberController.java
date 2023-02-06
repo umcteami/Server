@@ -8,6 +8,7 @@ import java.io.UnsupportedEncodingException;
 import javax.mail.MessagingException;
 
 import com.umc.i.src.member.model.get.GetMemRes;
+import com.umc.i.src.member.model.get.GetMemberEmailReq;
 import com.umc.i.src.member.model.patch.PatchMemReq;
 import com.umc.i.src.member.model.post.*;
 import com.umc.i.utils.ValidationRegex;
@@ -29,6 +30,8 @@ import org.springframework.web.multipart.MultipartFile;
 public class MemberController {
     @Autowired
     private final MemberService memberService;
+    @Autowired
+    private final MemberProvider memberProvider;
 
     //회원가입-clear
     @ResponseBody
@@ -115,7 +118,7 @@ public class MemberController {
     @ResponseBody
     @PostMapping("/join/auth")
     // 본인인증
-    public BaseResponse<PostAuthRes> checkType(@RequestBody PostAuthReq postJoinAuthReq) throws MessagingException, UnsupportedEncodingException {
+    public BaseResponse<PostAuthRes> sendAuth(@RequestBody PostAuthReq postJoinAuthReq) throws MessagingException, UnsupportedEncodingException {
         switch(postJoinAuthReq.getType()) {
             case 1: //메일 인증
                 if(postJoinAuthReq.getAuth() == null) return new BaseResponse<>(BaseResponseStatus.POST_MEMBER_EMPTY_EMAIL);
@@ -184,6 +187,38 @@ public class MemberController {
             return new BaseResponse<>(BaseResponseStatus.POST_NEMBER_BLOCK_DOUBLE);
         }catch (Exception e){
             return new BaseResponse<>(BaseResponseStatus.INTERNET_ERROR);
+        }
+    }
+
+
+    // 이메일 찾기
+    @ResponseBody
+    @GetMapping("/find/email")
+    public BaseResponse findEmail(@RequestBody GetMemberEmailReq getMemberEmailReq) throws BaseException {
+        try {
+            return new BaseResponse<>(memberProvider.findEmail(getMemberEmailReq.getPhone()));
+        } catch(BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
+    // 비밀번호 재설정
+    @ResponseBody
+    @PostMapping("/find/pw")
+    public BaseResponse findPw(@RequestBody PostFindPwReq postFindPwReq) throws BaseException {
+        try {
+            String pw = postFindPwReq.getPw();
+            BaseResponseStatus baseResponseStatus = null;
+            if(pw.length() > 15 || pw.length() < 7){
+                baseResponseStatus = BaseResponseStatus.POST_MEMBER_JOIN_PWLEN;
+            }else if(ValidationRegex.isRegexPw(pw)){
+                baseResponseStatus = BaseResponseStatus.POST_MEMBER_ISREGEX_PW;
+            } else{
+                baseResponseStatus = memberService.changePw(postFindPwReq.getEmail(), pw);
+            }
+            return new BaseResponse<>(baseResponseStatus);
+        }catch (BaseException e){
+            return new BaseResponse<>((e.getStatus()));
         }
     }
 }
