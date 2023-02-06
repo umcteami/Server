@@ -16,6 +16,7 @@ import com.umc.i.config.BaseResponse;
 import com.umc.i.config.BaseResponseStatus;
 import com.umc.i.src.feeds.model.patch.PatchFeedsReq;
 import com.umc.i.src.feeds.model.patch.PatchFeedsRes;
+import com.umc.i.src.feeds.model.post.PostFeedsLikeReq;
 import com.umc.i.src.feeds.model.post.PostFeedsReq;
 import com.umc.i.src.feeds.model.post.PostFeedsRes;
 import com.umc.i.utils.S3Storage.Image;
@@ -111,6 +112,23 @@ public class FeedsService {
             throw new BaseException(e.getStatus());
         }
         return;
+    }
+
+
+    // 좋아요 변경
+    public boolean changeLike(PostFeedsLikeReq postFeedsLikeReq) throws BaseException{
+        switch(postFeedsLikeReq.getBoardType()) {
+            case 1: // 이야기방
+                feedsDao.changeLikeStory(postFeedsLikeReq.getMemIdx(), postFeedsLikeReq.getFeedIdx());
+                return true;
+            case 2: // 일기장
+                feedsDao.changeLikeDiary(postFeedsLikeReq.getMemIdx(), postFeedsLikeReq.getFeedIdx());
+                return true;
+            case 3: // 장터후기
+                feedsDao.changeLikeReview(postFeedsLikeReq.getMemIdx(), postFeedsLikeReq.getFeedIdx());
+                return true;
+        }
+        throw new BaseException(BaseResponseStatus.POST_FEEDS_INVALID_TYPE);
     }
 
 }

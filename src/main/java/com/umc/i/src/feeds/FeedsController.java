@@ -21,6 +21,7 @@ import com.umc.i.config.BaseResponseStatus;
 import com.umc.i.src.feeds.model.patch.PatchDeleteReq;
 import com.umc.i.src.feeds.model.patch.PatchFeedsReq;
 import com.umc.i.src.feeds.model.patch.PatchFeedsRes;
+import com.umc.i.src.feeds.model.post.PostFeedsLikeReq;
 import com.umc.i.src.feeds.model.post.PostFeedsReq;
 import com.umc.i.src.feeds.model.post.PostFeedsRes;
 
@@ -184,5 +185,17 @@ public class FeedsController {
             return new BaseResponse<>(BaseResponseStatus.GET_REVIEW_FAIL);
         }
     }
-    
+
+    @ResponseBody
+    @PostMapping("like/change")     // 좋아요 변경
+    public BaseResponse changeLike(@RequestBody PostFeedsLikeReq postFeedsLikeReq) {
+        try {
+            boolean isSuccess = feedsService.changeLike(postFeedsLikeReq);
+            return new BaseResponse<>("");
+        } catch (BaseException e) {
+            e.printStackTrace();
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+     
 }

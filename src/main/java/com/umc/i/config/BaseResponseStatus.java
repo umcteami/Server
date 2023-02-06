@@ -42,10 +42,11 @@ public enum BaseResponseStatus {
     PATCH_EDIT_FEEDS_FAIL(false, 3010, "수정을 실패했습니다"),
     PATCH_DELETE_FEEDS_FAIL(false, 3011, "게시물 삭제를 실패했습니다"),
     
+
     
+    GET_REVIEW_FAIL(false, 3080, "게시물 조회에 실패했습니다"),
     
-    
-    GET_REVIEW_FAIL(false, 3080, "게시물 조회에 실패했습니다");
+    POST_CHANGE_LIKE_FAIL(false, 3090, "좋아요 변경에 실패했습니다");
 
 
 

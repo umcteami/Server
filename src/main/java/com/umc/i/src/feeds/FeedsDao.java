@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-import com.fasterxml.jackson.databind.JsonSerializable.Base;
 import com.umc.i.config.BaseException;
 import com.umc.i.config.BaseResponseStatus;
 import com.umc.i.src.feeds.model.Feeds;
@@ -303,6 +302,31 @@ public class FeedsDao {
             rs.getInt("comment_cnt"),
             rs.getString("diary_created_at")),
             diaryIdx);
+    }
+
+    // 좋아요, 좋아요 취소
+    public void changeLikeStory(int memIdx, int storyIdx) {     // 이야기방
+        String postFeedsLikeQuery = "insert into Story_feed_like (story_idx, mem_idx, sfl_status) values (?, ?, 1) ";
+        postFeedsLikeQuery += " on duplicate key update story_idx = ?, mem_idx = ?, sfl_status = !sfl_status";
+        this.jdbcTemplate.update(postFeedsLikeQuery, storyIdx, memIdx, storyIdx, memIdx);
+
+        return;
+    }
+
+    public void changeLikeDiary(int memIdx, int diaryIdx) {     // 일기장
+        String postFeedsLikeQuery = "insert into Diary_feed_like (diary_idx, mem_idx, dfl_status) values (?, ?, 1) ";
+        postFeedsLikeQuery += " on duplicate key update diary_idx = ?, mem_idx = ?, dfl_status = !dfl_status";
+        this.jdbcTemplate.update(postFeedsLikeQuery, diaryIdx, memIdx, diaryIdx, memIdx);
+
+        return;
+    }
+
+    public void changeLikeReview(int memIdx, int reviewIdx) {     // 장터후기
+        String postFeedsLikeQuery = "insert into Market_review_like (market_re_idx, mem_idx, mrl_status) values (?, ?, 1) ";
+        postFeedsLikeQuery += " on duplicate key update market_re_idx = ?, mem_idx = ?, mrl_status = !mrl_status";
+        this.jdbcTemplate.update(postFeedsLikeQuery, reviewIdx, memIdx, reviewIdx, memIdx);
+
+        return;
     }
     
 }
