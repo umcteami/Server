@@ -55,6 +55,10 @@ public enum BaseResponseStatus {
 
     MARKET_FEED_BY_CATEGORY_FAILED(false, 2113, "존재하지 않는 카테고리"),
 
+    FEED_NOT_EXIST(false, 2114, "존재하지 않는 게시물"),
+
+    SEARCH_TARGET_INVALID(false, 2115, "지원하지 않는 검색 방식"),
+
     PATCH_MEMBER_NICKNUM_OVER(false,2040,"닉네임 변경 횟수 초과"),
    
     PATCH_MEMBER_NICK_DOUBLE(false,2041,"닉네임 중복"),;
