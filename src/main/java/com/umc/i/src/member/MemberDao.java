@@ -185,4 +185,16 @@ public class MemberDao {
             throw new BaseException(POST_NEMBER_BLOCK_DOUBLE);
         }
     }
+
+
+    // 이메일 찾기
+    public String findEmail(String phone) throws BaseException{
+        try {
+            String findEmailQuery = "select mem_email from Member where mem_phone = ?";
+            return this.jdbcTemplate.queryForObject(findEmailQuery, String.class, phone);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BaseException(BaseResponseStatus.POST_AUTH_MEMBER_NOT_EXIST);
+        }
+    }
 }

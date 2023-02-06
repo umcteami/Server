@@ -8,6 +8,7 @@ import java.io.UnsupportedEncodingException;
 import javax.mail.MessagingException;
 
 import com.umc.i.src.member.model.get.GetMemRes;
+import com.umc.i.src.member.model.get.GetMemberEmailReq;
 import com.umc.i.src.member.model.patch.PatchMemReq;
 import com.umc.i.src.member.model.post.*;
 import com.umc.i.utils.ValidationRegex;
@@ -29,6 +30,8 @@ import org.springframework.web.multipart.MultipartFile;
 public class MemberController {
     @Autowired
     private final MemberService memberService;
+    @Autowired
+    private final MemberProvider memberProvider;
 
     //회원가입-clear
     @ResponseBody
@@ -184,6 +187,18 @@ public class MemberController {
             return new BaseResponse<>(BaseResponseStatus.POST_NEMBER_BLOCK_DOUBLE);
         }catch (Exception e){
             return new BaseResponse<>(BaseResponseStatus.INTERNET_ERROR);
+        }
+    }
+
+
+    // 이메일 찾기
+    @ResponseBody
+    @GetMapping("find/email")
+    public BaseResponse findEmail(@RequestBody GetMemberEmailReq getMemberEmailReq) throws BaseException {
+        try {
+            return new BaseResponse<>(memberProvider.findEmail(getMemberEmailReq.getPhone()));
+        } catch(BaseException e) {
+            return new BaseResponse<>(e.getStatus());
         }
     }
 }
