@@ -216,12 +216,15 @@ public class FeedsDao {
 
     // 이야기방 상세 조회
     public List<Feeds> getStory(int feedIdx) {
-        String getAllFeedsQuery = "select S.story_idx, story_roomType, S.mem_idx, mem_nickname, story_title, story_content, story_hit, story_created_at, ";
-        getAllFeedsQuery += " if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt";
-        getAllFeedsQuery += " from Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt";
-        getAllFeedsQuery += " where S.story_idx = ? && S.mem_idx = M.mem_idx";
+        String getFeedQuery = "update Story_feed set story_hit = story_hit + 1";
+        this.jdbcTemplate.update(getFeedQuery);
+        
+        getFeedQuery = "select S.story_idx, story_roomType, S.mem_idx, mem_nickname, story_title, story_content, story_hit, story_created_at, ";
+        getFeedQuery += " if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt";
+        getFeedQuery += " from Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt";
+        getFeedQuery += " where S.story_idx = ? && S.mem_idx = M.mem_idx";
 
-        return this.jdbcTemplate.query(getAllFeedsQuery, 
+        return this.jdbcTemplate.query(getFeedQuery, 
         (rs, rowNum) -> new Feeds(
             1, 
             rs.getInt("story_roomType"), 
