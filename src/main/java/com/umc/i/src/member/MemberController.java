@@ -193,12 +193,32 @@ public class MemberController {
 
     // 이메일 찾기
     @ResponseBody
-    @GetMapping("find/email")
+    @GetMapping("/find/email")
     public BaseResponse findEmail(@RequestBody GetMemberEmailReq getMemberEmailReq) throws BaseException {
         try {
             return new BaseResponse<>(memberProvider.findEmail(getMemberEmailReq.getPhone()));
         } catch(BaseException e) {
             return new BaseResponse<>(e.getStatus());
+        }
+    }
+
+    // 비밀번호 재설정
+    @ResponseBody
+    @PostMapping("/find/pw")
+    public BaseResponse findPw(@RequestBody PostFindPwReq postFindPwReq) throws BaseException {
+        try {
+            String pw = postFindPwReq.getPw();
+            BaseResponseStatus baseResponseStatus = null;
+            if(pw.length() > 15 || pw.length() < 7){
+                baseResponseStatus = BaseResponseStatus.POST_MEMBER_JOIN_PWLEN;
+            }else if(ValidationRegex.isRegexPw(pw)){
+                baseResponseStatus = BaseResponseStatus.POST_MEMBER_ISREGEX_PW;
+            } else{
+                baseResponseStatus = memberService.changePw(postFindPwReq.getEmail(), pw);
+            }
+            return new BaseResponse<>(baseResponseStatus);
+        }catch (BaseException e){
+            return new BaseResponse<>((e.getStatus()));
         }
     }
 }
