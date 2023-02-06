@@ -9,17 +9,25 @@ import javax.sql.DataSource;
 
 
 import com.umc.i.config.BaseException;
+import com.umc.i.config.BaseResponse;
 import com.umc.i.config.BaseResponseStatus;
+import com.umc.i.src.member.model.get.GetMemRes;
+import com.umc.i.src.member.model.Member;
 import com.umc.i.src.member.model.get.GetMemRes;
 
 import com.umc.i.src.member.model.patch.PatchMemReq;
 import com.umc.i.src.member.model.post.PostAuthNumberReq;
 import com.umc.i.src.member.model.post.PostJoinReq;
+import com.umc.i.src.member.model.post.PostMemblockReq;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+
+import static com.umc.i.config.BaseResponseStatus.POST_MEMBER_WITHDRAW;
+import static com.umc.i.config.BaseResponseStatus.POST_NEMBER_BLOCK_DOUBLE;
 
 @Repository
 @Slf4j
@@ -85,7 +93,6 @@ public class MemberDao {
     //유저 조회
     public GetMemRes getMem(int memIdx) {
         String getMemQuery = "select * from Member where mem_idx = ?";
-        int getMemParams = memIdx;
         return this.jdbcTemplate.queryForObject(getMemQuery,
                 (rs, rowNum) -> new GetMemRes(
                         rs.getString("mem_email"),
@@ -97,7 +104,7 @@ public class MemberDao {
                         rs.getString("mem_address"),
                         rs.getString("mem_address_detail"),
                         rs.getString("mem_profile_url")),
-                getMemParams);
+                memIdx);
     }
     //핸드폰번호 중복 확인
     public int checkPhone(String tel) {
@@ -144,5 +151,62 @@ public class MemberDao {
             postAuthNumberReq.setCreatedAt(rs.getTimestamp("ma_generate_time"));
             return postAuthNumberReq;
         };
+    }
+    //탈퇴하기
+    public void postWithdraw(int memIdx)throws BaseException{
+        try{
+            String selectMemQuery = "select mem_idx, mem_email,mem_phone,mem_nickname from Member where mem_idx = ?";
+            Member member = this.jdbcTemplate.queryForObject(selectMemQuery,
+                    (rs, rowNum) -> new Member(
+                            rs.getInt("mem_idx"),
+                            rs.getString("mem_email"),
+                            rs.getString("mem_phone"),
+                            rs.getString("mem_nickname")
+                    )
+                    , memIdx);
+            String postWithdrawQuery = "insert into Member_withdraw(mem_email,mem_phone,mem_nickname,mw_time) VALUES (?,?,?,now())";
+            this.jdbcTemplate.update(postWithdrawQuery, member.getEmail(), member.getPhone(), member.getNickname());
+
+            String deletMemberQuery = "delete from Member where mem_idx = ?";
+            this.jdbcTemplate.update(deletMemberQuery, memIdx);
+        }catch (EmptyResultDataAccessException e){
+            throw new BaseException(POST_MEMBER_WITHDRAW);
+        }
+    }
+    //사용자 차단하기
+    public void postMemblock(PostMemblockReq postMemblockReq)throws BaseException{
+        String findDoubleQuery = "select count(*) from Member_block where mem_idx = ? and blocked_mem_idx = ?";
+        int result = this.jdbcTemplate.queryForObject(findDoubleQuery,Integer.class,postMemblockReq.getMemIdx(),postMemblockReq.getBlockmemIdx());
+
+        if(result == 0){
+            String postMemblockQuery = "insert into Member_block(mem_idx,blocked_mem_idx,block_time)VALUES(?,?,now())";
+            this.jdbcTemplate.update(postMemblockQuery,postMemblockReq.getMemIdx(),postMemblockReq.getBlockmemIdx());
+        }else{
+            throw new BaseException(POST_NEMBER_BLOCK_DOUBLE);
+        }
+    }
+
+
+    // 이메일 찾기
+    public String findEmail(String phone) throws BaseException{
+        try {
+            String findEmailQuery = "select mem_email from Member where mem_phone = ?";
+            return this.jdbcTemplate.queryForObject(findEmailQuery, String.class, phone);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BaseException(BaseResponseStatus.POST_AUTH_MEMBER_NOT_EXIST);
+        }
+    }
+
+    // 비밀번호 재설정
+    public void changePw(int memIdx, String pw) throws BaseException {
+        String changePwQuery = "update Member set mem_password = ? where mem_idx = ?";
+        this.jdbcTemplate.update(changePwQuery, pw, memIdx);
+    }
+    
+    // 유저 인덱스 조회
+    public int getMemIdx(String email) {
+        String getMemIdxQuery = "select mem_idx from Member where mem_email = ?";
+        return this.jdbcTemplate.queryForObject(getMemIdxQuery, Integer.class, email);
     }
 }

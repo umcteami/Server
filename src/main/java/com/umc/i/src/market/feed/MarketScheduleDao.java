@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import javax.sql.DataSource;
+
 
 @Slf4j
 @Repository
@@ -26,7 +28,7 @@ public class MarketScheduleDao implements MarketScheduleRepository {
 
     @Override
     public void getHitRankView() {
-        String query = "drop view if exists hot_market_feed";
+        String query = "drop view if exists Hot_market_feed";
 
         try {
             jdbcTemplate.update(query);
@@ -35,7 +37,7 @@ public class MarketScheduleDao implements MarketScheduleRepository {
         }
 
         query = "create view Hot_market_feed as\n" +
-                "select *, market_category, co4unt(*) as count\n" +
+                "select *, market_category, count(*) as count\n" +
                 "from Daily_market_feed_hit\n" +
                 "group by market_idx\n" +
                 "order by count DESC";

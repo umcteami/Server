@@ -4,26 +4,21 @@ import static com.umc.i.utils.ValidationRegex.*;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.List;
 
 import javax.mail.MessagingException;
 
-import com.fasterxml.jackson.databind.ser.Serializers;
-import com.umc.i.src.member.model.Member;
 import com.umc.i.src.member.model.get.GetMemRes;
+import com.umc.i.src.member.model.get.GetMemberEmailReq;
 import com.umc.i.src.member.model.patch.PatchMemReq;
-import com.umc.i.src.member.model.post.PostJoinReq;
-import com.umc.i.src.member.model.post.PostJoinRes;
+import com.umc.i.src.member.model.post.*;
 import com.umc.i.utils.ValidationRegex;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.umc.i.config.BaseException;
 import com.umc.i.config.BaseResponse;
 import com.umc.i.config.BaseResponseStatus;
-import com.umc.i.src.member.model.post.PostAuthReq;
-import com.umc.i.src.member.model.post.PostAuthRes;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,9 +26,12 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/member")
 @RequiredArgsConstructor
+@Slf4j
 public class MemberController {
     @Autowired
     private final MemberService memberService;
+    @Autowired
+    private final MemberProvider memberProvider;
 
     //회원가입-clear
     @ResponseBody
@@ -120,7 +118,7 @@ public class MemberController {
     @ResponseBody
     @PostMapping("/join/auth")
     // 본인인증
-    public BaseResponse<PostAuthRes> checkType(@RequestBody PostAuthReq postJoinAuthReq) throws MessagingException, UnsupportedEncodingException {
+    public BaseResponse<PostAuthRes> sendAuth(@RequestBody PostAuthReq postJoinAuthReq) throws MessagingException, UnsupportedEncodingException {
         switch(postJoinAuthReq.getType()) {
             case 1: //메일 인증
                 if(postJoinAuthReq.getAuth() == null) return new BaseResponse<>(BaseResponseStatus.POST_MEMBER_EMPTY_EMAIL);
@@ -144,5 +142,83 @@ public class MemberController {
                 }
         }
         return new BaseResponse<>(BaseResponseStatus.POST_AUTH_INVALID_TYPE);
+    }
+
+
+    @GetMapping("/join/auth")
+    public BaseResponse<PostAuthNumberRes> checkAuthNumber(@RequestBody PostAuthNumberReq postAuthNumberReq) {
+        int authIdx = postAuthNumberReq.getAuthIdx();
+
+        PostAuthNumberReq res = memberService.getSignAuthNumberObject(authIdx);
+
+        if (res == null) {
+            return new BaseResponse<>(BaseResponseStatus.POST_NUMBER_AUTH_FAILED);
+        }
+
+        if (memberService.isExpired(res)) {
+            PostAuthNumberRes postAuthNumberRes = new PostAuthNumberRes(res.getAuthNumber());
+            return new BaseResponse<>(postAuthNumberRes);
+        }
+
+        return new BaseResponse<>(BaseResponseStatus.POST_NUMBER_AUTH_TIME_FAILED);
+    }
+
+    //유저 차단-clear
+    @ResponseBody
+    @PostMapping("/withdraw")
+    public BaseResponse<BaseException> postWithdraw(@RequestPart("memIdx") int memIdx) throws BaseException {
+        try {
+            memberService.postWithdraw(memIdx);
+            return new BaseResponse<>(BaseResponseStatus.SUCCESS);
+        }catch (BaseException e){
+            return new BaseResponse<>(BaseResponseStatus.POST_MEMBER_WITHDRAW);
+        } catch (Exception e){
+            return new BaseResponse<>(BaseResponseStatus.INTERNET_ERROR);
+        }
+    }
+    //유저 탈퇴 - clear
+    @ResponseBody
+    @PostMapping("/block")
+    public BaseResponse<BaseException> postBlock(@RequestBody PostMemblockReq postMemblockReq)throws BaseException{
+        try {
+            memberService.postMemblock(postMemblockReq);
+            return new BaseResponse<>(BaseResponseStatus.SUCCESS);
+        }catch (BaseException e){
+            return new BaseResponse<>(BaseResponseStatus.POST_NEMBER_BLOCK_DOUBLE);
+        }catch (Exception e){
+            return new BaseResponse<>(BaseResponseStatus.INTERNET_ERROR);
+        }
+    }
+
+
+    // 이메일 찾기
+    @ResponseBody
+    @GetMapping("/find/email")
+    public BaseResponse findEmail(@RequestBody GetMemberEmailReq getMemberEmailReq) throws BaseException {
+        try {
+            return new BaseResponse<>(memberProvider.findEmail(getMemberEmailReq.getPhone()));
+        } catch(BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
+    // 비밀번호 재설정
+    @ResponseBody
+    @PostMapping("/find/pw")
+    public BaseResponse findPw(@RequestBody PostFindPwReq postFindPwReq) throws BaseException {
+        try {
+            String pw = postFindPwReq.getPw();
+            BaseResponseStatus baseResponseStatus = null;
+            if(pw.length() > 15 || pw.length() < 7){
+                baseResponseStatus = BaseResponseStatus.POST_MEMBER_JOIN_PWLEN;
+            }else if(ValidationRegex.isRegexPw(pw)){
+                baseResponseStatus = BaseResponseStatus.POST_MEMBER_ISREGEX_PW;
+            } else{
+                baseResponseStatus = memberService.changePw(postFindPwReq.getEmail(), pw);
+            }
+            return new BaseResponse<>(baseResponseStatus);
+        }catch (BaseException e){
+            return new BaseResponse<>((e.getStatus()));
+        }
     }
 }

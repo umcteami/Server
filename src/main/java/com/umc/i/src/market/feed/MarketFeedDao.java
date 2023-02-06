@@ -170,7 +170,7 @@ public class MarketFeedDao implements MarketFeedRepository {
                 "\t\t) f\n" +
                 "\ton e.mem_idx = f.mem_idx\n" +
                 ") g\n" +
-                "join image_url h\n" +
+                "join Image_url h\n" +
                 "on g.market_idx = h.content_idx\n" +
                 "order by h.image_order;";
 
@@ -287,7 +287,7 @@ public class MarketFeedDao implements MarketFeedRepository {
         try {
             List<GetMarketFeedRes> result = jdbcTemplate.query(query,
                     marketFeedByCategoryRowMapper(),
-                    userIdx, category, soldout, page * 9, Constant.FEED_PER_PAGE);
+                    userIdx, category, soldout, page * Constant.FEED_PER_PAGE, Constant.FEED_PER_PAGE);
             return result;
         } catch (Exception e) {
             log.error(e.getMessage());

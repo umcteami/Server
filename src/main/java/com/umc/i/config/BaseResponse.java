@@ -20,7 +20,6 @@ public class BaseResponse<T> {
     private final int code;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private T result;
-    private List list;
 
     // 요청에 성공한 경우
     public BaseResponse(T result) {
@@ -29,18 +28,10 @@ public class BaseResponse<T> {
         this.code = SUCCESS.getCode();
         this.result = result;
     }
-
     public BaseResponse() {
         this.isSuccess = SUCCESS.isSuccess();
         this.message = SUCCESS.getMessage();
         this.code = SUCCESS.getCode();
-    }
-
-    public BaseResponse(List list) {
-        this.isSuccess = SUCCESS.isSuccess();
-        this.message = SUCCESS.getMessage();
-        this.code = SUCCESS.getCode();
-        this.list = list;
     }
 
     // 요청에 실패한 경우
@@ -49,5 +40,6 @@ public class BaseResponse<T> {
         this.message = status.getMessage();
         this.code = status.getCode();
     }
+
 }
 

@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.HashMap;
+
 
 // 프로젝트에서 공통적으로 사용하는 상수들
 public class Constant {
@@ -20,8 +22,9 @@ public class Constant {
     }};
 
     public static List<String> SEARCH_TARGET = Arrays.asList("title", "title_content", "member_nickname");
-
+    
     public static String[] BOOLEANS = {"true", "false", "0", "1"};
+    
     public static int FEED_PER_PAGE = 9;
 }
 
