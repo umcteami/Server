@@ -33,12 +33,14 @@ public class MarketFeedService {
         return marketFeedDao.getFeedByCategory(category, userIdx, soldout, page);
     }
 
-    public List<GetMarketFeedRes> getFeedByMarketIdx(String marketIdx, String memIdx) {
-        return marketFeedDao.getFeedByMarketIdx(marketIdx, memIdx);
+    public GetMarketFeedRes getFeedByMarketIdx(String marketIdx, String memIdx) {
+        return marketFeedDao.getFeedByMarketIdx(marketIdx, memIdx)
+                .filter(f -> f.getMarketIdx() > 0)
+                .orElse(null);
     }
 
-    public void updateMarketFeedHitCount(String marketIdx) {
-        marketFeedDao.updateFeedHitCount(marketIdx);
+    public void updateMarketFeedHitCount(int category, String marketIdx) {
+        marketFeedDao.updateFeedHitCount(category, marketIdx);
     }
 
     public void deleteFeed(String marketIdx) {
@@ -66,4 +68,18 @@ public class MarketFeedService {
     public void postCoverImage(List<String> filesUrlList, String marketIdx) {
         marketFeedDao.postCoverImage(filesUrlList, marketIdx);
     }
+
+    public List<GetMarketFeedRes> getAllFeed(int userIdx, String soldout, int page) {
+        return marketFeedDao.getAllFeed(userIdx, soldout, page);
+    }
+
+    public List<GetMarketFeedRes> getAllHotFeed(int userIdx, String soldout, int page) {
+        return marketFeedDao.getAllHotFeed(userIdx, soldout, page);
+    }
+
+    public List<GetMarketFeedRes> getHotFeedByCategory(String categoryIdx, int userIdx, String soldout, int page) {
+        return marketFeedDao.getHotFeedByCategory(categoryIdx, userIdx, soldout, page);
+    }
+
+
 }

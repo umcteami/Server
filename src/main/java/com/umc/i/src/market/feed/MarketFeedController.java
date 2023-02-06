@@ -13,10 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @RestController
@@ -116,30 +113,69 @@ public class MarketFeedController {
     }
 
     @GetMapping("/market/latest")
-    public BaseResponse<GetMarketFeedRes> getNewsFeed(@RequestParam String category,
-                                                      @RequestParam(defaultValue = "0") String soldout,
-                                                      @RequestParam(defaultValue = "0") int page,
-                                                      @RequestBody GetMarketFeedReq req) throws RuntimeException {
+    public BaseResponse getNewsFeed(@RequestParam(required = false) String category,
+                                    @RequestParam(defaultValue = "0") String soldout,
+                                    @RequestParam(defaultValue = "0") int page,
+                                    @RequestBody GetMarketFeedReq req) throws RuntimeException {
         // query string 값 오류
         HashMap<String, String> marketGoodCategories = Constant.MARKET_GOOD_CATEGORIES;
         String[] booleans = Constant.BOOLEANS;
-        int userIdx = req.getUserIdx();
 
         if (!marketGoodCategories.containsKey(category) || !Arrays.asList(booleans).contains(soldout)) {
-            return new BaseResponse<>(BaseResponseStatus.GET_MARKET_FEED_BY_PARAM_FAILED);
+            return new BaseResponse<>(BaseResponseStatus.MARKET_FEED_BY_CATEGORY_FAILED);
         }
 
-        List<GetMarketFeedRes> feedByCategory = marketFeedService.getFeedByCategory(category, userIdx, soldout, page);
+        int userIdx = req.getUserIdx();
+        String categoryIdx = marketGoodCategories.get(category);
 
-        return new BaseResponse<>(feedByCategory);
+        List<GetMarketFeedRes> feedResList;
+        if (categoryIdx == null) { // category 무관
+            feedResList= marketFeedService.getAllFeed(userIdx, soldout, page);
+        } else { // category 선택
+            feedResList = marketFeedService.getFeedByCategory(categoryIdx, userIdx, soldout, page);
+        }
+
+        return new BaseResponse<>(feedResList);
+    }
+
+    @GetMapping("market/hot")
+    public BaseResponse getHotNewsFeed(@RequestParam(required = false) String category,
+                                       @RequestParam(defaultValue = "0") String soldout,
+                                       @RequestParam(defaultValue = "0") int page,
+                                       @RequestBody GetMarketFeedReq req) throws RuntimeException {
+
+        // query string 값 오류
+        HashMap<String, String> marketGoodCategories = Constant.MARKET_GOOD_CATEGORIES;
+        String[] booleans = Constant.BOOLEANS;
+
+        if (!marketGoodCategories.containsKey(category) || !Arrays.asList(booleans).contains(soldout)) {
+            return new BaseResponse<>(BaseResponseStatus.MARKET_FEED_BY_CATEGORY_FAILED);
+        }
+
+        int userIdx = req.getUserIdx();
+        String categoryIdx = marketGoodCategories.get(category);
+
+        List<GetMarketFeedRes> feedResList;
+        if (categoryIdx == null) {
+            feedResList = marketFeedService.getAllHotFeed(userIdx, soldout, page);
+        } else {
+            feedResList = marketFeedService.getHotFeedByCategory(categoryIdx, userIdx, soldout, page);
+        }
+
+        return new BaseResponse<>(feedResList);
     }
 
     @GetMapping("/market/detail")
-    public BaseResponse<GetMarketFeedRes> getFeedDetail(@RequestParam String marketIdx,
-                                                        @RequestBody MarketFeed feed) {
+    public BaseResponse getFeedDetail(@RequestParam String marketIdx,
+                                      @RequestBody MarketFeed feed) {
 
-        List<GetMarketFeedRes> result = marketFeedService.getFeedByMarketIdx(marketIdx, String.valueOf(feed.getUserIdx()));
-        marketFeedService.updateMarketFeedHitCount(marketIdx);
+        GetMarketFeedRes result = marketFeedService.getFeedByMarketIdx(marketIdx, String.valueOf(feed.getUserIdx()));
+
+        if (result == null) {
+            return new BaseResponse<>(BaseResponseStatus.FEED_NOT_EXIST);
+        }
+
+        marketFeedService.updateMarketFeedHitCount(result.getCategory(), marketIdx);
 
         return new BaseResponse<>(result);
     }
