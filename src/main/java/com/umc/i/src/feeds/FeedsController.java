@@ -173,5 +173,16 @@ public class FeedsController {
             return new BaseResponse<>(BaseResponseStatus.GET_REVIEW_FAIL);
         }
     }
+
+    @ResponseBody
+    @GetMapping("/diary/{diaryIdx}")    // 일기장 상세 조회
+    public BaseResponse getDiary(@PathVariable("diaryIdx") int diaryIdx) throws BaseException {
+        try {
+            return new BaseResponse<>(feedsProvider.getDiary(diaryIdx));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new BaseResponse<>(BaseResponseStatus.GET_REVIEW_FAIL);
+        }
+    }
     
 }

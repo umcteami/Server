@@ -49,6 +49,7 @@ public class FeedsService {
             }
             return new PostFeedsRes(postFeedsReq.getBoardIdx(), feedsIdx);
         } catch (BaseException e) {
+            e.printStackTrace();
             throw new BaseException(e.getStatus());
         }
         

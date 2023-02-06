@@ -40,18 +40,18 @@ public class FeedsDao {
             switch(postFeedsReq.getBoardIdx()) {
                 case 1: //이야기방
                     createFeedsQuery = "insert into Story_feed (board_idx, story_roomType, mem_idx, story_title, story_content, ";
-                    createFeedsQuery += "story_image, story_hit, story_comment_count, story_like_count, story_blame, story_created_at)";
-                    createFeedsQuery += "values (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    createFeedsQuery += "story_image, story_hit, story_blame, story_created_at)";
+                    createFeedsQuery += "values (1, ?, ?, ?, ?, ?, ?, ?, ?)";
                     break;
                 case 2: //일기장
                     createFeedsQuery = "insert into Diary_feed (board_idx, diary_roomType, mem_idx, diary_title, diary_content, ";
-                    createFeedsQuery += "diary_image, diary_hit, diary_comment_count, diary_like_count, diary_blame, diary_created_at)";
-                    createFeedsQuery += "values (2, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    createFeedsQuery += "diary_image, diary_hit, diary_blame, diary_created_at)";
+                    createFeedsQuery += "values (2, ?, ?, ?, ?, ?, ?, ?, ?)";
                     break;
             }
     
             Object[] createFeedsParams = new Object[] {postFeedsReq.getRoomType(), postFeedsReq.getUserIdx(), postFeedsReq.getTitle(),
-                                    postFeedsReq.getContent(), postFeedsReq.getImgCnt(), 0, 0, 0, 0, currentTime};
+                                    postFeedsReq.getContent(), postFeedsReq.getImgCnt(), 0, 0, currentTime};
             this.jdbcTemplate.update(createFeedsQuery, createFeedsParams);  // 게시물 저장
     
             String lastInserIdQuery = "select last_insert_id()"; // 가장 마지막에 삽입된(생성된) id값은 가져온다.
@@ -248,7 +248,7 @@ public class FeedsDao {
 
         return this.jdbcTemplate.query(getAllFeedsQuery, 
         (rs, rowNum) -> new GetAllFeedsRes(
-            1, 
+            2, 
             rs.getInt("diary_roomType"), 
             rs.getInt("diary_idx"), 
             rs.getInt("mem_idx"),
@@ -268,7 +268,7 @@ public class FeedsDao {
 
         return this.jdbcTemplate.query(getAllFeedsQuery, 
         (rs, rowNum) -> new GetAllFeedsRes(
-            1, 
+            2, 
             rs.getInt("diary_roomType"), 
             rs.getInt("diary_idx"), 
             rs.getInt("mem_idx"),
@@ -278,6 +278,31 @@ public class FeedsDao {
             rs.getInt("comment_cnt"),
             rs.getString("diary_created_at")),
             roomType);
+    }
+
+    // 일기장 상세조회
+    public List<Feeds> getDiary(int diaryIdx) {
+        String getFeedQuery = "update Diary_feed set diary_hit = diary_hit + 1";
+        this.jdbcTemplate.update(getFeedQuery);
+
+        getFeedQuery = "select D.diary_idx, diary_roomType, D.mem_idx, mem_nickname, diary_title, diary_content, diary_hit, diary_created_at, ";
+        getFeedQuery += " if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt";
+        getFeedQuery += " from Diary_feed D, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt";
+        getFeedQuery += " where D.diary_idx = ?";
+
+        return this.jdbcTemplate.query(getFeedQuery, 
+        (rs, rowNum) -> new Feeds(
+            2, 
+            rs.getInt("diary_roomType"), 
+            rs.getInt("diary_idx"), 
+            rs.getInt("mem_idx"),
+            rs.getString("mem_nickname"),
+            rs.getString("diary_title"), 
+            rs.getString("diary_content"),
+            rs.getInt("diary_hit"),
+            rs.getInt("comment_cnt"),
+            rs.getString("diary_created_at")),
+            diaryIdx);
     }
     
 }

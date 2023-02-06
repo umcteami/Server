@@ -61,5 +61,21 @@ public class FeedsProvider {
             return new GetFeedRes(feedsDao.getStory(storyIdx), filePath);
 
     }
+
+    // 일기장 상세 조회
+    public GetFeedRes getDiary(int diaryIdx) {
+
+        List<Image> img = feedsDao.getFeedsImage(2, diaryIdx);
+        List<String> filePath = new ArrayList();
+        
+        if(img != null) {   // 이미지가 있으면
+            for(int i = 0; i < img.size(); i++) {
+                filePath.add(uploadImageS3.getS3(img.get(i).getUploadFilePath()));
+            }
+        }
+        
+        return new GetFeedRes(feedsDao.getDiary(diaryIdx), filePath);
+
+}
     
 }
