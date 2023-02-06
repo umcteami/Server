@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -123,6 +124,17 @@ public class FeedsController {
     public BaseResponse getStories() throws BaseException {
         try {
             return new BaseResponse<>(feedsProvider.getAllStories());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new BaseResponse<>(BaseResponseStatus.GET_REVIEW_FAIL);
+        }
+    }
+
+    @ResponseBody
+    @GetMapping("/story/{roomType}")   // 이야기방 카테고리별 조회
+    public BaseResponse getStoryByRoomType(@PathVariable("roomType") int roomType) throws BaseException {
+        try {
+            return new BaseResponse<>(feedsProvider.getStoryByRoomType(roomType));
         } catch (Exception e) {
             e.printStackTrace();
             return new BaseResponse<>(BaseResponseStatus.GET_REVIEW_FAIL);

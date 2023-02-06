@@ -24,5 +24,10 @@ public class FeedsProvider {
     public List<GetAllFeedsRes> getAllStories() {
         return feedsDao.getAllStories();
     }
+
+    // 이야기방 카테고리별 조회
+    public List<GetAllFeedsRes> getStoryByRoomType(int roomType) {
+        return feedsDao.getStoryRoomType(roomType);
+    }
     
 }

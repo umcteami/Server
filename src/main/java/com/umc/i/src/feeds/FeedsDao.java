@@ -191,4 +191,25 @@ public class FeedsDao {
             rs.getInt("comment_cnt"),
             rs.getString("story_created_at")));
     }
+    
+    // 이야기방 카테고리별 조회
+    public List<GetAllFeedsRes> getStoryRoomType(int roomType) {
+        String getAllFeedsQuery = "select S.story_idx, story_roomType, S.mem_idx, mem_nickname, story_title, story_hit, story_created_at, ";
+        getAllFeedsQuery += " if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt";
+        getAllFeedsQuery += " from Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt";
+        getAllFeedsQuery += " where story_roomType = ? && S.mem_idx = M.mem_idx group by story_idx order by story_idx desc limit 20 offset 0";
+
+        return this.jdbcTemplate.query(getAllFeedsQuery, 
+        (rs, rowNum) -> new GetAllFeedsRes(
+            1, 
+            rs.getInt("story_roomType"), 
+            rs.getInt("story_idx"), 
+            rs.getInt("mem_idx"),
+            rs.getString("mem_nickname"),
+            rs.getString("story_title"), 
+            rs.getInt("story_hit"),
+            rs.getInt("comment_cnt"),
+            rs.getString("story_created_at")),
+            roomType);
+    }
 }
