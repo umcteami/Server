@@ -42,7 +42,7 @@ public class SearchDao implements SearchRepository {
                 "        limit ?, ? ) m\n" +
                 "\tleft join (\n" +
                 "\t\tselect market_idx, mem_idx22\n" +
-                "        from market_like\n" +
+                "        from Market_like\n" +
                 "        where mem_idx22 = ?\n" +
                 "\t) ml\n" +
                 "\ton m.market_idx = ml.market_idx\n" +
@@ -90,7 +90,7 @@ public class SearchDao implements SearchRepository {
                 "        limit ?, ? ) m\n" +
                 "\tleft join (\n" +
                 "\t\tselect market_idx, mem_idx22\n" +
-                "        from market_like\n" +
+                "        from Market_like\n" +
                 "        where mem_idx22 = ?\n" +
                 "\t) ml\n" +
                 "\ton m.market_idx = ml.market_idx\n" +
@@ -136,7 +136,7 @@ public class SearchDao implements SearchRepository {
                 "        limit ?, ? ) m\n" +
                 "\tleft join (\n" +
                 "\t\tselect market_idx, mem_idx22\n" +
-                "        from market_like\n" +
+                "        from Market_like\n" +
                 "        where mem_idx22 = ?\n" +
                 "\t) ml\n" +
                 "\ton m.market_idx = ml.market_idx\n" +
@@ -183,7 +183,7 @@ public class SearchDao implements SearchRepository {
                 "        limit ?, ? ) m\n" +
                 "\tleft join (\n" +
                 "\t\tselect market_idx, mem_idx22\n" +
-                "        from market_like\n" +
+                "        from Market_like\n" +
                 "        where mem_idx22 = ?\n" +
                 "\t) ml\n" +
                 "\ton m.market_idx = ml.market_idx\n" +
@@ -231,7 +231,7 @@ public class SearchDao implements SearchRepository {
                 "        limit ?, ? ) m\n" +
                 "\tleft join (\n" +
                 "\t\tselect market_idx, mem_idx22\n" +
-                "        from market_like\n" +
+                "        from Market_like\n" +
                 "        where mem_idx22 = ?\n" +
                 "\t) ml\n" +
                 "\ton m.market_idx = ml.market_idx\n" +
@@ -280,7 +280,7 @@ public class SearchDao implements SearchRepository {
                 "        limit ?, ? ) m\n" +
                 "\tleft join (\n" +
                 "\t\tselect market_idx, mem_idx22\n" +
-                "        from market_like\n" +
+                "        from Market_like\n" +
                 "        where mem_idx22 = ?\n" +
                 "\t) ml\n" +
                 "\ton m.market_idx = ml.market_idx\n" +
