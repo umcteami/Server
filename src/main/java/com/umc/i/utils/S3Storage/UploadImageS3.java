@@ -26,9 +26,8 @@ public class UploadImageS3 {
     @Autowired
     private final AmazonS3 amazonS3;
 
-    // @Value("${aws.s3.image.bucket:i-image}")
-    // private String bucket;
-    private String bucket = "i-image";
+    @Value("${aws.s3.image.bucket:i-image}")
+    private String bucket;
 
     // 업로드
     public String upload(MultipartFile uploadFile, String filePath, String saveFileName) throws AmazonServiceException, SdkClientException, IOException {
@@ -46,7 +45,6 @@ public class UploadImageS3 {
         
         return fileName;
     }
-
     // 조회
     public String getS3(String fileName) {
         return amazonS3.getUrl(bucket, fileName).toString();

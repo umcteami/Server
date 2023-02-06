@@ -28,10 +28,15 @@ import com.umc.i.src.feeds.model.post.PostFeedsRes;
 
 import lombok.RequiredArgsConstructor;
 
+import com.umc.i.src.feeds.model.post.PostBlameReq;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.*;
+
 
 @RestController
 @RequestMapping("/feeds")
 @RequiredArgsConstructor
+@Slf4j
 public class FeedsController {
     @Autowired
     private final FeedsService feedsService;
@@ -229,5 +234,19 @@ public class FeedsController {
             return new BaseResponse<>(BaseResponseStatus.GET_REVIEW_FAIL);
         }
     }
-     
+    
+    //게시글 신고하기 - clear
+    @ResponseBody
+    @PostMapping("/blame")
+    public BaseResponse<BaseException> postBlame(@RequestBody PostBlameReq postBlameReq){
+        try {
+            feedsService.postBlame(postBlameReq);
+            return new BaseResponse<>(BaseResponseStatus.SUCCESS);
+        }catch (BaseException e){
+            return new BaseResponse<>(BaseResponseStatus.POST_FEED_BLAME_DOUBLE);
+        } catch (Exception e){
+            e.printStackTrace();
+            return new BaseResponse<>(BaseResponseStatus.INTERNET_ERROR);
+        }
+    }
 }

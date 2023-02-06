@@ -19,6 +19,13 @@ import com.umc.i.src.feeds.model.patch.PatchFeedsReq;
 import com.umc.i.src.feeds.model.post.PostCommentReq;
 import com.umc.i.src.feeds.model.post.PostFeedsReq;
 import com.umc.i.utils.S3Storage.Image;
+import com.umc.i.src.feeds.model.post.PostBlameReq;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import javax.sql.DataSource;
 
 @Repository
 public class FeedsDao {
@@ -487,5 +494,17 @@ public class FeedsDao {
             rs.getInt("comment_cnt"),
             rs.getString("createAt")
         ));
+
+    //게시글 신고하기
+    public int postBlame(PostBlameReq postBlameReq) {
+        String doubleProtectQuery = "select count(*) from Blame where mem_idx = ? and target_type = ? and target_idx = ?";
+        int doubleProtect = this.jdbcTemplate.queryForObject(doubleProtectQuery,int.class,postBlameReq.getMemIdx(),postBlameReq.getBoardIdx(),postBlameReq.getComuIdx());
+
+        if(doubleProtect == 0){
+            String postBlameQuery = "insert into Blame(mem_idx,target_type,target_idx,blame_time)VALUES(?,?,?,now())";
+            this.jdbcTemplate.update(postBlameQuery,postBlameReq.getMemIdx(),postBlameReq.getBoardIdx(),postBlameReq.getComuIdx());
+            return doubleProtect;
+        }
+        return doubleProtect;
     }
 }
