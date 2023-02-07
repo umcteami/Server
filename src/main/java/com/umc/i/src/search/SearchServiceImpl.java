@@ -1,6 +1,8 @@
 package com.umc.i.src.search;
 
+import com.umc.i.src.feeds.model.get.GetAllFeedsRes;
 import com.umc.i.src.market.feed.model.GetMarketFeedRes;
+import com.umc.i.src.review.model.get.GetAllReviewsRes;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -66,5 +68,40 @@ public class SearchServiceImpl implements SearchService {
                 categoryIdx,
                 search_keyword,
                 page);
+    }
+
+    @Override
+    public List<GetAllReviewsRes> searchAllReviewFeedByKeywordByContentInLatest(String search_keyword, int page) {
+        return searchDao.searchAllReviewFeedByKeywordByContentInLatest(search_keyword, page);
+    }
+
+    @Override
+    public List<GetAllFeedsRes> searchAllDairyFeedByKeywordByTitleInLatest(String search_keyword, int page) {
+        return searchDao.searchAllDairyFeedByKeywordByTitleInLatest(search_keyword, page);
+    }
+
+    @Override
+    public List<GetAllFeedsRes> searchCategoryDairyFeedByKeywordByTitleInLatest(String categoryIdx, String search_keyword, int page) {
+        return searchDao.searchCategoryDairyFeedByKeywordByTitleInLatest(categoryIdx, search_keyword, page);
+    }
+
+    @Override
+    public List<GetAllFeedsRes> searchAllDairyFeedByKeywordByTitleContentInLatest(String search_keyword, int page) {
+        return searchDao.searchAllDairyFeedByKeywordByTitleContentInLatest(search_keyword, page);
+    }
+
+    @Override
+    public List<GetAllFeedsRes> searchCategoryDairyFeedByKeywordByTitleContentInLatest(String categoryIdx, String search_keyword, int page) {
+        return searchDao.searchCategoryDairyFeedByKeywordByTitleContentInLatest(categoryIdx, search_keyword, page);
+    }
+
+    @Override
+    public List<GetAllFeedsRes> searchAllDairyFeedByKeywordByMemberNicknameInLatest(String search_keyword, int page) {
+        return searchDao.searchAllDairyFeedByKeywordByMemberNicknameInLatest(search_keyword, page);
+    }
+
+    @Override
+    public List<GetAllFeedsRes> searchCategoryDairyFeedByKeywordByMemberNicknameInLatest(String categoryIdx, String search_keyword, int page) {
+        return searchDao.searchCategoryDairyFeedByKeywordByMemberNicknameInLatest(categoryIdx, search_keyword, page);
     }
 }

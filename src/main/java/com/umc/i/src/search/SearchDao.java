@@ -1,8 +1,10 @@
 package com.umc.i.src.search;
 
 import com.umc.i.config.Constant;
+import com.umc.i.src.feeds.model.get.GetAllFeedsRes;
 import com.umc.i.src.market.feed.model.GetMarketFeedRes;
 import com.umc.i.src.member.model.Member;
+import com.umc.i.src.review.model.get.GetAllReviewsRes;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -301,6 +303,117 @@ public class SearchDao implements SearchRepository {
         return null;
     }
 
+    @Override
+    public List<GetAllReviewsRes> searchAllReviewFeedByKeywordByContentInLatest(String search_keyword, int page) {
+        String query = "select review_idx, sell_mem_idx, A.mem_nickname as seller_nick, buy_mem_idx, B.mem_nickname as buyer_nick, \n" +
+                "I.Market_review.review_goods, review_content, review_hit, review_created_at \n" +
+                "from Market_review, Member A, Member B\n" +
+                "where Market_review.sell_mem_idx = A.mem_idx && Market_review.buy_mem_idx = B.mem_idx and review_content like \"%" + search_keyword + "%\"\n" +
+                "order by review_created_at desc limit ?, ?;";
+
+        try {
+            return jdbcTemplate.query(query,
+                    (rs, rowNum) -> new GetAllReviewsRes(
+                            rs.getInt("review_idx"),
+                            rs.getInt("buy_mem_idx"),
+                            rs.getInt("sell_mem_idx"),
+                            rs.getString("buyer_nick"),
+                            rs.getString("seller_nick"),
+                            rs.getString("review_goods"),
+                            rs.getInt("review_hit"),
+                            rs.getString("review_created_at")),
+                    page * Constant.FEED_PER_PAGE, Constant.FEED_PER_PAGE);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+
+        return null;
+    }
+
+    @Override
+    public List<GetAllFeedsRes> searchAllDairyFeedByKeywordByTitleInLatest(String search_keyword, int page) {
+        String query = "select D.diary_idx, diary_roomType, D.mem_idx, mem_nickname, diary_title, diary_hit, diary_created_at, \n" +
+                "if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt\n" +
+                "from Diary_feed D, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt\n" +
+                "where diary_title like \"%" + search_keyword + "%\" and diary_blame < 10  group by diary_idx order by diary_idx desc limit ?, ?;";
+        try {
+            return jdbcTemplate.query(query, diaryFeedRowMapper(), page * Constant.FEED_PER_PAGE, Constant.FEED_PER_PAGE);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        return null;
+    }
+
+    @Override
+    public List<GetAllFeedsRes> searchCategoryDairyFeedByKeywordByTitleInLatest(String categoryIdx, String search_keyword, int page) {
+        String query = "select D.diary_idx, diary_roomType, D.mem_idx, mem_nickname, diary_title, diary_hit, diary_created_at, \n" +
+                "if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt\n" +
+                "from Diary_feed D, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt\n" +
+                "where diary_roomType = ? and diary_title like \"%" + search_keyword + "%\" and diary_blame < 10  group by diary_idx order by diary_idx desc limit ?, ?;";
+        try {
+            return jdbcTemplate.query(query, diaryFeedRowMapper(), categoryIdx, page * Constant.FEED_PER_PAGE, Constant.FEED_PER_PAGE);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        return null;
+    }
+
+    @Override
+    public List<GetAllFeedsRes> searchAllDairyFeedByKeywordByTitleContentInLatest(String search_keyword, int page) {
+        String query = "select D.diary_idx, diary_roomType, D.mem_idx, mem_nickname, diary_title, diary_hit, diary_created_at, \n" +
+                "if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt\n" +
+                "from Diary_feed D, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt\n" +
+                "where (diary_title like \"%"+ search_keyword +"%\" or diary_content like \"%" + search_keyword +"%\") and diary_blame < 10  group by diary_idx order by diary_idx desc limit ?, ?;";
+        try {
+            return jdbcTemplate.query(query, diaryFeedRowMapper(), page * Constant.FEED_PER_PAGE, Constant.FEED_PER_PAGE);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        return null;
+    }
+
+    @Override
+    public List<GetAllFeedsRes> searchCategoryDairyFeedByKeywordByTitleContentInLatest(String categoryIdx, String search_keyword, int page) {
+        String query = "select D.diary_idx, diary_roomType, D.mem_idx, mem_nickname, diary_title, diary_hit, diary_created_at, \n" +
+                "if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt\n" +
+                "from Diary_feed D, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt\n" +
+                "where diary_roomType = ? and (diary_title like \"%" + search_keyword + "%\" or diary_content like \"%" + search_keyword + "%\") and diary_blame < 10  group by diary_idx order by diary_idx desc limit ?, ?;";
+        try {
+            return jdbcTemplate.query(query, diaryFeedRowMapper(), categoryIdx, page * Constant.FEED_PER_PAGE, Constant.FEED_PER_PAGE);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        return null;
+    }
+
+    @Override
+    public List<GetAllFeedsRes> searchAllDairyFeedByKeywordByMemberNicknameInLatest(String search_keyword, int page) {
+        String query = "select D.diary_idx, diary_roomType, D.mem_idx, mem_nickname, diary_title, diary_hit, diary_created_at, \n" +
+                "if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt\n" +
+                "from Diary_feed D, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt\n" +
+                "where mem_nickname like \"%" + search_keyword + "%\" and diary_blame < 10  group by diary_idx order by diary_idx desc limit ?, ?;";
+        try {
+            return jdbcTemplate.query(query, diaryFeedRowMapper(), page * Constant.FEED_PER_PAGE, Constant.FEED_PER_PAGE);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        return null;
+    }
+
+    @Override
+    public List<GetAllFeedsRes> searchCategoryDairyFeedByKeywordByMemberNicknameInLatest(String categoryIdx, String search_keyword, int page) {
+        String query = "select D.diary_idx, diary_roomType, D.mem_idx, mem_nickname, diary_title, diary_hit, diary_created_at, \n" +
+                "if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt\n" +
+                "from Diary_feed D, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt\n" +
+                "where diary_roomType = ? and mem_nickname like \"%" + search_keyword + "%\" and diary_blame < 10  group by diary_idx order by diary_idx desc limit ?, ?;";
+        try {
+            return jdbcTemplate.query(query, diaryFeedRowMapper(), categoryIdx, page * Constant.FEED_PER_PAGE, Constant.FEED_PER_PAGE);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        return null;
+    }
+
     private Integer findMemberNickNameByMemberIdx(String userNickname) {
         String query = "select mem_idx from Member where mem_nickname = ?";
 
@@ -337,6 +450,21 @@ public class SearchDao implements SearchRepository {
             marketFeed.setCreatedAt(rs.getTimestamp("market_created_at"));
             marketFeed.setUserLiked(rs.getBoolean("mem_liked"));
             return marketFeed;
+        };
+    }
+
+    private RowMapper<GetAllFeedsRes> diaryFeedRowMapper() {
+        return (rs, rowNum) -> {
+            GetAllFeedsRes res = new GetAllFeedsRes();
+            res.setBoardType(rs.getInt("diary_roomType"));
+            res.setFeedIdx(rs.getInt("diary_idx"));
+            res.setMemIdx(rs.getInt("mem_idx"));
+            res.setMemNick(rs.getString("mem_nickname"));
+            res.setTitle(rs.getString("diary_title"));
+            res.setHit(rs.getInt("diary_hit"));
+            res.setCommentCnt(rs.getInt("comment_cnt"));
+            res.setCreateAt(rs.getString("diary_created_at"));
+            return res;
         };
     }
 }
