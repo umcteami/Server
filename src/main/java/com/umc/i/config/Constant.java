@@ -21,6 +21,12 @@ public class Constant {
         put(null, null);
     }};
 
+    public static HashMap<String, String> DAIRY_CATEGORIES = new HashMap<>(){{
+        put("nurse", "1");
+        put("rainbow", "2");
+        put(null, null);
+    }};
+
     public static List<String> SEARCH_TARGET = Arrays.asList("title", "title_content", "member_nickname");
     
     public static String[] BOOLEANS = {"true", "false", "0", "1"};
