@@ -150,7 +150,7 @@ public class ReviewDao {
     // 장터후기 전체 조회
     public List<GetAllReviewsRes> getAllReviews() {
         String getAllReviewQuery = "select review_idx, sell_mem_idx, A.mem_nickname as seller_nick, buy_mem_idx, B.mem_nickname as buyer_nick, ";
-        getAllReviewQuery += " I.Market_review.review_goods, review_content, review_hit, review_created_at ";
+        getAllReviewQuery += " I.Market_review.review_goods, review_content, review_hit, review_created_at, review_image ";
         getAllReviewQuery += " from Market_review, Member A, Member B";
         getAllReviewQuery += " where Market_review.sell_mem_idx = A.mem_idx && Market_review.buy_mem_idx = B.mem_idx";
         getAllReviewQuery += " order by review_created_at desc limit 20 offset 0";
@@ -164,6 +164,7 @@ public class ReviewDao {
             rs.getString("seller_nick"),
             rs.getString("review_goods"),
             rs.getInt("review_hit"),
-            rs.getString("review_created_at")));
+            rs.getString("review_created_at"),
+            rs.getString("review_image")));
     }
 }
