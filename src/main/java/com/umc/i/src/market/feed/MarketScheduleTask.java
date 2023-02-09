@@ -12,12 +12,12 @@ public class MarketScheduleTask {
 
     private final MarketScheduleRepository marketScheduleRepository;
 
-    @Scheduled(cron = "* * 0/12 * * *")
+    @Scheduled(cron = "0 * 0/12 * * ?")
     public void resetHitCountTable() {
         marketScheduleRepository.resetHitCountTable();
     }
 
-    @Scheduled(cron = "* 5 0/12 * * *")
+    @Scheduled(cron = "0 5 3/12 * * ?")
     public void getHitRankView() {
         marketScheduleRepository.getHitRankView();
     }

@@ -122,7 +122,7 @@ public class MarketFeedController {
         String[] booleans = Constant.BOOLEANS;
 
         if (!marketGoodCategories.containsKey(category) || !Arrays.asList(booleans).contains(soldout)) {
-            return new BaseResponse<>(BaseResponseStatus.MARKET_FEED_BY_CATEGORY_FAILED);
+            return new BaseResponse<>(BaseResponseStatus.FEED_BY_CATEGORY_FAILED);
         }
 
         int userIdx = req.getUserIdx();
@@ -149,7 +149,7 @@ public class MarketFeedController {
         String[] booleans = Constant.BOOLEANS;
 
         if (!marketGoodCategories.containsKey(category) || !Arrays.asList(booleans).contains(soldout)) {
-            return new BaseResponse<>(BaseResponseStatus.MARKET_FEED_BY_CATEGORY_FAILED);
+            return new BaseResponse<>(BaseResponseStatus.FEED_BY_CATEGORY_FAILED);
         }
 
         int userIdx = req.getUserIdx();
