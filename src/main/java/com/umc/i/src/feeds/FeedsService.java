@@ -40,8 +40,8 @@ public class FeedsService {
     public PostFeedsRes writeFeeds(PostFeedsReq postFeedsReq, List<MultipartFile> file) throws BaseException {
         try {
             int feedsIdx;
-            if(postFeedsReq.getImgCnt() == 0) { //이미지 업로드를 안할 경우
-                feedsIdx = feedsDao.createFeeds(postFeedsReq);
+            if(file.get(0).isEmpty()) { //이미지 업로드를 안할 경우
+                feedsIdx = feedsDao.createFeeds(postFeedsReq, null);
             }
             else {
                 List<Image> img = new ArrayList<Image>();
@@ -50,13 +50,12 @@ public class FeedsService {
                 for(int i = 0; i < file.size(); i++) {
                     img.add(createAndUploadFile(file.get(i), fileName, postFeedsReq.getBoardIdx(), i));
                 }
-                feedsIdx = feedsDao.createFeeds(postFeedsReq);
-                feedsDao.createFeedsImage(img, feedsIdx);
+                feedsIdx = feedsDao.createFeeds(postFeedsReq, img);
             }
             return new PostFeedsRes(postFeedsReq.getBoardIdx(), feedsIdx);
         } catch (BaseException e) {
             e.printStackTrace();
-            throw new BaseException(e.getStatus());
+            throw e;
         }
         
         
@@ -70,7 +69,7 @@ public class FeedsService {
         try {
             //파일 업로드
             String saveFilePath = uploadImageS3.upload(mf, filePath, saveFileName);
-            return new Image(originalFilename, saveFilePath, category, order);
+            return new Image(originalFilename, uploadImageS3.getS3(saveFilePath), category, order);
         } catch (IOException e) {
             // 파일 업로드 오류
             e.printStackTrace();

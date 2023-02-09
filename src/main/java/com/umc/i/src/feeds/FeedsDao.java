@@ -31,33 +31,40 @@ public class FeedsDao {
     }
 
     // 이야기방, 일기장 게시글 저장
-    public int createFeeds(PostFeedsReq postFeedsReq) throws BaseException{
-        LocalDateTime time = LocalDateTime.now();
-        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        String currentTime = time.format(timeFormatter);
-
+    public int createFeeds(PostFeedsReq postFeedsReq, List<Image> img) throws BaseException{
         String createFeedsQuery = null;
+        int feedsIdx;
 
         try {
             switch(postFeedsReq.getBoardIdx()) {
                 case 1: //이야기방
                     createFeedsQuery = "insert into Story_feed (board_idx, story_roomType, mem_idx, story_title, story_content, ";
-                    createFeedsQuery += "story_image, story_hit, story_blame, story_created_at)";
-                    createFeedsQuery += "values (1, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    createFeedsQuery += "story_image, story_hit, story_blame)";
+                    createFeedsQuery += "values (1, ?, ?, ?, ?, ?, ?, ?)";
                     break;
                 case 2: //일기장
                     createFeedsQuery = "insert into Diary_feed (board_idx, diary_roomType, mem_idx, diary_title, diary_content, ";
-                    createFeedsQuery += "diary_image, diary_hit, diary_blame, diary_created_at)";
-                    createFeedsQuery += "values (2, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    createFeedsQuery += "diary_image, diary_hit, diary_blame)";
+                    createFeedsQuery += "values (2, ?, ?, ?, ?, ?, ?, ?)";
                     break;
             }
-    
-            Object[] createFeedsParams = new Object[] {postFeedsReq.getRoomType(), postFeedsReq.getUserIdx(), postFeedsReq.getTitle(),
-                                    postFeedsReq.getContent(), postFeedsReq.getImgCnt(), 0, 0, currentTime};
-            this.jdbcTemplate.update(createFeedsQuery, createFeedsParams);  // 게시물 저장
-    
-            String lastInserIdQuery = "select last_insert_id()"; // 가장 마지막에 삽입된(생성된) id값은 가져온다.
-            int feedsIdx = this.jdbcTemplate.queryForObject(lastInserIdQuery, int.class);
+
+            if(img == null) {
+                Object[] createFeedsParams = new Object[] {postFeedsReq.getRoomType(), postFeedsReq.getUserIdx(), postFeedsReq.getTitle(),
+                    postFeedsReq.getContent(), null, 0, 0};
+                this.jdbcTemplate.update(createFeedsQuery, createFeedsParams);  // 게시물 저장  
+
+                String lastInserIdQuery = "select last_insert_id()"; // 가장 마지막에 삽입된(생성된) id값은 가져온다.
+                feedsIdx = this.jdbcTemplate.queryForObject(lastInserIdQuery, int.class);
+            } else {
+                Object[] createFeedsParams = new Object[] {postFeedsReq.getRoomType(), postFeedsReq.getUserIdx(), postFeedsReq.getTitle(),
+                    postFeedsReq.getContent(), img.get(0).getUploadFilePath(), 0, 0};
+                this.jdbcTemplate.update(createFeedsQuery, createFeedsParams);  // 게시물 저장  
+
+                String lastInserIdQuery = "select last_insert_id()"; // 가장 마지막에 삽입된(생성된) id값은 가져온다.
+                feedsIdx = this.jdbcTemplate.queryForObject(lastInserIdQuery, int.class);
+                createFeedsImage(img, feedsIdx);
+            }
             
             return feedsIdx;
         } catch (Exception e) {

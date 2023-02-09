@@ -45,38 +45,25 @@ public class FeedsController {
 
     @ResponseBody
     @PostMapping("/write")     // 이야기방, 일기장 게시글 작성
-    public BaseResponse<PostFeedsRes> createFeeds(@RequestBody PostFeedsReq postFeedsReq) throws BaseException {
-        switch(postFeedsReq.getBoardIdx()) {
-            case 1: //이야기방
-                if(postFeedsReq.getRoomType() > 3) 
-                    return new BaseResponse<>(BaseResponseStatus.POST_FEEDS_INVALID_TYPE);
-                return new BaseResponse<>(feedsService.writeFeeds(postFeedsReq, null));
-            case 2: //일기장
-                if(postFeedsReq.getRoomType() > 2) 
-                    return new BaseResponse<>(BaseResponseStatus.POST_FEEDS_INVALID_TYPE);
-                return new BaseResponse<>(feedsService.writeFeeds(postFeedsReq, null));
-        }
-
-        return new BaseResponse<>(BaseResponseStatus.POST_FEEDS_INVALID_TYPE);
-    }
-
-    @ResponseBody
-    @PostMapping("/write/img")     // 이야기방, 일기장 게시글 작성
     public BaseResponse<PostFeedsRes> createFeedsWithImg(@RequestPart("request") PostFeedsReq postFeedsReq, 
                         @RequestPart("img") List<MultipartFile> file) throws BaseException {
-        switch(postFeedsReq.getBoardIdx()) {
-            case 1: //이야기방
-                if(postFeedsReq.getRoomType() > 3) 
-                    return new BaseResponse<>(BaseResponseStatus.POST_FEEDS_INVALID_TYPE);
-                return new BaseResponse<>(feedsService.writeFeeds(postFeedsReq, file));
-            case 2: //일기장
-                if(postFeedsReq.getRoomType() > 2) 
-                    return new BaseResponse<>(BaseResponseStatus.POST_FEEDS_INVALID_TYPE);
-                return new BaseResponse<>(feedsService.writeFeeds(postFeedsReq, file));
-
+        try {
+            switch(postFeedsReq.getBoardIdx()) {
+                case 1: //이야기방
+                    if(postFeedsReq.getRoomType() > 3) 
+                        return new BaseResponse<>(BaseResponseStatus.POST_FEEDS_INVALID_TYPE);
+                    return new BaseResponse<>(feedsService.writeFeeds(postFeedsReq, file));
+                case 2: //일기장
+                    if(postFeedsReq.getRoomType() > 2) 
+                        return new BaseResponse<>(BaseResponseStatus.POST_FEEDS_INVALID_TYPE);
+                    return new BaseResponse<>(feedsService.writeFeeds(postFeedsReq, file));
+    
+            }
+            return new BaseResponse<>(BaseResponseStatus.POST_FEEDS_INVALID_TYPE);
+        } catch (BaseException e) {
+            return new BaseResponse<> (e.getStatus());
         }
-
-        return new BaseResponse<>(BaseResponseStatus.POST_FEEDS_INVALID_TYPE);
+        
     }
 
 
