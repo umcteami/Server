@@ -79,18 +79,18 @@ public enum BaseResponseStatus {
     GET_WRITE_FEED_EMPTY(false,2025,"조회 대상 없음"),
     GET_WRITE_FEED_TYPERROR(false,2026,"path 오류"),
 
-
-
-
-
-    FEED_NOT_EXIST(false, 2112, "게시물이 존재하지 않음"),
-
+    // market
     GET_MARKET_FEED_BY_PARAM_FAILED(false, 2100, "나눔 거래 게시물 조회 카테고리 설정 오류"),
-
     FEED_UNAUTHORIZED(false, 2111, "게시물 수정 및 삭제 권한 없음"),
+    
     //chatting
-    CHATTING_BLAME_NOTABLE(false,2050,"차단 당했습니다.");
+    CHATTING_BLAME_NOTABLE(false,2050,"차단 당했습니다."),
 
+    // search
+    SEARCH_KEYWORD_NULL_EXCEPTION(false, 2112, "검색 키워드 오류"),
+    MARKET_FEED_BY_CATEGORY_FAILED(false, 2113, "존재하지 않는 카테고리"),
+    FEED_NOT_EXIST(false, 2114, "존재하지 않는 게시물"),
+    SEARCH_TARGET_INVALID(false, 2115, "지원하지 않는 검색 방식"),;
 
     private final boolean isSuccess;
     private final int code;

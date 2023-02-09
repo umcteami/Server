@@ -21,13 +21,6 @@ import com.umc.i.src.feeds.model.post.PostFeedsReq;
 import com.umc.i.utils.S3Storage.Image;
 import com.umc.i.src.feeds.model.post.PostBlameReq;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.RequestMapping;
-
-import com.umc.i.src.feeds.model.post.PostBlameReq;
-import javax.sql.DataSource;
-
 @Repository
 public class FeedsDao {
     private JdbcTemplate jdbcTemplate;
@@ -495,6 +488,7 @@ public class FeedsDao {
             rs.getInt("comment_cnt"),
             rs.getString("createAt")
         ));
+    }
 
     //게시글 신고하기
     public int postBlame(PostBlameReq postBlameReq) {

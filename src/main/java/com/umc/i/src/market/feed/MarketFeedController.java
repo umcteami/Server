@@ -122,7 +122,7 @@ public class MarketFeedController {
         String[] booleans = Constant.BOOLEANS;
 
         if (!marketGoodCategories.containsKey(category) || !Arrays.asList(booleans).contains(soldout)) {
-            return new BaseResponse<>(BaseResponseStatus.GET_MARKET_FEED_BY_PARAM_FAILED);
+            return new BaseResponse<>(BaseResponseStatus.MARKET_FEED_BY_CATEGORY_FAILED);
         }
 
         int userIdx = req.getUserIdx();
@@ -149,16 +149,17 @@ public class MarketFeedController {
         String[] booleans = Constant.BOOLEANS;
 
         if (!marketGoodCategories.containsKey(category) || !Arrays.asList(booleans).contains(soldout)) {
-            return new BaseResponse<>(BaseResponseStatus.GET_MARKET_FEED_BY_PARAM_FAILED);
+            return new BaseResponse<>(BaseResponseStatus.MARKET_FEED_BY_CATEGORY_FAILED);
         }
 
         int userIdx = req.getUserIdx();
         String categoryIdx = marketGoodCategories.get(category);
+        log.info("categoryIdx={}", categoryIdx);
 
         List<GetMarketFeedRes> feedResList;
-        if (categoryIdx == null) {
-            feedResList = marketFeedService.getAllHotFeed(userIdx, soldout, page);
-        } else {
+        if (categoryIdx == null) { // category 무관
+            feedResList= marketFeedService.getAllHotFeed(userIdx, soldout, page);
+        } else { // category 선택
             feedResList = marketFeedService.getHotFeedByCategory(categoryIdx, userIdx, soldout, page);
         }
 
@@ -181,9 +182,10 @@ public class MarketFeedController {
     }
 
     @GetMapping("/market/list")
-    public BaseResponse getFeedByUserIdx(@RequestParam int userIdx) {
+    public BaseResponse getFeedByUserIdx(@RequestParam int userIdx,
+                                         @RequestParam(defaultValue = "0") int page) {
 
-        List<GetMarketFeedRes> result = marketFeedService.getFeedByUserIdx(userIdx);
+        List<GetMarketFeedRes> result = marketFeedService.getFeedByUserIdx(userIdx, page);
 
         return new BaseResponse<>(result);
     }
