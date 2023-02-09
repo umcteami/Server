@@ -129,50 +129,51 @@ public class MarketFeedDao implements MarketFeedRepository {
 
     @Override
     public Optional<GetMarketFeedRes> getFeedByMarketIdx(String marketIdx, String memIdx) {
-        String query = "select g.*, group_concat(h.image_url) as image_url\n" +
-                "from (\n" +
-                "\tselect e.*, f.mem_nickname\n" +
-                "\tfrom (\n" +
-                "\t\tselect c.*, d.market_like_count\n" +
-                "\t\tfrom (\n" +
-                "\t\t\tselect \n" +
-                "\t\t\t\ta.market_idx, \n" +
-                "\t\t\t\ta.mem_idx, \n" +
-                "\t\t\t\ta.market_group, \n" +
-                "\t\t\t\ta.market_title, \n" +
-                "\t\t\t\ta.market_content, \n" +
-                "\t\t\t\ta.market_soldout, \n" +
-                "\t\t\t\ta.market_price, \n" +
-                "\t\t\t\ta.market_image, \n" +
-                "\t\t\t\ta.market_hit, \n" +
-                "\t\t\t\tIF (b.mem_idx22 is null, false, true) as mem_liked, \n" +
-                "\t\t\t\ta.market_created_at \n" +
-                "\t\t\tfrom Market a\n" +
-                "\t\t\tleft join (\n" +
-                "\t\t\t\tselect market_idx, mem_idx22\n" +
-                "\t\t\t\tfrom Market_like\n" +
-                "\t\t\t\twhere mem_idx22 = ?\n" +
-                "\t\t\t) b\n" +
-                "\t\t\ton a.market_idx = b.market_idx\n" +
+        String query = "select g.*, group_concat(h.image_url) as image_url \n" +
+                "from ( \n" +
+                "\tselect e.*, f.mem_nickname, f.mem_profile_url\n" +
+                "\tfrom ( \n" +
+                "\t\tselect c.*, d.market_like_count \n" +
+                "\t\tfrom ( \n" +
+                "\t\t\tselect  \n" +
+                "\t\t\t\ta.market_idx,  \n" +
+                "                a.mem_idx,  \n" +
+                "                a.market_group,  \n" +
+                "                a.market_title,  \n" +
+                "                a.market_content,  \n" +
+                "                a.market_soldout,  \n" +
+                "                a.market_price,  \n" +
+                "                a.market_image,  \n" +
+                "                a.market_hit,  \n" +
+                "                IF (b.mem_idx22 is null, false, true) as mem_liked,  \n" +
+                "                a.market_created_at  \n" +
+                "\t\t\tfrom Market a \n" +
+                "\t\t\tleft join ( \n" +
+                "\t\t\t\tselect market_idx, mem_idx22 \n" +
+                "                from Market_like \n" +
+                "                where mem_idx22 = ?\n" +
+                "\t\t\t) b \n" +
+                "\t\t\ton a.market_idx = b.market_idx \n" +
                 "\t\t\twhere a.market_idx = ?\n" +
-                "\t\t) c\n" +
-                "\t\tleft join (\n" +
-                "\t\t\tselect market_idx, count(*) as market_like_count\n" +
-                "\t\t\tfrom Market_like\n" +
+                "\t\t) c \n" +
+                "\t\tleft join ( \n" +
+                "\t\t\tselect market_idx, count(*) as market_like_count \n" +
+                "\t\t\tfrom Market_like \n" +
                 "\t\t\twhere market_idx = ?\n" +
-                "\t\t\tgroup by market_idx\n" +
-                "\t\t) d\n" +
-                "\t\ton c.market_idx = d.market_idx\n" +
-                "\t) e\n" +
-                "\tleft join (\n" +
-                "\t\tselect mem_idx, mem_nickname\n" +
-                "\t\tfrom Member\n" +
-                "\t\t) f\n" +
-                "\ton e.mem_idx = f.mem_idx\n" +
-                ") g\n" +
-                "join Image_url h\n" +
-                "on g.market_idx = h.content_idx\n" +
-                "order by h.image_order;";
+                "\t\t\tgroup by market_idx \n" +
+                "\t\t) d \n" +
+                "        on c.market_idx = d.market_idx \n" +
+                "\t) e \n" +
+                "\tleft join ( \n" +
+                "\t\tselect mem_idx, mem_nickname, mem_profile_url\n" +
+                "\t\tfrom Member \n" +
+                "\t) f \n" +
+                "\ton e.mem_idx = f.mem_idx \n" +
+                "\t) g \n" +
+                "\tjoin Image_url h \n" +
+                "\ton g.market_idx = h.content_idx\n" +
+                "    where content_category = 4\n" +
+                "\torder by h.image_order;";
 
         List<GetMarketFeedRes> feedResult = null;
         try {
@@ -466,6 +467,7 @@ public class MarketFeedDao implements MarketFeedRepository {
             feedRes.setMarketIdx(rs.getInt("market_idx"));
             feedRes.setUserIdx(rs.getInt("mem_idx"));
             feedRes.setUserNickname(rs.getString("mem_nickname"));
+            feedRes.setUserProfileUrl(rs.getString("mem_profile_url"));
             feedRes.setCategory(rs.getInt("market_group"));
             feedRes.setTitle(rs.getString("market_title"));
             feedRes.setContent(rs.getString("market_content"));
