@@ -532,19 +532,17 @@ public class SearchDao implements SearchRepository {
 
     @Override
     public List<GetAllFeedsRes> searchAllHomeFeedByKeywordByTitleInLatest(String search_keyword, int page) {
-        String query = "select t.*\n" +
+        String query = "select *\n" +
                 "from (\n" +
-                "\tselect 1 as boardType, S.story_idx as feedIdx, story_roomType as roomType, S.mem_idx, mem_nickname, story_title as title, story_hit as hit, story_created_at as createAt, if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt \n" +
-                "\tfrom Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt\n" +
-                "\twhere S.mem_idx = M.mem_idx && S.story_blame < 10 and story_title like \"%" + search_keyword + "%\" group by S.story_idx UNION\n" +
-                "\tselect 2 as boardType, D.diary_idx as feedIdx, diary_roomType as roomType, D.mem_idx, mem_nickname, diary_title as title, diary_hit as hit, diary_created_at as createAt, if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt \n" +
-                "\tfrom Diary_feed D, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt\n" +
-                "\twhere D.diary_blame < 10 and diary_title like \"%" + search_keyword + "%\" group by D.diary_idx UNION\n" +
-                "\tselect 3 as boardType, review_idx as feedIdx, null as roomType, buy_mem_idx as mem_idx, B.mem_nickname as mem_nickname, concat(A.mem_nickname, '님과 ', I.Market_review.review_goods, ' 을 거래했습니다.') as title, review_hit as hit, review_created_at as createAt, 0 as comment_cnt\n" +
-                "\tfrom Market_review, Member A, Member B where Market_review.sell_mem_idx = A.mem_idx && Market_review.buy_mem_idx = B.mem_idx && Market_review.review_blame < 10 and Market_review.review_goods like \"%" + search_keyword + "%\"\n" +
-                ") as t\n" +
-                "order by t.createAt desc\n" +
-                "limit ?, ?;";
+                "select 1 as boardType, S.story_idx as feedIdx, story_roomType as roomType, S.mem_idx, mem_nickname, story_title as title, story_image as image, story_hit as hit, story_created_at as createAt, if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt\n" +
+                "from Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt\n" +
+                "where S.mem_idx = M.mem_idx && S.story_blame < 10 group by S.story_idx UNION\n" +
+                "select 2 as boardType, D.diary_idx as feedIdx, diary_roomType as roomType, D.mem_idx, mem_nickname, diary_title as title, diary_image as image, diary_hit as hit, diary_created_at as createAt, if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt\n" +
+                "from Diary_feed D, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt\n" +
+                "where D.diary_blame < 10 group by D.diary_idx UNION\n" +
+                "select 3 as boardType, review_idx as feedIdx, null as roomType, buy_mem_idx as mem_idx, B.mem_nickname as mem_nickname, concat(A.mem_nickname, '님과 ', I.Market_review.review_goods, ' 을 거래했습니다.') as title, review_image as image, review_hit as hit, review_created_at as createAt, 0 as comment_cnt\n" +
+                "from Market_review, Member A, Member B where Market_review.sell_mem_idx = A.mem_idx && Market_review.buy_mem_idx = B.mem_idx && Market_review.review_blame < 10 ) t\n" +
+                "where title like \"%" + search_keyword + "%\" order by createAt desc limit ?, ?;";
         try {
             return jdbcTemplate.query(query, homeAllFeedRowMapper(), page * Constant.FEED_PER_PAGE, Constant.FEED_PER_PAGE);
         } catch (Exception e) {
@@ -555,19 +553,17 @@ public class SearchDao implements SearchRepository {
 
     @Override
     public List<GetAllFeedsRes> searchAllHomeFeedByKeywordByTitleContentInLatest(String search_keyword, int page) {
-        String query = "select t.*\n" +
+        String query = "select t.boardType, t.feedIdx, t.roomType, t.mem_Idx, t.mem_nickname, t.title, t.image, t.hit, t.createAt, t.comment_cnt \n" +
                 "from (\n" +
-                "\tselect 1 as boardType, S.story_idx as feedIdx, story_roomType as roomType, S.mem_idx, mem_nickname, story_title as title, story_hit as hit, story_created_at as createAt, if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt \n" +
-                "\tfrom Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt\n" +
-                "\twhere S.mem_idx = M.mem_idx && S.story_blame < 10 and (story_title like \"%" + search_keyword +"%\" or story_content like \"%" + search_keyword +"%\") group by S.story_idx UNION\n" +
-                "\tselect 2 as boardType, D.diary_idx as feedIdx, diary_roomType as roomType, D.mem_idx, mem_nickname, diary_title as title, diary_hit as hit, diary_created_at as createAt, if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt \n" +
-                "\tfrom Diary_feed D, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt\n" +
-                "\twhere D.diary_blame < 10 and (diary_title like \"%" + search_keyword + "%\" or diary_content like \"%" + search_keyword + "%\") group by D.diary_idx UNION\n" +
-                "\tselect 3 as boardType, review_idx as feedIdx, null as roomType, buy_mem_idx as mem_idx, B.mem_nickname as mem_nickname, concat(A.mem_nickname, '님과 ', I.Market_review.review_goods, ' 을 거래했습니다.') as title, review_hit as hit, review_created_at as createAt, 0 as comment_cnt\n" +
-                "\tfrom Market_review, Member A, Member B where Market_review.sell_mem_idx = A.mem_idx && Market_review.buy_mem_idx = B.mem_idx && Market_review.review_blame < 10 and (review_goods like \"%" + search_keyword + "%\" or review_content like \"%" + search_keyword + "%\")\n" +
-                ") as t\n" +
-                "order by t.createAt desc\n" +
-                "limit ?, ?;";
+                "select 1 as boardType, S.story_idx as feedIdx, story_roomType as roomType, S.mem_idx, mem_nickname, story_title as title, story_content as content, story_image as image, story_hit as hit, story_created_at as createAt, if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt \n" +
+                "from Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt\n" +
+                "where S.mem_idx = M.mem_idx && S.story_blame < 10 group by S.story_idx UNION\n" +
+                "select 2 as boardType, D.diary_idx as feedIdx, diary_roomType as roomType, D.mem_idx, mem_nickname, diary_title as title, diary_content as content, diary_image as image, diary_hit as hit, diary_created_at as createAt, if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt \n" +
+                "from Diary_feed D, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt \n" +
+                "where D.diary_blame < 10 group by D.diary_idx UNION\n" +
+                "select 3 as boardType, review_idx as feedIdx, null as roomType, buy_mem_idx as mem_idx, B.mem_nickname as mem_nickname, concat(A.mem_nickname, '님과 ', I.Market_review.review_goods, ' 을 거래했습니다.') as title, review_content as content, review_image as image, review_hit as hit, review_created_at as createAt, 0 as comment_cnt\n" +
+                "from Market_review, Member A, Member B where Market_review.sell_mem_idx = A.mem_idx && Market_review.buy_mem_idx = B.mem_idx && Market_review.review_blame < 10 ) t\n" +
+                "where title like \"%" + search_keyword + "%\" or content like \"%" + search_keyword +"%\" order by createAt desc limit ?, ?;";
         try {
             return jdbcTemplate.query(query, homeAllFeedRowMapper(), page * Constant.FEED_PER_PAGE, Constant.FEED_PER_PAGE);
         } catch (Exception e) {
@@ -578,19 +574,17 @@ public class SearchDao implements SearchRepository {
 
     @Override
     public List<GetAllFeedsRes> searchAllHomeFeedByKeywordByMemberNicknameInLatest(String search_keyword, int page) {
-        String query = "select t.*\n" +
+        String query = "select *\n" +
                 "from (\n" +
-                "\tselect 1 as boardType, S.story_idx as feedIdx, story_roomType as roomType, S.mem_idx, mem_nickname, story_title as title, story_hit as hit, story_created_at as createAt, if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt \n" +
-                "\tfrom Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt\n" +
-                "\twhere S.mem_idx = M.mem_idx && S.story_blame < 10 and (mem_nickname like \"%" + search_keyword + "%\") group by S.story_idx UNION\n" +
-                "\tselect 2 as boardType, D.diary_idx as feedIdx, diary_roomType as roomType, D.mem_idx, mem_nickname, diary_title as title, diary_hit as hit, diary_created_at as createAt, if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt \n" +
-                "\tfrom Diary_feed D, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt\n" +
-                "\twhere D.diary_blame < 10 and (mem_nickname like \"%" + search_keyword + "%\") group by D.diary_idx UNION\n" +
-                "\tselect 3 as boardType, review_idx as feedIdx, null as roomType, buy_mem_idx as mem_idx, B.mem_nickname as mem_nickname, concat(A.mem_nickname, '님과 ', I.Market_review.review_goods, ' 을 거래했습니다.') as title, review_hit as hit, review_created_at as createAt, 0 as comment_cnt\n" +
-                "\tfrom Market_review, Member A, Member B where Market_review.sell_mem_idx = A.mem_idx && Market_review.buy_mem_idx = B.mem_idx && Market_review.review_blame < 10 and (B.mem_nickname like \"%" + search_keyword + "%\")\n" +
-                ") as t\n" +
-                "order by t.createAt desc\n" +
-                "limit ?, ?;";
+                "select 1 as boardType, S.story_idx as feedIdx, story_roomType as roomType, S.mem_idx, mem_nickname, story_title as title, story_image as image, story_hit as hit, story_created_at as createAt, if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt\n" +
+                "from Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt\n" +
+                "where S.mem_idx = M.mem_idx && S.story_blame < 10 group by S.story_idx UNION\n" +
+                "select 2 as boardType, D.diary_idx as feedIdx, diary_roomType as roomType, D.mem_idx, mem_nickname, diary_title as title, diary_image as image, diary_hit as hit, diary_created_at as createAt, if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt\n" +
+                "from Diary_feed D, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt\n" +
+                "where D.diary_blame < 10 group by D.diary_idx UNION\n" +
+                "select 3 as boardType, review_idx as feedIdx, null as roomType, buy_mem_idx as mem_idx, B.mem_nickname as mem_nickname, concat(A.mem_nickname, '님과 ', I.Market_review.review_goods, ' 을 거래했습니다.') as title, review_image as image, review_hit as hit, review_created_at as createAt, 0 as comment_cnt\n" +
+                "from Market_review, Member A, Member B where Market_review.sell_mem_idx = A.mem_idx && Market_review.buy_mem_idx = B.mem_idx && Market_review.review_blame < 10 ) t\n" +
+                "where mem_nickname like \"%" + search_keyword + "%\" order by createAt desc limit ?, ?;";
         try {
             return jdbcTemplate.query(query, homeAllFeedRowMapper(), page * Constant.FEED_PER_PAGE, Constant.FEED_PER_PAGE);
         } catch (Exception e) {
@@ -696,6 +690,7 @@ public class SearchDao implements SearchRepository {
             res.setMemIdx(rs.getInt("mem_idx"));
             res.setMemNick(rs.getString("mem_nickname"));
             res.setTitle(rs.getString("title"));
+            res.setImg(rs.getString("image"));
             res.setHit(rs.getInt("hit"));
             res.setCommentCnt(rs.getInt("comment_cnt"));
             res.setCreateAt(rs.getString("createAt"));
