@@ -29,20 +29,32 @@ public class ReviewDao {
     }
 
     // 장터 후기 작성
-    public int createReviews(PostReviewReq postReviewReq) throws BaseException {
+    public int createReviews(PostReviewReq postReviewReq, List<Image> img) throws BaseException {
         LocalDateTime time = LocalDateTime.now();
         DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         String currentTime = time.format(timeFormatter);
 
         try {
+            int reviewIdx;
             String createReviewsQuery = "insert into Market_review (board_idx, sell_mem_idx, buy_mem_idx, review_goods, review_content, review_image, review_hit, review_blame, review_created_at) ";
             createReviewsQuery += "values (3, ?, ?, ?, ?, ?, 0, 0, ?)";
 
-            Object[] createReviewsParams = new Object[] {postReviewReq.getSellerIdx(), postReviewReq.getBuyerIdx(), postReviewReq.getGoods(), postReviewReq.getContent(), postReviewReq.getImgCnt(), currentTime};
-            this.jdbcTemplate.update(createReviewsQuery, createReviewsParams);  // 장터 후기 저장
+            if(img == null) {
+                Object[] createReviewsParams = new Object[] {postReviewReq.getSellerIdx(), postReviewReq.getBuyerIdx(), postReviewReq.getGoods(), postReviewReq.getContent(), null, currentTime};
+                this.jdbcTemplate.update(createReviewsQuery, createReviewsParams);  // 장터 후기 저장
 
-            String laseInsertQuery = "select last_insert_id()"; // 가장 마지막에 삽입된 id 값 가져온다
-            int reviewIdx = this.jdbcTemplate.queryForObject(laseInsertQuery, int.class);
+                String laseInsertQuery = "select last_insert_id()"; // 가장 마지막에 삽입된 id 값 가져온다
+                reviewIdx = this.jdbcTemplate.queryForObject(laseInsertQuery, int.class);
+            } else {
+                Object[] createReviewsParams = new Object[] {postReviewReq.getSellerIdx(), postReviewReq.getBuyerIdx(), postReviewReq.getGoods(), postReviewReq.getContent(), img.get(0).getUploadFilePath(), currentTime};
+                this.jdbcTemplate.update(createReviewsQuery, createReviewsParams);  // 장터 후기 저장
+    
+                String laseInsertQuery = "select last_insert_id()"; // 가장 마지막에 삽입된 id 값 가져온다
+                reviewIdx = this.jdbcTemplate.queryForObject(laseInsertQuery, int.class);
+                createReviewsImage(img, reviewIdx);
+            }
+
+            
 
             return reviewIdx;        // 생성된 장터 후기 인덱스
         } catch (Exception e) {
@@ -65,13 +77,13 @@ public class ReviewDao {
     // 장터 후기 수정
     public int editReviews(PatchReviewsReq patchReviewsReq, List<Image> img){
         // 게시글 수정
-        String editReviewsQuery = "update Market_review set review_goods = ?, review_content = ?, review_image = ? where review_idx = ?";
-        Object[] editReviewsParams = new Object[] {patchReviewsReq.getGoods(), patchReviewsReq.getContent(), patchReviewsReq.getImgCnt(), patchReviewsReq.getReviewIdx()};
+        // String editReviewsQuery = "update Market_review set review_goods = ?, review_content = ?, review_image = ? where review_idx = ?";
+        // this.jdbcTemplate.update(editReviewsQuery, editReviewsParams);// Object[] editReviewsParams = new Object[] {patchReviewsReq.getGoods(), patchReviewsReq.getContent(), patchReviewsReq.getImgCnt(), patchReviewsReq.getReviewIdx()};
 
-        this.jdbcTemplate.update(editReviewsQuery, editReviewsParams);
+        
 
         // 이미지 수정(삭제 후 추가)
-        editReviewsQuery = "delete from Image_url where content_category = 3 && content_idx = ?";
+        String editReviewsQuery = "delete from Image_url where content_category = 3 && content_idx = ?";
         this.jdbcTemplate.update(editReviewsQuery, patchReviewsReq.getReviewIdx());
 
         if(img != null) {       // 이미지가 있으면
@@ -80,6 +92,15 @@ public class ReviewDao {
                 Object[] editReviewsImageParams = new Object[] {3, patchReviewsReq.getReviewIdx(), img.get(i).getUploadFilePath(), i};
                 this.jdbcTemplate.update(editReviewsQuery, editReviewsImageParams);
             }
+            editReviewsQuery = "update Market_review set review_goods = ?, review_content = ?, review_image = ? where review_idx = ?";
+            Object[] editReviewsParams = new Object[] {patchReviewsReq.getGoods(), patchReviewsReq.getContent(), img.get(0).getUploadFilePath(), patchReviewsReq.getReviewIdx()};
+
+            this.jdbcTemplate.update(editReviewsQuery, editReviewsParams);
+        } else {
+            editReviewsQuery = "update Market_review set review_goods = ?, review_content = ?, review_image = ? where review_idx = ?";
+            Object[] editReviewsParams = new Object[] {patchReviewsReq.getGoods(), patchReviewsReq.getContent(), null, patchReviewsReq.getReviewIdx()};
+
+            this.jdbcTemplate.update(editReviewsQuery, editReviewsParams);
         }
 
         return patchReviewsReq.getReviewIdx();
@@ -138,7 +159,7 @@ public class ReviewDao {
     // 장터후기 전체 조회
     public List<GetAllReviewsRes> getAllReviews() {
         String getAllReviewQuery = "select review_idx, sell_mem_idx, A.mem_nickname as seller_nick, buy_mem_idx, B.mem_nickname as buyer_nick, ";
-        getAllReviewQuery += " I.Market_review.review_goods, review_content, review_hit, review_created_at ";
+        getAllReviewQuery += " I.Market_review.review_goods, review_content, review_hit, review_created_at, review_image ";
         getAllReviewQuery += " from Market_review, Member A, Member B";
         getAllReviewQuery += " where Market_review.sell_mem_idx = A.mem_idx && Market_review.buy_mem_idx = B.mem_idx";
         getAllReviewQuery += " order by review_created_at desc limit 20 offset 0";
@@ -152,6 +173,7 @@ public class ReviewDao {
             rs.getString("seller_nick"),
             rs.getString("review_goods"),
             rs.getInt("review_hit"),
-            rs.getString("review_created_at")));
+            rs.getString("review_created_at"),
+            rs.getString("review_image")));
     }
 }

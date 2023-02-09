@@ -38,7 +38,7 @@ public class ReviewService {
         try {
             int reviewIdx;
             if(file.get(0).isEmpty()) {      // 이미지 업로드를 하지 않을 경우
-                reviewIdx = reviewDao.createReviews(postReviewReq);
+                reviewIdx = reviewDao.createReviews(postReviewReq, null);
             } else {
                 List<Image> img = new ArrayList<Image>();
                 String fileName = "image" + File.separator + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMM"));
@@ -46,8 +46,8 @@ public class ReviewService {
                 for(int i = 0; i < file.size(); i++) {
                     img.add(createAndUploadFile(file.get(i), fileName, 3, i));
                 }
-                reviewIdx = reviewDao.createReviews(postReviewReq);
-                reviewDao.createReviewsImage(img, reviewIdx);
+                reviewIdx = reviewDao.createReviews(postReviewReq, img);
+                // reviewDao.createReviewsImage(img, reviewIdx);
             }
 
             return new PostReviewRes(reviewIdx);
@@ -66,7 +66,7 @@ public class ReviewService {
         try {
             //파일 업로드
             String saveFilePath = uploadImageS3.upload(mf, filePath, saveFileName);
-            return new Image(originalFilename, saveFilePath, category, order);
+            return new Image(originalFilename, uploadImageS3.getS3(saveFilePath), category, order);
         } catch (IOException e) {
             // 파일 업로드 오류
             e.printStackTrace();
@@ -79,9 +79,9 @@ public class ReviewService {
         try {
             List<Image> img = reviewDao.getReviewsImage(patchReviewsReq.getReviewIdx());
             List<Image> newImg = new ArrayList<Image>();
-            for(int i = 0; i < img.size(); i++) {
-                uploadImageS3.remove(img.get(i).getUploadFilePath());       // s3에 있는 기존 이미지 삭제
-            }
+            // for(int i = 0; i < img.size(); i++) {
+            //     uploadImageS3.remove(img.get(i).getUploadFilePath());       // s3에 있는 기존 이미지 삭제
+            // }
             if(!file.get(0).isEmpty()) {    // 이미지가 있으면
                 String fileName = "image" + File.separator + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMM"));
                 for(int i = 0; i < file.size(); i++) {

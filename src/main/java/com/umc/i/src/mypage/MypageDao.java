@@ -115,19 +115,19 @@ public class MypageDao {
                         ",(select count(*) from Market_review_like where Mr.review_idx = market_re_idx) as likeCount\n" +
                         ",(select count(*) from Market_review_comment Mrc where Mr.review_idx = Mrc.review_idx) as commentCount\n" +
                         "from Market_review Mr join Market_review_like Mrl on Mr.review_idx = Mrl.market_re_idx\n" +
-                        "where buy_mem_idx = ?\n" +
+                        "where Mrl.mem_idx = ? group by Mrl.mrl_idx\n" +
                         "union\n" +
                         "select board_idx, S.story_idx as idx,story_roomType as roomType,story_title as title,story_image as countImg,story_hit as hit,story_created_at as createAt\n" +
                         ",(select count(*) from Story_feed_like SFL where S.story_idx = SFL.story_idx) as likeCount\n" +
                         ",(select count(*) from Story_feed_comment Sfc where S.story_idx = Sfc.story_idx) as commentCount\n" +
                         "from Story_feed S join Story_feed_like l on S.story_idx = l.story_idx\n" +
-                        "where S.mem_idx =?\n" +
+                        "where l.mem_idx = ? group by l.sfl_idx\n" +
                         "union\n" +
                         "select board_idx, D.diary_idx as idx,diary_roomType as roomType,diary_title as title,diary_image as countImg,diary_hit as hit,diary_created_at as createAt\n" +
                         ",(select count(*) from Diary_feed_like Dfl where D.diary_idx = Dfl.diary_idx) as likeCount\n" +
                         ",(select count(*) from Diary_comment Dc where D.diary_idx = Dc.diary_idx) as commentCount\n" +
                         "from Diary_feed D join Diary_feed_like l on D.diary_idx = l.diary_idx\n" +
-                        "where D.mem_idx = ? order by createAt desc limit ?,?";
+                        "where l.mem_idx = ? group by l.dfl_idx order by createAt desc limit ?,?";
             }else{
                 getAllWriteQuery = "select board_idx, review_idx as idx,null as roomType,concat(sell_mem_idx,'님과 ',review_goods,'을 거래했습니다') as title,review_image as countImg,review_hit as hit,review_created_at as createAt\n" +
                         ",(select count(*) from Market_review_like where Mr.review_idx = market_re_idx) as likeCount\n" +
@@ -327,7 +327,7 @@ public class MypageDao {
     }
     //나눔장터 - 찜한 게시글 개수
     public Integer getWantMarketCount(int memIdx){
-        String getWantMarketCountQuery = "select count(*) from Market m join Market_like Ml on m.market_idx = Ml.market_idx where Ml.mem_idx = ? and ml_status = 1";
+        String getWantMarketCountQuery = "select count(*) from Market m join Market_like Ml on m.market_idx = Ml.market_idx where Ml.mem_idx = ? and ml_status = 1 group by m.market_idx";
         return this.jdbcTemplate.queryForObject(getWantMarketCountQuery,Integer.class,memIdx);
     }
     //나눔장터 - 찜한 게시글 조회
@@ -336,7 +336,7 @@ public class MypageDao {
             String getWantFeedQuery = "select board_idx,m.market_idx,market_price,TIMEDIFF(market_created_at,CURRENT_TIMESTAMP()) as createAt ,market_hit,market_soldout,market_image,market_title\n" +
                     "from Market m join Market_like ml\n" +
                     "        on ml.market_idx = m.market_idx\n" +
-                    "where ml.mem_idx = ? and ml_status = 1 limit ?,?";
+                    "where ml.mem_idx = ? and ml_status = 1 group by m.market_idx limit ?,?";
             String getWantCountQuery = "select count(*) from Market_like where market_idx = ?";
             int startPoint = page-10;
             return this.jdbcTemplate.query(getWantFeedQuery,
