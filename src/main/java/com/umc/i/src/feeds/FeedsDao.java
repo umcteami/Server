@@ -248,13 +248,14 @@ public class FeedsDao {
     }
 
     // 이야기방 상세 조회
-    public List<Feeds> getStory(int feedIdx) {
+    public List<Feeds> getStory(int feedIdx, int memIdx) {
         String getFeedQuery = "update Story_feed set story_hit = story_hit + 1";
         this.jdbcTemplate.update(getFeedQuery);
         
         getFeedQuery = "select S.story_idx, story_roomType, S.mem_idx, M.mem_nickname, M.mem_profile_url, story_title, story_content, story_hit, story_created_at, ";
-        getFeedQuery += " if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt";
-        getFeedQuery += " from Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt";
+        getFeedQuery += " if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt, sfl_status as islike";
+        getFeedQuery += " from Story_feed S left join (select * from Story_feed_like where mem_idx = ?) Sfl on S.story_idx = Sfl.story_idx, ";
+        getFeedQuery += " Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt ";
         getFeedQuery += " where S.story_idx = ? && S.mem_idx = M.mem_idx && story_blame < 10";
 
         return this.jdbcTemplate.query(getFeedQuery, 
@@ -269,8 +270,9 @@ public class FeedsDao {
             rs.getString("story_content"),
             rs.getInt("story_hit"),
             rs.getInt("comment_cnt"),
-            rs.getString("story_created_at")),
-            feedIdx);
+            rs.getString("story_created_at"),
+            rs.getInt("islike")),
+            memIdx, feedIdx);
     }
 
     // 일기장 전체 조회
@@ -317,13 +319,14 @@ public class FeedsDao {
     }
 
     // 일기장 상세조회
-    public List<Feeds> getDiary(int diaryIdx) {
+    public List<Feeds> getDiary(int diaryIdx, int memIdx) {
         String getFeedQuery = "update Diary_feed set diary_hit = diary_hit + 1";
         this.jdbcTemplate.update(getFeedQuery);
 
         getFeedQuery = "select D.diary_idx, diary_roomType, D.mem_idx, M.mem_nickname, mem_profile_url, diary_title, diary_content, diary_hit, diary_created_at, ";
-        getFeedQuery += " if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt";
-        getFeedQuery += " from Diary_feed D, Member M, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt";
+        getFeedQuery += " if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt, dfl_status as islike";
+        getFeedQuery += " from Diary_feed D left join (select * from Diary_feed_like where mem_idx = ?) Dfl on D.diary_idx = Dfl.diary_idx, ";
+        getFeedQuery += " Member M, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt";
         getFeedQuery += " where D.diary_idx = ? && diary_blame < 10 && D.mem_idx = M.mem_idx";
 
         return this.jdbcTemplate.query(getFeedQuery, 
@@ -338,8 +341,9 @@ public class FeedsDao {
             rs.getString("diary_content"),
             rs.getInt("diary_hit"),
             rs.getInt("comment_cnt"),
-            rs.getString("diary_created_at")),
-            diaryIdx);
+            rs.getString("diary_created_at"),
+            rs.getInt("islike")),
+            memIdx, diaryIdx);
     }
 
     // 좋아요, 좋아요 취소

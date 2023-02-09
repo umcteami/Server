@@ -137,9 +137,9 @@ public class FeedsController {
 
     @ResponseBody
     @GetMapping("/story/{storyIdx}")    // 이야기방 상세 조회
-    public BaseResponse getStory(@PathVariable("storyIdx") int storyIdx) throws BaseException {
+    public BaseResponse getStory(@PathVariable("storyIdx") int storyIdx, @RequestParam("memIdx") int memIdx) throws BaseException {
         try {
-            return new BaseResponse<>(feedsProvider.getStory(storyIdx));
+            return new BaseResponse<>(feedsProvider.getStory(storyIdx, memIdx));
         } catch (Exception e) {
             e.printStackTrace();
             return new BaseResponse<>(BaseResponseStatus.GET_REVIEW_FAIL);
@@ -170,9 +170,9 @@ public class FeedsController {
 
     @ResponseBody
     @GetMapping("/diary/{diaryIdx}")    // 일기장 상세 조회
-    public BaseResponse getDiary(@PathVariable("diaryIdx") int diaryIdx) throws BaseException {
+    public BaseResponse getDiary(@PathVariable("diaryIdx") int diaryIdx, @RequestParam("memIdx") int memIdx) throws BaseException {
         try {
-            return new BaseResponse<>(feedsProvider.getDiary(diaryIdx));
+            return new BaseResponse<>(feedsProvider.getDiary(diaryIdx, memIdx));
         } catch (Exception e) {
             e.printStackTrace();
             return new BaseResponse<>(BaseResponseStatus.GET_REVIEW_FAIL);

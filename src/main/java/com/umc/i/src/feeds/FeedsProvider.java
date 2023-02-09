@@ -54,7 +54,7 @@ public class FeedsProvider {
     }
 
     // 이야기방 상세 조회
-    public GetFeedRes getStory(int storyIdx) {
+    public GetFeedRes getStory(int storyIdx, int memIdx) {
 
             List<Image> img = feedsDao.getFeedsImage(1, storyIdx);
             List<String> filePath = new ArrayList();
@@ -65,12 +65,12 @@ public class FeedsProvider {
                 }
             }
             
-            return new GetFeedRes(feedsDao.getStory(storyIdx), filePath);
+            return new GetFeedRes(feedsDao.getStory(storyIdx, memIdx), filePath);
 
     }
 
     // 일기장 상세 조회
-    public GetFeedRes getDiary(int diaryIdx) {
+    public GetFeedRes getDiary(int diaryIdx, int memIdx) {
 
         List<Image> img = feedsDao.getFeedsImage(2, diaryIdx);
         List<String> filePath = new ArrayList();
@@ -81,7 +81,7 @@ public class FeedsProvider {
             }
         }
         
-        return new GetFeedRes(feedsDao.getDiary(diaryIdx), filePath);
+        return new GetFeedRes(feedsDao.getDiary(diaryIdx, memIdx), filePath);
 
     }
     
