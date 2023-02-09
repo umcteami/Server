@@ -29,20 +29,32 @@ public class ReviewDao {
     }
 
     // 장터 후기 작성
-    public int createReviews(PostReviewReq postReviewReq) throws BaseException {
+    public int createReviews(PostReviewReq postReviewReq, List<Image> img) throws BaseException {
         LocalDateTime time = LocalDateTime.now();
         DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         String currentTime = time.format(timeFormatter);
 
         try {
+            int reviewIdx;
             String createReviewsQuery = "insert into Market_review (board_idx, sell_mem_idx, buy_mem_idx, review_goods, review_content, review_image, review_hit, review_blame, review_created_at) ";
             createReviewsQuery += "values (3, ?, ?, ?, ?, ?, 0, 0, ?)";
 
-            Object[] createReviewsParams = new Object[] {postReviewReq.getSellerIdx(), postReviewReq.getBuyerIdx(), postReviewReq.getGoods(), postReviewReq.getContent(), postReviewReq.getImgCnt(), currentTime};
-            this.jdbcTemplate.update(createReviewsQuery, createReviewsParams);  // 장터 후기 저장
+            if(img == null) {
+                Object[] createReviewsParams = new Object[] {postReviewReq.getSellerIdx(), postReviewReq.getBuyerIdx(), postReviewReq.getGoods(), postReviewReq.getContent(), null, currentTime};
+                this.jdbcTemplate.update(createReviewsQuery, createReviewsParams);  // 장터 후기 저장
 
-            String laseInsertQuery = "select last_insert_id()"; // 가장 마지막에 삽입된 id 값 가져온다
-            int reviewIdx = this.jdbcTemplate.queryForObject(laseInsertQuery, int.class);
+                String laseInsertQuery = "select last_insert_id()"; // 가장 마지막에 삽입된 id 값 가져온다
+                reviewIdx = this.jdbcTemplate.queryForObject(laseInsertQuery, int.class);
+            } else {
+                Object[] createReviewsParams = new Object[] {postReviewReq.getSellerIdx(), postReviewReq.getBuyerIdx(), postReviewReq.getGoods(), postReviewReq.getContent(), img.get(0).getUploadFilePath(), currentTime};
+                this.jdbcTemplate.update(createReviewsQuery, createReviewsParams);  // 장터 후기 저장
+    
+                String laseInsertQuery = "select last_insert_id()"; // 가장 마지막에 삽입된 id 값 가져온다
+                reviewIdx = this.jdbcTemplate.queryForObject(laseInsertQuery, int.class);
+                createReviewsImage(img, reviewIdx);
+            }
+
+            
 
             return reviewIdx;        // 생성된 장터 후기 인덱스
         } catch (Exception e) {
