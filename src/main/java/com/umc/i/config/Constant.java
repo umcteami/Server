@@ -29,6 +29,7 @@ public class Constant {
         put("justchat", "1");
         put("question", "2");
         put("info", "3");
+        put(null, null);
     }};
 
     public static List<String> SEARCH_TARGET = Arrays.asList("title", "title_content", "member_nickname");
