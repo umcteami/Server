@@ -33,7 +33,7 @@ public class SearchController {
         int userIdx = req.getUserIdx();
 
         if (!isMarketCategoryValid(category)) {
-            return new BaseResponse<>(BaseResponseStatus.MARKET_FEED_BY_CATEGORY_FAILED);
+            return new BaseResponse<>(BaseResponseStatus.FEED_BY_CATEGORY_FAILED);
         }
         if (!isSearchKeywordValid(search_keyword)) {
             return new BaseResponse<>(BaseResponseStatus.SEARCH_KEYWORD_NULL_EXCEPTION);
@@ -76,6 +76,10 @@ public class SearchController {
     @GetMapping("review/search")
     public BaseResponse<List<GetAllReviewsRes>> searchReviewFeedByKeyword(@RequestParam String search_keyword,
                                                                           @RequestParam int page) throws BaseException {
+        if (!isSearchKeywordValid(search_keyword)) {
+            return new BaseResponse<>(BaseResponseStatus.SEARCH_KEYWORD_NULL_EXCEPTION);
+        }
+
         try {
             List<GetAllReviewsRes> feedRes = searchService.searchAllReviewFeedByKeywordByContentInLatest(search_keyword, page);
             return new BaseResponse<>(feedRes);
@@ -90,6 +94,16 @@ public class SearchController {
                                                  @RequestParam String search_keyword,
                                                  @RequestParam String search_target,
                                                  @RequestParam(defaultValue = "0") int page) throws BaseException {
+        if (!isDairyCategoryValid(category)) {
+            return new BaseResponse<>(BaseResponseStatus.FEED_BY_CATEGORY_FAILED);
+        }
+        if (!isSearchKeywordValid(search_keyword)) {
+            return new BaseResponse<>(BaseResponseStatus.SEARCH_KEYWORD_NULL_EXCEPTION);
+        }
+        if (!isSearchTargetValid(search_target)) {
+            return new BaseResponse<>(BaseResponseStatus.SEARCH_TARGET_INVALID);
+        }
+
         List<GetAllFeedsRes> feedRes = null;
         switch (search_target) {
             case "title":
@@ -153,8 +167,139 @@ public class SearchController {
         return null;
     }
 
+
+    @GetMapping("story/search")
+    public BaseResponse searchStoryFeedByKeyword(@RequestParam(required = false) String category,
+                                                 @RequestParam String search_keyword,
+                                                 @RequestParam String search_target,
+                                                 @RequestParam(defaultValue = "0") int page) throws BaseException {
+        if (!isStoryCategoryValid(category)) {
+            return new BaseResponse<>(BaseResponseStatus.FEED_BY_CATEGORY_FAILED);
+        }
+        if (!isSearchKeywordValid(search_keyword)) {
+            return new BaseResponse<>(BaseResponseStatus.SEARCH_KEYWORD_NULL_EXCEPTION);
+        }
+        if (!isSearchTargetValid(search_target)) {
+            return new BaseResponse<>(BaseResponseStatus.SEARCH_TARGET_INVALID);
+        }
+
+        List<GetAllFeedsRes> feedRes = null;
+        switch (search_target) {
+            case "title":
+                if (category == null) {
+                    try {
+                        feedRes = searchService.searchAllStoryFeedByKeywordByTitleInLatest(search_keyword, page);
+                        return new BaseResponse<>(feedRes);
+                    } catch (Exception e) {
+                        log.error(e.getMessage());
+                        throw new BaseException(BaseResponseStatus.GET_REVIEW_FAIL);
+                    }
+                } else {
+                    try {
+                        String categoryIdx = Constant.STORY_CATEGORIES.get(category);
+                        feedRes = searchService.searchCategoryStoryFeedByKeywordByTitleInLatest(categoryIdx, search_keyword, page);
+                        return new BaseResponse<>(feedRes);
+                    } catch (Exception e) {
+                        log.error(e.getMessage());
+                        throw new BaseException(BaseResponseStatus.GET_REVIEW_FAIL);
+                    }
+                }
+            case "title_content":
+                if (category == null) {
+                    try {
+                        feedRes = searchService.searchAllStoryFeedByKeywordByTitleContentInLatest(search_keyword, page);
+                        return new BaseResponse<>(feedRes);
+                    } catch (Exception e) {
+                        log.error(e.getMessage());
+                        throw new BaseException(BaseResponseStatus.GET_REVIEW_FAIL);
+                    }
+                } else {
+                    try {
+                        String categoryIdx = Constant.STORY_CATEGORIES.get(category);
+                        feedRes = searchService.searchCategoryStoryFeedByKeywordByTitleContentInLatest(categoryIdx, search_keyword, page);
+                        return new BaseResponse<>(feedRes);
+                    } catch (Exception e) {
+                        log.error(e.getMessage());
+                        throw new BaseException(BaseResponseStatus.GET_REVIEW_FAIL);
+                    }
+                }
+            case "member_nickname":
+                if (category == null) {
+                    try {
+                        feedRes = searchService.searchAllStoryFeedByKeywordByMemberNicknameInLatest(search_keyword, page);
+                        return new BaseResponse<>(feedRes);
+                    } catch (Exception e) {
+                        log.error(e.getMessage());
+                        throw new BaseException(BaseResponseStatus.GET_REVIEW_FAIL);
+                    }
+                } else {
+                    try {
+                        String categoryIdx = Constant.STORY_CATEGORIES.get(category);
+                        feedRes = searchService.searchCategoryStoryFeedByKeywordByMemberNicknameInLatest(categoryIdx, search_keyword, page);
+                        return new BaseResponse<>(feedRes);
+                    } catch (Exception e) {
+                        log.error(e.getMessage());
+                        throw new BaseException(BaseResponseStatus.GET_REVIEW_FAIL);
+                    }
+                }
+        }
+        return null;
+    }
+
+    @GetMapping("home/search")
+    public BaseResponse searchStoryFeedByKeyword(@RequestParam String search_keyword,
+                                                 @RequestParam String search_target,
+                                                 @RequestParam(defaultValue = "0") int page) throws BaseException {
+        if (!isSearchKeywordValid(search_keyword)) {
+            return new BaseResponse<>(BaseResponseStatus.SEARCH_KEYWORD_NULL_EXCEPTION);
+        }
+        if (!isSearchTargetValid(search_target)) {
+            return new BaseResponse<>(BaseResponseStatus.SEARCH_TARGET_INVALID);
+        }
+
+        List<GetAllFeedsRes> feedRes = null;
+        switch (search_target) {
+            case "title":
+                try {
+                    feedRes = searchService.searchAllHomeFeedByKeywordByTitleInLatest(search_keyword, page);
+                    return new BaseResponse<>(feedRes);
+                } catch (Exception e) {
+                    log.error(e.getMessage());
+                    throw new BaseException(BaseResponseStatus.GET_REVIEW_FAIL);
+                }
+            case "title_content":
+                try {
+                    feedRes = searchService.searchAllHomeFeedByKeywordByTitleContentInLatest(search_keyword, page);
+                    return new BaseResponse<>(feedRes);
+                } catch (Exception e) {
+                    log.error(e.getMessage());
+                    throw new BaseException(BaseResponseStatus.GET_REVIEW_FAIL);
+                }
+
+            case "member_nickname":
+                try {
+                    feedRes = searchService.searchAllHomeFeedByKeywordByMemberNicknameInLatest(search_keyword, page);
+                    return new BaseResponse<>(feedRes);
+                } catch (Exception e) {
+                    log.error(e.getMessage());
+                    throw new BaseException(BaseResponseStatus.GET_REVIEW_FAIL);
+                }
+        }
+        return null;
+    }
+
+
+
     private boolean isMarketCategoryValid(String category) {
         return Constant.MARKET_GOOD_CATEGORIES.containsKey(category);
+    }
+
+    private boolean isDairyCategoryValid(String category) {
+        return Constant.DAIRY_CATEGORIES.containsKey(category);
+    }
+
+    private boolean isStoryCategoryValid(String category) {
+        return Constant.STORY_CATEGORIES.containsKey(category);
     }
 
     private boolean isSearchKeywordValid(String search_keyword) {

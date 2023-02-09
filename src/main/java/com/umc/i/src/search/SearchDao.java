@@ -414,6 +414,163 @@ public class SearchDao implements SearchRepository {
         return null;
     }
 
+    @Override
+    public List<GetAllFeedsRes> searchAllStoryFeedByKeywordByTitleInLatest(String search_keyword, int page) {
+        String query = "select S.story_idx, story_roomType, S.mem_idx, mem_nickname, story_title, story_hit, story_created_at, \n" +
+                "if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt\n" +
+                "from Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt\n" +
+                "where S.mem_idx = M.mem_idx && story_blame < 10 and story_title like \"%" + search_keyword + "%\"  group by story_idx order by story_idx desc limit ?, ?;";
+        try {
+            return jdbcTemplate.query(query, storyFeedRowMapper(), page * Constant.FEED_PER_PAGE, Constant.FEED_PER_PAGE);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        return null;
+    }
+
+    @Override
+    public List<GetAllFeedsRes> searchCategoryStoryFeedByKeywordByTitleInLatest(String categoryIdx, String search_keyword, int page) {
+        String query = "select S.story_idx, story_roomType, S.mem_idx, mem_nickname, story_title, story_hit, story_created_at, \n" +
+                "if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt\n" +
+                "from Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt\n" +
+                "where S.mem_idx = M.mem_idx && story_blame < 10 and story_roomType = ? and story_title like \"%" + search_keyword + "%\"  group by story_idx order by story_idx desc limit ?, ?;";
+        try {
+            return jdbcTemplate.query(query, storyFeedRowMapper(), categoryIdx, page * Constant.FEED_PER_PAGE, Constant.FEED_PER_PAGE);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        return null;
+    }
+
+    @Override
+    public List<GetAllFeedsRes> searchAllStoryFeedByKeywordByTitleContentInLatest(String search_keyword, int page) {
+        String query = "select S.story_idx, story_roomType, S.mem_idx, mem_nickname, story_title, story_hit, story_created_at, \n" +
+                "if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt\n" +
+                "from Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt\n" +
+                "where S.mem_idx = M.mem_idx && story_blame < 10 and (story_title like \"%" + search_keyword + "%\" or story_content like \"%" + search_keyword + "%\")  \n" +
+                "group by story_idx order by story_idx desc limit ?, ?;";
+        try {
+            return jdbcTemplate.query(query, storyFeedRowMapper(), page * Constant.FEED_PER_PAGE, Constant.FEED_PER_PAGE);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        return null;
+    }
+
+    @Override
+    public List<GetAllFeedsRes> searchCategoryStoryFeedByKeywordByTitleContentInLatest(String categoryIdx, String search_keyword, int page) {
+        String query = "select S.story_idx, story_roomType, S.mem_idx, mem_nickname, story_title, story_hit, story_created_at, \n" +
+                "if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt\n" +
+                "from Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt\n" +
+                "where S.mem_idx = M.mem_idx && story_blame < 10 and story_roomType = ? and (story_title like \"%" + search_keyword + "%\" or story_content like \"%" + search_keyword + "%\")  \n" +
+                "group by story_idx order by story_idx desc limit ?, ?;";
+        try {
+            return jdbcTemplate.query(query, storyFeedRowMapper(), categoryIdx, page * Constant.FEED_PER_PAGE, Constant.FEED_PER_PAGE);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        return null;
+    }
+
+    @Override
+    public List<GetAllFeedsRes> searchAllStoryFeedByKeywordByMemberNicknameInLatest(String search_keyword, int page) {
+        String query = "select S.story_idx, story_roomType, S.mem_idx, mem_nickname, story_title, story_hit, story_created_at, \n" +
+                "if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt\n" +
+                "from Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt\n" +
+                "where S.mem_idx = M.mem_idx && story_blame < 10 and mem_nickname like \"%" + search_keyword + "%\"\n" +
+                "group by story_idx order by story_idx desc limit ?, ?;";
+        try {
+            return jdbcTemplate.query(query, storyFeedRowMapper(), page * Constant.FEED_PER_PAGE, Constant.FEED_PER_PAGE);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        return null;
+    }
+
+    @Override
+    public List<GetAllFeedsRes> searchCategoryStoryFeedByKeywordByMemberNicknameInLatest(String categoryIdx, String search_keyword, int page) {
+        String query = "select S.story_idx, story_roomType, S.mem_idx, mem_nickname, story_title, story_hit, story_created_at, \n" +
+                "if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt\n" +
+                "from Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt\n" +
+                "where S.mem_idx = M.mem_idx && story_blame < 10 and story_roomType = ? and mem_nickname like \"%" + search_keyword + "%\"\n" +
+                "group by story_idx order by story_idx desc limit ?, ?;";
+        try {
+            return jdbcTemplate.query(query, storyFeedRowMapper(), categoryIdx, page * Constant.FEED_PER_PAGE, Constant.FEED_PER_PAGE);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        return null;
+    }
+
+    @Override
+    public List<GetAllFeedsRes> searchAllHomeFeedByKeywordByTitleInLatest(String search_keyword, int page) {
+        String query = "select t.*\n" +
+                "from (\n" +
+                "\tselect 1 as boardType, S.story_idx as feedIdx, story_roomType as roomType, S.mem_idx, mem_nickname, story_title as title, story_hit as hit, story_created_at as createAt, if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt \n" +
+                "\tfrom Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt\n" +
+                "\twhere S.mem_idx = M.mem_idx && S.story_blame < 10 and story_title like \"%" + search_keyword + "%\" group by S.story_idx UNION\n" +
+                "\tselect 2 as boardType, D.diary_idx as feedIdx, diary_roomType as roomType, D.mem_idx, mem_nickname, diary_title as title, diary_hit as hit, diary_created_at as createAt, if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt \n" +
+                "\tfrom Diary_feed D, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt\n" +
+                "\twhere D.diary_blame < 10 and diary_title like \"%" + search_keyword + "%\" group by D.diary_idx UNION\n" +
+                "\tselect 3 as boardType, review_idx as feedIdx, null as roomType, buy_mem_idx as mem_idx, B.mem_nickname as mem_nickname, concat(A.mem_nickname, '님과 ', I.Market_review.review_goods, ' 을 거래했습니다.') as title, review_hit as hit, review_created_at as createAt, 0 as comment_cnt\n" +
+                "\tfrom Market_review, Member A, Member B where Market_review.sell_mem_idx = A.mem_idx && Market_review.buy_mem_idx = B.mem_idx && Market_review.review_blame < 10 and Market_review.review_goods like \"%" + search_keyword + "%\"\n" +
+                ") as t\n" +
+                "order by t.createAt desc\n" +
+                "limit ?, ?;";
+        try {
+            return jdbcTemplate.query(query, homeAllFeedRowMapper(), page * Constant.FEED_PER_PAGE, Constant.FEED_PER_PAGE);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        return null;
+    }
+
+    @Override
+    public List<GetAllFeedsRes> searchAllHomeFeedByKeywordByTitleContentInLatest(String search_keyword, int page) {
+        String query = "select t.*\n" +
+                "from (\n" +
+                "\tselect 1 as boardType, S.story_idx as feedIdx, story_roomType as roomType, S.mem_idx, mem_nickname, story_title as title, story_hit as hit, story_created_at as createAt, if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt \n" +
+                "\tfrom Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt\n" +
+                "\twhere S.mem_idx = M.mem_idx && S.story_blame < 10 and (story_title like \"%" + search_keyword +"%\" or story_content like \"%" + search_keyword +"%\") group by S.story_idx UNION\n" +
+                "\tselect 2 as boardType, D.diary_idx as feedIdx, diary_roomType as roomType, D.mem_idx, mem_nickname, diary_title as title, diary_hit as hit, diary_created_at as createAt, if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt \n" +
+                "\tfrom Diary_feed D, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt\n" +
+                "\twhere D.diary_blame < 10 and (diary_title like \"%" + search_keyword + "%\" or diary_content like \"%" + search_keyword + "%\") group by D.diary_idx UNION\n" +
+                "\tselect 3 as boardType, review_idx as feedIdx, null as roomType, buy_mem_idx as mem_idx, B.mem_nickname as mem_nickname, concat(A.mem_nickname, '님과 ', I.Market_review.review_goods, ' 을 거래했습니다.') as title, review_hit as hit, review_created_at as createAt, 0 as comment_cnt\n" +
+                "\tfrom Market_review, Member A, Member B where Market_review.sell_mem_idx = A.mem_idx && Market_review.buy_mem_idx = B.mem_idx && Market_review.review_blame < 10 and (review_goods like \"%" + search_keyword + "%\" or review_content like \"%" + search_keyword + "%\")\n" +
+                ") as t\n" +
+                "order by t.createAt desc\n" +
+                "limit ?, ?;";
+        try {
+            return jdbcTemplate.query(query, homeAllFeedRowMapper(), page * Constant.FEED_PER_PAGE, Constant.FEED_PER_PAGE);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        return null;
+    }
+
+    @Override
+    public List<GetAllFeedsRes> searchAllHomeFeedByKeywordByMemberNicknameInLatest(String search_keyword, int page) {
+        String query = "select t.*\n" +
+                "from (\n" +
+                "\tselect 1 as boardType, S.story_idx as feedIdx, story_roomType as roomType, S.mem_idx, mem_nickname, story_title as title, story_hit as hit, story_created_at as createAt, if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt \n" +
+                "\tfrom Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt\n" +
+                "\twhere S.mem_idx = M.mem_idx && S.story_blame < 10 and (mem_nickname like \"%" + search_keyword + "%\") group by S.story_idx UNION\n" +
+                "\tselect 2 as boardType, D.diary_idx as feedIdx, diary_roomType as roomType, D.mem_idx, mem_nickname, diary_title as title, diary_hit as hit, diary_created_at as createAt, if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt \n" +
+                "\tfrom Diary_feed D, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt\n" +
+                "\twhere D.diary_blame < 10 and (mem_nickname like \"%" + search_keyword + "%\") group by D.diary_idx UNION\n" +
+                "\tselect 3 as boardType, review_idx as feedIdx, null as roomType, buy_mem_idx as mem_idx, B.mem_nickname as mem_nickname, concat(A.mem_nickname, '님과 ', I.Market_review.review_goods, ' 을 거래했습니다.') as title, review_hit as hit, review_created_at as createAt, 0 as comment_cnt\n" +
+                "\tfrom Market_review, Member A, Member B where Market_review.sell_mem_idx = A.mem_idx && Market_review.buy_mem_idx = B.mem_idx && Market_review.review_blame < 10 and (B.mem_nickname like \"%" + search_keyword + "%\")\n" +
+                ") as t\n" +
+                "order by t.createAt desc\n" +
+                "limit ?, ?;";
+        try {
+            return jdbcTemplate.query(query, homeAllFeedRowMapper(), page * Constant.FEED_PER_PAGE, Constant.FEED_PER_PAGE);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        return null;
+    }
+
     private Integer findMemberNickNameByMemberIdx(String userNickname) {
         String query = "select mem_idx from Member where mem_nickname = ?";
 
@@ -423,7 +580,6 @@ public class SearchDao implements SearchRepository {
         } catch (Exception e) {
             log.error(e.getMessage());
         }
-
         return null;
     }
 
@@ -464,6 +620,36 @@ public class SearchDao implements SearchRepository {
             res.setHit(rs.getInt("diary_hit"));
             res.setCommentCnt(rs.getInt("comment_cnt"));
             res.setCreateAt(rs.getString("diary_created_at"));
+            return res;
+        };
+    }
+    private RowMapper<GetAllFeedsRes> storyFeedRowMapper() {
+        return (rs, rowNum) -> {
+            GetAllFeedsRes res = new GetAllFeedsRes();
+            res.setBoardType(rs.getInt("story_roomType"));
+            res.setFeedIdx(rs.getInt("story_idx"));
+            res.setMemIdx(rs.getInt("mem_idx"));
+            res.setMemNick(rs.getString("mem_nickname"));
+            res.setTitle(rs.getString("story_title"));
+            res.setHit(rs.getInt("story_hit"));
+            res.setCommentCnt(rs.getInt("comment_cnt"));
+            res.setCreateAt(rs.getString("story_created_at"));
+            return res;
+        };
+    }
+
+    private RowMapper<GetAllFeedsRes> homeAllFeedRowMapper() {
+        return (rs, rowNum) -> {
+            GetAllFeedsRes res = new GetAllFeedsRes();
+            res.setBoardType(rs.getInt("boardType"));
+            res.setRoomType(rs.getInt("roomType"));
+            res.setFeedIdx(rs.getInt("feedIdx"));
+            res.setMemIdx(rs.getInt("mem_idx"));
+            res.setMemNick(rs.getString("mem_nickname"));
+            res.setTitle(rs.getString("title"));
+            res.setHit(rs.getInt("hit"));
+            res.setCommentCnt(rs.getInt("comment_cnt"));
+            res.setCreateAt(rs.getString("createAt"));
             return res;
         };
     }

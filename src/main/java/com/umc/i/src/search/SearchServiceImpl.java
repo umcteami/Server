@@ -104,4 +104,49 @@ public class SearchServiceImpl implements SearchService {
     public List<GetAllFeedsRes> searchCategoryDairyFeedByKeywordByMemberNicknameInLatest(String categoryIdx, String search_keyword, int page) {
         return searchDao.searchCategoryDairyFeedByKeywordByMemberNicknameInLatest(categoryIdx, search_keyword, page);
     }
+
+    @Override
+    public List<GetAllFeedsRes> searchAllStoryFeedByKeywordByTitleInLatest(String search_keyword, int page) {
+        return searchDao.searchAllStoryFeedByKeywordByTitleInLatest(search_keyword, page);
+    }
+
+    @Override
+    public List<GetAllFeedsRes> searchCategoryStoryFeedByKeywordByTitleInLatest(String categoryIdx, String search_keyword, int page) {
+        return searchDao.searchCategoryStoryFeedByKeywordByTitleInLatest(categoryIdx, search_keyword, page);
+    }
+
+    @Override
+    public List<GetAllFeedsRes> searchAllStoryFeedByKeywordByTitleContentInLatest(String search_keyword, int page) {
+        return searchDao.searchAllStoryFeedByKeywordByTitleContentInLatest(search_keyword, page);
+    }
+
+    @Override
+    public List<GetAllFeedsRes> searchCategoryStoryFeedByKeywordByTitleContentInLatest(String categoryIdx, String search_keyword, int page) {
+        return searchDao.searchCategoryStoryFeedByKeywordByTitleContentInLatest(categoryIdx, search_keyword, page);
+    }
+
+    @Override
+    public List<GetAllFeedsRes> searchAllStoryFeedByKeywordByMemberNicknameInLatest(String search_keyword, int page) {
+        return searchDao.searchAllStoryFeedByKeywordByMemberNicknameInLatest(search_keyword, page);
+    }
+
+    @Override
+    public List<GetAllFeedsRes> searchCategoryStoryFeedByKeywordByMemberNicknameInLatest(String categoryIdx, String search_keyword, int page) {
+        return searchDao.searchCategoryStoryFeedByKeywordByMemberNicknameInLatest(categoryIdx, search_keyword, page);
+    }
+
+    @Override
+    public List<GetAllFeedsRes> searchAllHomeFeedByKeywordByTitleInLatest(String search_keyword, int page) {
+        return searchDao.searchAllHomeFeedByKeywordByTitleInLatest(search_keyword, page);
+    }
+
+    @Override
+    public List<GetAllFeedsRes> searchAllHomeFeedByKeywordByTitleContentInLatest(String search_keyword, int page) {
+        return searchDao.searchAllHomeFeedByKeywordByTitleContentInLatest(search_keyword, page);
+    }
+
+    @Override
+    public List<GetAllFeedsRes> searchAllHomeFeedByKeywordByMemberNicknameInLatest(String search_keyword, int page) {
+        return searchDao.searchAllHomeFeedByKeywordByMemberNicknameInLatest(search_keyword, page);
+    }
 }
