@@ -29,8 +29,13 @@ public class FeedsProvider {
     private final UploadImageS3 uploadImageS3;
 
     // 이야기방 전체 조회
-    public List<GetAllFeedsRes> getAllStories() {
-        return feedsDao.getAllStories();
+    public List<GetAllFeedsRes> getAllStories() throws BaseException {
+        try {
+            return feedsDao.getAllStories();
+        } catch (BaseException e) {
+            e.printStackTrace();
+            throw e;
+        } 
     }
 
     // 일기장 전체 조회
