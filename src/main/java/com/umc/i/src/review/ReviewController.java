@@ -84,7 +84,7 @@ public class ReviewController {
             return new BaseResponse<>(reivewProvider.getAllReviews());
         } catch (Exception e) {
             e.getStackTrace();
-            throw new BaseException(BaseResponseStatus.GET_REVIEW_FAIL);
+            return new BaseResponse<> (BaseResponseStatus.GET_REVIEW_FAIL);
         }
     }
 

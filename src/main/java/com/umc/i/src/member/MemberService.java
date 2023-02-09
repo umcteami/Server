@@ -1,6 +1,10 @@
 package com.umc.i.src.member;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.InvalidKeyException;
@@ -256,7 +260,7 @@ public class MemberService {
             if(checkNick != 0){return PATCH_MEMBER_NICK_DOUBLE;}
 
             String saveFilePath = null;
-            if(!profile.getOriginalFilename().equals("basic.jpg")) {  //기본 프로필이 아니면 + 기본 프로필 사진 이름으로 변경하기
+            if(profile != null) {  // 기본 프로필 아니면
                 String fileName = "image" + File.separator + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMM"));
 
                 // 저장할 새 이름
@@ -265,14 +269,14 @@ public class MemberService {
                 String saveFileName = String.format("%d_%s", time, originalFilename.replaceAll(" ", ""));
 
                 // 이미지 업로드
-                saveFilePath = File.separator + uploadImageS3.upload(profile, fileName, saveFileName);
+                saveFilePath = uploadImageS3.upload(profile, fileName, saveFileName);
             }
 
             //암호화
             String encryptPwd = UserSha256.encrypt(postJoinReq.getPw());
             postJoinReq.setPw(encryptPwd);
 
-            return memberDao.createMem(postJoinReq, saveFilePath);
+            return memberDao.createMem(postJoinReq, uploadImageS3.getS3(saveFilePath));
 
         } catch (Exception exception) { // 회원가입 실패시
             exception.printStackTrace();
@@ -302,10 +306,10 @@ public class MemberService {
                 String saveFileName = String.format("%d_%s", time, originalFilename.replaceAll(" ", ""));
 
                 // 이미지 업로드
-                saveFilePath = File.separator + uploadImageS3.upload(profile, fileName, saveFileName);
+                saveFilePath = uploadImageS3.upload(profile, fileName, saveFileName);
             }
 
-            memberDao.editMem(memIdx,patchMemReq,saveFilePath); // 해당 과정이 무사히 수행되면 True(1), 그렇지 않으면 False(0)입니다.
+            memberDao.editMem(memIdx,patchMemReq,uploadImageS3.getS3(saveFilePath)); // 해당 과정이 무사히 수행되면 True(1), 그렇지 않으면 False(0)입니다.
             return SUCCESS;
         } catch (Exception exception) { // 인터넷 오류
             exception.printStackTrace();

@@ -21,6 +21,7 @@ public class GetAllReviewsRes {
         private String goods;       // 구매 물품
         private int hit;        // 조회수
         private String createAt;      // 작성일
+        private String image;       // 대표 이미지
 }
 
 

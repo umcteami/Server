@@ -16,9 +16,11 @@ public class Feeds {
     private int feedIdx;        // 게시물 인덱스
     private int memIdx;         // 작성자 인덱스
     private String memNick;     // 작성자 닉네임
+    private String memProfile;  // 작성자 프로필
     private String title;       // 제목
     private String content;     // 내용
     private int hit;            // 조회수
     private int commentCnt;     // 댓글수
     private String createAt;    // 작성일
+    private int islike;      // 좋아요 여부
 }

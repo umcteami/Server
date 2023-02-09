@@ -30,34 +30,57 @@ public class FeedsDao {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
-    // 이야기방, 일기장 게시글 저장
-    public int createFeeds(PostFeedsReq postFeedsReq) throws BaseException{
-        LocalDateTime time = LocalDateTime.now();
-        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        String currentTime = time.format(timeFormatter);
+    // 멤버 닉네임 조회
+    public String getNickname(int memIdx) throws BaseException {
+        try {
+            String getNicknameQuery = "select mem_nickname from Member where mem_idx = ?";
+            return this.jdbcTemplate.queryForObject(getNicknameQuery, String.class, memIdx);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BaseException(BaseResponseStatus.POST_AUTH_MEMBER_NOT_EXIST);
+        }
+    }
 
+    // 이야기방, 일기장 게시글 저장
+    public int createFeeds(PostFeedsReq postFeedsReq, List<Image> img) throws BaseException{
         String createFeedsQuery = null;
+        int feedsIdx;
+        try {
+            String nickname = getNickname(postFeedsReq.getUserIdx());
+        } catch (BaseException e) {
+            throw e;
+        }
 
         try {
             switch(postFeedsReq.getBoardIdx()) {
                 case 1: //이야기방
                     createFeedsQuery = "insert into Story_feed (board_idx, story_roomType, mem_idx, story_title, story_content, ";
-                    createFeedsQuery += "story_image, story_hit, story_blame, story_created_at)";
-                    createFeedsQuery += "values (1, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    createFeedsQuery += "story_image, story_hit, story_blame)";
+                    createFeedsQuery += "values (1, ?, ?, ?, ?, ?, ?, ?)";
                     break;
                 case 2: //일기장
                     createFeedsQuery = "insert into Diary_feed (board_idx, diary_roomType, mem_idx, diary_title, diary_content, ";
-                    createFeedsQuery += "diary_image, diary_hit, diary_blame, diary_created_at)";
-                    createFeedsQuery += "values (2, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    createFeedsQuery += "diary_image, diary_hit, diary_blame)";
+                    createFeedsQuery += "values (2, ?, ?, ?, ?, ?, ?, ?)";
                     break;
             }
-    
-            Object[] createFeedsParams = new Object[] {postFeedsReq.getRoomType(), postFeedsReq.getUserIdx(), postFeedsReq.getTitle(),
-                                    postFeedsReq.getContent(), postFeedsReq.getImgCnt(), 0, 0, currentTime};
-            this.jdbcTemplate.update(createFeedsQuery, createFeedsParams);  // 게시물 저장
-    
-            String lastInserIdQuery = "select last_insert_id()"; // 가장 마지막에 삽입된(생성된) id값은 가져온다.
-            int feedsIdx = this.jdbcTemplate.queryForObject(lastInserIdQuery, int.class);
+
+            if(img == null) {
+                Object[] createFeedsParams = new Object[] {postFeedsReq.getRoomType(), postFeedsReq.getUserIdx(), 
+                    postFeedsReq.getTitle(), postFeedsReq.getContent(), null, 0, 0};
+                this.jdbcTemplate.update(createFeedsQuery, createFeedsParams);  // 게시물 저장  
+
+                String lastInserIdQuery = "select last_insert_id()"; // 가장 마지막에 삽입된(생성된) id값은 가져온다.
+                feedsIdx = this.jdbcTemplate.queryForObject(lastInserIdQuery, int.class);
+            } else {
+                Object[] createFeedsParams = new Object[] {postFeedsReq.getRoomType(), postFeedsReq.getUserIdx(), 
+                    postFeedsReq.getTitle(), postFeedsReq.getContent(), img.get(0).getUploadFilePath(), 0, 0};
+                this.jdbcTemplate.update(createFeedsQuery, createFeedsParams);  // 게시물 저장  
+
+                String lastInserIdQuery = "select last_insert_id()"; // 가장 마지막에 삽입된(생성된) id값은 가져온다.
+                feedsIdx = this.jdbcTemplate.queryForObject(lastInserIdQuery, int.class);
+                createFeedsImage(img, feedsIdx);
+            }
             
             return feedsIdx;
         } catch (Exception e) {
@@ -77,9 +100,9 @@ public class FeedsDao {
     }
 
     // 이야기방, 일기장 게시글 수정
-    public int editFeeds(PatchFeedsReq patchFeedsReq) throws BaseException {
+    public int editFeeds(PatchFeedsReq patchFeedsReq, List<Image> img) throws BaseException {
         String editFeedsQuery = null;
-        switch(patchFeedsReq.getBoardIdx()) {
+        switch(patchFeedsReq.getBoardType()) {
             case 1: // 이야기방 수정
                 editFeedsQuery = "update Story_feed set story_title=?, story_content=?, story_image=? where story_idx=?";
                 break;
@@ -89,9 +112,16 @@ public class FeedsDao {
         }
 
         try {
-            Object[] editFeedsParams = new Object[] {patchFeedsReq.getTitle(), patchFeedsReq.getContent(), 
-                patchFeedsReq.getImgCnt(), patchFeedsReq.getFeedsIdx()};
-            this.jdbcTemplate.update(editFeedsQuery, editFeedsParams);
+            if(img == null) {
+                Object[] editFeedsParams = new Object[] {patchFeedsReq.getTitle(), patchFeedsReq.getContent(), 
+                    null, patchFeedsReq.getFeedsIdx()};
+                this.jdbcTemplate.update(editFeedsQuery, editFeedsParams);
+            } else {
+                Object[] editFeedsParams = new Object[] {patchFeedsReq.getTitle(), patchFeedsReq.getContent(), 
+                    img.get(0).getUploadFilePath(), patchFeedsReq.getFeedsIdx()};
+                this.jdbcTemplate.update(editFeedsQuery, editFeedsParams);
+            }
+            
         } catch(Exception e) {
             e.printStackTrace();
             throw new BaseException(BaseResponseStatus.PATCH_EDIT_FEEDS_FAIL);
@@ -176,31 +206,38 @@ public class FeedsDao {
 
 
     // 이야기방 전체 조회
-    public List<GetAllFeedsRes> getAllStories() {
-        String getAllFeedsQuery = "select S.story_idx, story_roomType, S.mem_idx, mem_nickname, story_title, story_hit, story_created_at, ";
-        getAllFeedsQuery += " if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt";
-        getAllFeedsQuery += " from Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt";
-        getAllFeedsQuery += " where S.mem_idx = M.mem_idx && story_blame < 10 group by story_idx order by story_idx desc limit 20 offset 0";
-
-        return this.jdbcTemplate.query(getAllFeedsQuery, 
-        (rs, rowNum) -> new GetAllFeedsRes(
-            1, 
-            rs.getInt("story_roomType"), 
-            rs.getInt("story_idx"), 
-            rs.getInt("mem_idx"),
-            rs.getString("mem_nickname"),
-            rs.getString("story_title"), 
-            rs.getInt("story_hit"),
-            rs.getInt("comment_cnt"),
-            rs.getString("story_created_at")));
+    public List<GetAllFeedsRes> getAllStories() throws BaseException {
+        try {
+            String getAllFeedsQuery = "select S.story_idx, story_roomType, S.mem_idx, M.mem_nickname, story_title, story_image, story_hit, story_created_at, ";
+            getAllFeedsQuery += " if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt";
+            getAllFeedsQuery += " from Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt";
+            getAllFeedsQuery += " where story_blame < 10 && S.mem_idx = M.mem_idx group by story_idx order by story_idx desc limit 20 offset 0";
+    
+            return this.jdbcTemplate.query(getAllFeedsQuery, 
+            (rs, rowNum) -> new GetAllFeedsRes(
+                1, 
+                rs.getInt("story_roomType"), 
+                rs.getInt("story_idx"), 
+                rs.getInt("mem_idx"),
+                rs.getString("mem_nickname"),
+                rs.getString("story_title"), 
+                rs.getString("story_image"),
+                rs.getInt("story_hit"),
+                rs.getInt("comment_cnt"),
+                rs.getString("story_created_at")));
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BaseException(BaseResponseStatus.GET_REVIEW_FAIL);
+        }
+        
     }
     
     // 이야기방 카테고리별 조회
     public List<GetAllFeedsRes> getStoryRoomType(int roomType) {
-        String getAllFeedsQuery = "select S.story_idx, story_roomType, S.mem_idx, mem_nickname, story_title, story_hit, story_created_at, ";
+        String getAllFeedsQuery = "select S.story_idx, story_roomType, S.mem_idx, M.mem_nickname, story_title, story_image, story_hit, story_created_at, ";
         getAllFeedsQuery += " if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt";
         getAllFeedsQuery += " from Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt";
-        getAllFeedsQuery += " where story_roomType = ? && S.mem_idx = M.mem_idx && story_blame < 10 group by story_idx order by story_idx desc limit 20 offset 0";
+        getAllFeedsQuery += " where story_roomType = ? && story_blame < 10 && S.mem_idx = M.mem_idx group by story_idx order by story_idx desc limit 20 offset 0";
 
         return this.jdbcTemplate.query(getAllFeedsQuery, 
         (rs, rowNum) -> new GetAllFeedsRes(
@@ -210,6 +247,7 @@ public class FeedsDao {
             rs.getInt("mem_idx"),
             rs.getString("mem_nickname"),
             rs.getString("story_title"), 
+            rs.getString("story_image"),
             rs.getInt("story_hit"),
             rs.getInt("comment_cnt"),
             rs.getString("story_created_at")),
@@ -217,13 +255,14 @@ public class FeedsDao {
     }
 
     // 이야기방 상세 조회
-    public List<Feeds> getStory(int feedIdx) {
+    public List<Feeds> getStory(int feedIdx, int memIdx) {
         String getFeedQuery = "update Story_feed set story_hit = story_hit + 1";
         this.jdbcTemplate.update(getFeedQuery);
         
-        getFeedQuery = "select S.story_idx, story_roomType, S.mem_idx, mem_nickname, story_title, story_content, story_hit, story_created_at, ";
-        getFeedQuery += " if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt";
-        getFeedQuery += " from Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt";
+        getFeedQuery = "select S.story_idx, story_roomType, S.mem_idx, M.mem_nickname, M.mem_profile_url, story_title, story_content, story_hit, story_created_at, ";
+        getFeedQuery += " if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt, sfl_status as islike";
+        getFeedQuery += " from Story_feed S left join (select * from Story_feed_like where mem_idx = ?) Sfl on S.story_idx = Sfl.story_idx, ";
+        getFeedQuery += " Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt ";
         getFeedQuery += " where S.story_idx = ? && S.mem_idx = M.mem_idx && story_blame < 10";
 
         return this.jdbcTemplate.query(getFeedQuery, 
@@ -233,20 +272,22 @@ public class FeedsDao {
             rs.getInt("story_idx"), 
             rs.getInt("mem_idx"),
             rs.getString("mem_nickname"),
+            rs.getString("mem_profile_url"),
             rs.getString("story_title"), 
             rs.getString("story_content"),
             rs.getInt("story_hit"),
             rs.getInt("comment_cnt"),
-            rs.getString("story_created_at")),
-            feedIdx);
+            rs.getString("story_created_at"),
+            rs.getInt("islike")),
+            memIdx, feedIdx);
     }
 
     // 일기장 전체 조회
     public List<GetAllFeedsRes> getAllDiaries() {
-        String getAllFeedsQuery = "select D.diary_idx, diary_roomType, D.mem_idx, mem_nickname, diary_title, diary_hit, diary_created_at, ";
+        String getAllFeedsQuery = "select D.diary_idx, diary_roomType, D.mem_idx, M.mem_nickname, diary_title, diary_image, diary_hit, diary_created_at, ";
         getAllFeedsQuery += " if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt";
-        getAllFeedsQuery += " from Diary_feed D, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt";
-        getAllFeedsQuery += " where diary_blame < 10 group by diary_idx order by diary_idx desc limit 20 offset 0";
+        getAllFeedsQuery += " from Diary_feed D, Member M, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt";
+        getAllFeedsQuery += " where diary_blame < 10 && D.mem_idx = M.mem_idx group by diary_idx order by diary_idx desc limit 20 offset 0";
 
         return this.jdbcTemplate.query(getAllFeedsQuery, 
         (rs, rowNum) -> new GetAllFeedsRes(
@@ -256,6 +297,7 @@ public class FeedsDao {
             rs.getInt("mem_idx"),
             rs.getString("mem_nickname"),
             rs.getString("diary_title"), 
+            rs.getString("diary_image"),
             rs.getInt("diary_hit"),
             rs.getInt("comment_cnt"),
             rs.getString("diary_created_at")));
@@ -263,10 +305,10 @@ public class FeedsDao {
 
     // 일기장 카테고리별 조회
     public List<GetAllFeedsRes> getDiariesByRoomType(int roomType) {
-        String getAllFeedsQuery = "select D.diary_idx, diary_roomType, D.mem_idx, mem_nickname, diary_title, diary_hit, diary_created_at, ";
+        String getAllFeedsQuery = "select D.diary_idx, diary_roomType, D.mem_idx, M.mem_nickname, diary_title, diary_image, diary_hit, diary_created_at, ";
         getAllFeedsQuery += " if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt";
-        getAllFeedsQuery += " from Diary_feed D, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt";
-        getAllFeedsQuery += " where diary_roomType = ? && diary_blame < 10 group by diary_idx order by diary_idx desc limit 20 offset 0";
+        getAllFeedsQuery += " from Diary_feed D, Member M, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt";
+        getAllFeedsQuery += " where diary_roomType = ? && diary_blame < 10 && D.mem_idx = M.mem_idx group by diary_idx order by diary_idx desc limit 20 offset 0";
 
         return this.jdbcTemplate.query(getAllFeedsQuery, 
         (rs, rowNum) -> new GetAllFeedsRes(
@@ -276,6 +318,7 @@ public class FeedsDao {
             rs.getInt("mem_idx"),
             rs.getString("mem_nickname"),
             rs.getString("diary_title"), 
+            rs.getString("diary_image"),
             rs.getInt("diary_hit"),
             rs.getInt("comment_cnt"),
             rs.getString("diary_created_at")),
@@ -283,14 +326,15 @@ public class FeedsDao {
     }
 
     // 일기장 상세조회
-    public List<Feeds> getDiary(int diaryIdx) {
+    public List<Feeds> getDiary(int diaryIdx, int memIdx) {
         String getFeedQuery = "update Diary_feed set diary_hit = diary_hit + 1";
         this.jdbcTemplate.update(getFeedQuery);
 
-        getFeedQuery = "select D.diary_idx, diary_roomType, D.mem_idx, mem_nickname, diary_title, diary_content, diary_hit, diary_created_at, ";
-        getFeedQuery += " if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt";
-        getFeedQuery += " from Diary_feed D, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt";
-        getFeedQuery += " where D.diary_idx = ? && diary_blame < 10";
+        getFeedQuery = "select D.diary_idx, diary_roomType, D.mem_idx, M.mem_nickname, mem_profile_url, diary_title, diary_content, diary_hit, diary_created_at, ";
+        getFeedQuery += " if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt, dfl_status as islike";
+        getFeedQuery += " from Diary_feed D left join (select * from Diary_feed_like where mem_idx = ?) Dfl on D.diary_idx = Dfl.diary_idx, ";
+        getFeedQuery += " Member M, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt";
+        getFeedQuery += " where D.diary_idx = ? && diary_blame < 10 && D.mem_idx = M.mem_idx";
 
         return this.jdbcTemplate.query(getFeedQuery, 
         (rs, rowNum) -> new Feeds(
@@ -299,12 +343,14 @@ public class FeedsDao {
             rs.getInt("diary_idx"), 
             rs.getInt("mem_idx"),
             rs.getString("mem_nickname"),
+            rs.getString("mem_profile_url"),
             rs.getString("diary_title"), 
             rs.getString("diary_content"),
             rs.getInt("diary_hit"),
             rs.getInt("comment_cnt"),
-            rs.getString("diary_created_at")),
-            diaryIdx);
+            rs.getString("diary_created_at"),
+            rs.getInt("islike")),
+            memIdx, diaryIdx);
     }
 
     // 좋아요, 좋아요 취소
@@ -466,13 +512,13 @@ public class FeedsDao {
 
     // 통합 조회 -> 최신순
     public List<GetAllFeedsRes> getAllFeeds() {
-        String getAllFeedsQuery = "select 1 as boardType, S.story_idx as feedIdx, story_roomType as roomType, S.mem_idx, mem_nickname, story_title as title, story_hit as hit, story_created_at as createAt, if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt ";
+        String getAllFeedsQuery = "select 1 as boardType, S.story_idx as feedIdx, story_roomType as roomType, S.mem_idx, mem_nickname, story_title as title, story_image as image, story_hit as hit, story_created_at as createAt, if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt ";
         getAllFeedsQuery += " from Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt";
         getAllFeedsQuery += " where S.mem_idx = M.mem_idx && S.story_blame < 10 group by S.story_idx UNION";
-        getAllFeedsQuery += " select 2 as boardType, D.diary_idx as feedIdx, diary_roomType as roomType, D.mem_idx, mem_nickname, diary_title as title, diary_hit as hit, diary_created_at as createAt, if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt ";
+        getAllFeedsQuery += " select 2 as boardType, D.diary_idx as feedIdx, diary_roomType as roomType, D.mem_idx, mem_nickname, diary_title as title, diary_image as image, diary_hit as hit, diary_created_at as createAt, if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt ";
         getAllFeedsQuery += " from Diary_feed D, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt";
         getAllFeedsQuery += " where D.diary_blame < 10 group by D.diary_idx UNION";
-        getAllFeedsQuery += " select 3 as boardType, review_idx as feedIdx, null as roomType, buy_mem_idx as mem_idx, B.mem_nickname as mem_nickname, concat(A.mem_nickname, '님과 ', I.Market_review.review_goods, ' 을 거래했습니다.') title, review_hit as hit, review_created_at as createAt, 0 as comment_cnt";
+        getAllFeedsQuery += "  select 3 as boardType, review_idx as feedIdx, null as roomType, buy_mem_idx as mem_idx, B.mem_nickname as mem_nickname, concat(A.mem_nickname, '님과 ', I.Market_review.review_goods, ' 을 거래했습니다.') as title, review_image as image, review_hit as hit, review_created_at as createAt, 0 as comment_cnt";
         getAllFeedsQuery += " from Market_review, Member A, Member B where Market_review.sell_mem_idx = A.mem_idx && Market_review.buy_mem_idx = B.mem_idx && Market_review.review_blame < 10";
         getAllFeedsQuery += " order by createAt desc limit 20 offset 0 ";
 
@@ -484,10 +530,12 @@ public class FeedsDao {
             rs.getInt("mem_idx"),
             rs.getString("mem_nickname"),
             rs.getString("title"),
+            rs.getString("image"),
             rs.getInt("hit"),
             rs.getInt("comment_cnt"),
             rs.getString("createAt")
         ));
+        
     }
 
     //게시글 신고하기
