@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.umc.i.config.BaseException;
+import com.umc.i.config.BaseResponseStatus;
 import com.umc.i.src.feeds.model.get.GetAllFeedsRes;
 import com.umc.i.src.feeds.model.get.GetCommentRes;
 import com.umc.i.src.feeds.model.get.GetFeedRes;
@@ -95,7 +96,7 @@ public class FeedsProvider {
     }
 
     // 아이홈 통합 조회
-    public List<GetAllFeedsRes> getFeeds() {
+    public List<GetAllFeedsRes> getFeeds(){
         return feedsDao.getAllFeeds();
     }
 }

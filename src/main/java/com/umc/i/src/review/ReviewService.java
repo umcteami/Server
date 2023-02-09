@@ -79,9 +79,9 @@ public class ReviewService {
         try {
             List<Image> img = reviewDao.getReviewsImage(patchReviewsReq.getReviewIdx());
             List<Image> newImg = new ArrayList<Image>();
-            for(int i = 0; i < img.size(); i++) {
-                uploadImageS3.remove(img.get(i).getUploadFilePath());       // s3에 있는 기존 이미지 삭제
-            }
+            // for(int i = 0; i < img.size(); i++) {
+            //     uploadImageS3.remove(img.get(i).getUploadFilePath());       // s3에 있는 기존 이미지 삭제
+            // }
             if(!file.get(0).isEmpty()) {    // 이미지가 있으면
                 String fileName = "image" + File.separator + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMM"));
                 for(int i = 0; i < file.size(); i++) {

@@ -79,28 +79,30 @@ public class FeedsService {
 
     // 이야기방, 일기장 게시글 수정
     public PatchFeedsRes editFeeds(PatchFeedsReq patchFeedsReq, List<MultipartFile> file) throws BaseException {
-        int feedsIdx = feedsDao.editFeeds(patchFeedsReq);
+        // int feedsIdx = feedsDao.editFeeds(patchFeedsReq,);
+        List<Image> newImg = new ArrayList<Image>();
 
         try {
-            if(file != null) {  // 이미지 수정
-                List<Image> img = feedsDao.getFeedsImage(patchFeedsReq.getBoardIdx(), feedsIdx);
+            if(!file.get(0).isEmpty()) {  // 이미지 수정
+                List<Image> img = feedsDao.getFeedsImage(patchFeedsReq.getBoardType(), patchFeedsReq.getFeedsIdx());
                 String fileName = "image" + File.separator + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMM"));
-                List<Image> newImg = new ArrayList<Image>();
-                for(int i = 0; i < img.size(); i++) {   
-                    uploadImageS3.remove(img.get(i).getUploadFilePath());       // s3에 있는 기존 이미지 삭제
-                }
+                // List<Image> newImg = new ArrayList<Image>();
+                // for(int i = 0; i < img.size(); i++) {   
+                //     uploadImageS3.remove(img.get(i).getUploadFilePath());       // s3에 있는 기존 이미지 삭제
+                // }
                 for(int i = 0; i < file.size(); i++) {
                     if(file.get(i).getOriginalFilename().equals("")) break;
-                    newImg.add(createAndUploadFile(file.get(i), fileName, patchFeedsReq.getBoardIdx(), i));      // s3에 새 이미지 업로드
+                    newImg.add(createAndUploadFile(file.get(i), fileName, patchFeedsReq.getBoardType(), i));      // s3에 새 이미지 업로드
                 }
-                feedsDao.editFeedsImage(newImg, patchFeedsReq.getBoardIdx(), feedsIdx);
             } 
+            int feedsIdx = feedsDao.editFeeds(patchFeedsReq, newImg);
+            feedsDao.editFeedsImage(newImg, patchFeedsReq.getBoardType(), feedsIdx);
+
+            return new PatchFeedsRes(patchFeedsReq.getBoardType(), feedsIdx);
         } catch(Exception e) {
             e.printStackTrace();
             throw new BaseException(BaseResponseStatus.PATCH_EDIT_FEEDS_FAIL);
         }
-        
-        return new PatchFeedsRes(patchFeedsReq.getBoardIdx(), feedsIdx);
     }
 
     // 이야기방, 일기장 게시글 삭제

@@ -67,27 +67,27 @@ public class FeedsController {
     }
 
 
-    @ResponseBody
-    @PatchMapping("/edit")  // 이야기방, 일기장 게시글 수정
-    public BaseResponse<PatchFeedsRes> editFeeds(@RequestBody PatchFeedsReq patchFeedsReq) throws BaseException {
-        switch(patchFeedsReq.getBoardIdx()) {
-            case 1:     // 이야기방
-                if(patchFeedsReq.getRoomType() > 3) break;
-                return new BaseResponse<>(feedsService.editFeeds(patchFeedsReq, null));
-            case 2:     // 일기장
-                if(patchFeedsReq.getRoomType() > 2) break;
-                return new BaseResponse<>(feedsService.editFeeds(patchFeedsReq, null));
-        }
+    // @ResponseBody
+    // @PatchMapping("/edit")  // 이야기방, 일기장 게시글 수정
+    // public BaseResponse<PatchFeedsRes> editFeeds(@RequestBody PatchFeedsReq patchFeedsReq) throws BaseException {
+    //     switch(patchFeedsReq.getBoardIdx()) {
+    //         case 1:     // 이야기방
+    //             if(patchFeedsReq.getRoomType() > 3) break;
+    //             return new BaseResponse<>(feedsService.editFeeds(patchFeedsReq, null));
+    //         case 2:     // 일기장
+    //             if(patchFeedsReq.getRoomType() > 2) break;
+    //             return new BaseResponse<>(feedsService.editFeeds(patchFeedsReq, null));
+    //     }
 
-        return new BaseResponse<>(BaseResponseStatus.POST_FEEDS_INVALID_TYPE);
-    }
+    //     return new BaseResponse<>(BaseResponseStatus.POST_FEEDS_INVALID_TYPE);
+    // }
 
     @ResponseBody
-    @PatchMapping("/edit/img")  // 이야기방, 일기장 게시글 수정(이미지 포함)
+    @PatchMapping("/edit")  // 이야기방, 일기장 게시글 수정(이미지 포함)
     public BaseResponse<PatchFeedsRes> editFeedsWithImg(@RequestPart("request") PatchFeedsReq patchFeedsReq,
                     @RequestPart("img") List<MultipartFile> img) throws BaseException {
         try {
-            switch(patchFeedsReq.getBoardIdx()) {
+            switch(patchFeedsReq.getBoardType()) {
                 case 1:     // 이야기방
                     if(patchFeedsReq.getRoomType() > 3) break;
                     return new BaseResponse<>(feedsService.editFeeds(patchFeedsReq, img));

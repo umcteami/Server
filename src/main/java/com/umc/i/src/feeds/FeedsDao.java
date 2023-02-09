@@ -100,9 +100,9 @@ public class FeedsDao {
     }
 
     // 이야기방, 일기장 게시글 수정
-    public int editFeeds(PatchFeedsReq patchFeedsReq) throws BaseException {
+    public int editFeeds(PatchFeedsReq patchFeedsReq, List<Image> img) throws BaseException {
         String editFeedsQuery = null;
-        switch(patchFeedsReq.getBoardIdx()) {
+        switch(patchFeedsReq.getBoardType()) {
             case 1: // 이야기방 수정
                 editFeedsQuery = "update Story_feed set story_title=?, story_content=?, story_image=? where story_idx=?";
                 break;
@@ -112,9 +112,16 @@ public class FeedsDao {
         }
 
         try {
-            Object[] editFeedsParams = new Object[] {patchFeedsReq.getTitle(), patchFeedsReq.getContent(), 
-                patchFeedsReq.getImgCnt(), patchFeedsReq.getFeedsIdx()};
-            this.jdbcTemplate.update(editFeedsQuery, editFeedsParams);
+            if(img == null) {
+                Object[] editFeedsParams = new Object[] {patchFeedsReq.getTitle(), patchFeedsReq.getContent(), 
+                    null, patchFeedsReq.getFeedsIdx()};
+                this.jdbcTemplate.update(editFeedsQuery, editFeedsParams);
+            } else {
+                Object[] editFeedsParams = new Object[] {patchFeedsReq.getTitle(), patchFeedsReq.getContent(), 
+                    img.get(0).getUploadFilePath(), patchFeedsReq.getFeedsIdx()};
+                this.jdbcTemplate.update(editFeedsQuery, editFeedsParams);
+            }
+            
         } catch(Exception e) {
             e.printStackTrace();
             throw new BaseException(BaseResponseStatus.PATCH_EDIT_FEEDS_FAIL);
@@ -511,7 +518,7 @@ public class FeedsDao {
         getAllFeedsQuery += " select 2 as boardType, D.diary_idx as feedIdx, diary_roomType as roomType, D.mem_idx, mem_nickname, diary_title as title, diary_image as image, diary_hit as hit, diary_created_at as createAt, if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt ";
         getAllFeedsQuery += " from Diary_feed D, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt";
         getAllFeedsQuery += " where D.diary_blame < 10 group by D.diary_idx UNION";
-        getAllFeedsQuery += " select 3 as boardType, review_idx as feedIdx, null as roomType, review_image as image, buy_mem_idx as mem_idx, B.mem_nickname as mem_nickname, concat(A.mem_nickname, '님과 ', I.Market_review.review_goods, ' 을 거래했습니다.') title, review_hit as hit, review_created_at as createAt, 0 as comment_cnt";
+        getAllFeedsQuery += "  select 3 as boardType, review_idx as feedIdx, null as roomType, buy_mem_idx as mem_idx, B.mem_nickname as mem_nickname, concat(A.mem_nickname, '님과 ', I.Market_review.review_goods, ' 을 거래했습니다.') as title, review_image as image, review_hit as hit, review_created_at as createAt, 0 as comment_cnt";
         getAllFeedsQuery += " from Market_review, Member A, Member B where Market_review.sell_mem_idx = A.mem_idx && Market_review.buy_mem_idx = B.mem_idx && Market_review.review_blame < 10";
         getAllFeedsQuery += " order by createAt desc limit 20 offset 0 ";
 
@@ -522,12 +529,13 @@ public class FeedsDao {
             rs.getInt("feedIdx"),
             rs.getInt("mem_idx"),
             rs.getString("mem_nickname"),
-            rs.getString("image"),
             rs.getString("title"),
+            rs.getString("image"),
             rs.getInt("hit"),
             rs.getInt("comment_cnt"),
             rs.getString("createAt")
         ));
+        
     }
 
     //게시글 신고하기

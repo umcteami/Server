@@ -77,13 +77,13 @@ public class ReviewDao {
     // 장터 후기 수정
     public int editReviews(PatchReviewsReq patchReviewsReq, List<Image> img){
         // 게시글 수정
-        String editReviewsQuery = "update Market_review set review_goods = ?, review_content = ?, review_image = ? where review_idx = ?";
-        Object[] editReviewsParams = new Object[] {patchReviewsReq.getGoods(), patchReviewsReq.getContent(), patchReviewsReq.getImgCnt(), patchReviewsReq.getReviewIdx()};
+        // String editReviewsQuery = "update Market_review set review_goods = ?, review_content = ?, review_image = ? where review_idx = ?";
+        // this.jdbcTemplate.update(editReviewsQuery, editReviewsParams);// Object[] editReviewsParams = new Object[] {patchReviewsReq.getGoods(), patchReviewsReq.getContent(), patchReviewsReq.getImgCnt(), patchReviewsReq.getReviewIdx()};
 
-        this.jdbcTemplate.update(editReviewsQuery, editReviewsParams);
+        
 
         // 이미지 수정(삭제 후 추가)
-        editReviewsQuery = "delete from Image_url where content_category = 3 && content_idx = ?";
+        String editReviewsQuery = "delete from Image_url where content_category = 3 && content_idx = ?";
         this.jdbcTemplate.update(editReviewsQuery, patchReviewsReq.getReviewIdx());
 
         if(img != null) {       // 이미지가 있으면
@@ -92,6 +92,15 @@ public class ReviewDao {
                 Object[] editReviewsImageParams = new Object[] {3, patchReviewsReq.getReviewIdx(), img.get(i).getUploadFilePath(), i};
                 this.jdbcTemplate.update(editReviewsQuery, editReviewsImageParams);
             }
+            editReviewsQuery = "update Market_review set review_goods = ?, review_content = ?, review_image = ? where review_idx = ?";
+            Object[] editReviewsParams = new Object[] {patchReviewsReq.getGoods(), patchReviewsReq.getContent(), img.get(0).getUploadFilePath(), patchReviewsReq.getReviewIdx()};
+
+            this.jdbcTemplate.update(editReviewsQuery, editReviewsParams);
+        } else {
+            editReviewsQuery = "update Market_review set review_goods = ?, review_content = ?, review_image = ? where review_idx = ?";
+            Object[] editReviewsParams = new Object[] {patchReviewsReq.getGoods(), patchReviewsReq.getContent(), null, patchReviewsReq.getReviewIdx()};
+
+            this.jdbcTemplate.update(editReviewsQuery, editReviewsParams);
         }
 
         return patchReviewsReq.getReviewIdx();
