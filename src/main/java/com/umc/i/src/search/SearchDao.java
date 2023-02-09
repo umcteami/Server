@@ -11,7 +11,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @Slf4j
@@ -133,7 +135,7 @@ public class SearchDao implements SearchRepository {
                 "\t\t\tm.market_hit,\n" +
                 "\t\t\tm.market_created_at\n" +
                 "\t\tfrom Market m \n" +
-                "        where 1market_title like \"%" + search_keyword + "%\" or market_content like \"%" + search_keyword + "%\" \n" +
+                "        where market_title like \"%" + search_keyword + "%\" or market_content like \"%" + search_keyword + "%\" \n" +
                 "        order by market_created_at DESC\n" +
                 "        limit ?, ? ) m\n" +
                 "\tleft join (\n" +
@@ -211,7 +213,13 @@ public class SearchDao implements SearchRepository {
     public List<GetMarketFeedRes> searchAllMarketFeedByKeywordByNicknameInLatest(int userIdx,
                                                                                  String search_keyword,
                                                                                  int page) {
-        Integer searchMemberIdx = findMemberNickNameByMemberIdx(search_keyword);
+        List<Integer> searchMemberIdx = findMemberNickNameByMemberIdx(search_keyword);
+        String memberIdxList = null;
+        if (searchMemberIdx == null) {
+            return null;
+        } else {
+            memberIdxList = makeMemberIdxString(searchMemberIdx);
+        }
 
         String query = "select a.*, b.market_like_count\n" +
                 "from (\n" +
@@ -228,7 +236,7 @@ public class SearchDao implements SearchRepository {
                 "\t\t\tm.market_hit,\n" +
                 "\t\t\tm.market_created_at\n" +
                 "\t\tfrom Market m \n" +
-                "        where mem_idx = ?" +
+                "        where mem_idx in" + memberIdxList + " \n" +
                 "        order by market_created_at DESC\n" +
                 "        limit ?, ? ) m\n" +
                 "\tleft join (\n" +
@@ -246,8 +254,9 @@ public class SearchDao implements SearchRepository {
                 "on a.market_idx = b.market_idx;";
 
         try {
+            log.info("{}", query);
             return jdbcTemplate.query(query, marketFeedByCategoryRowMapper(),
-                    searchMemberIdx, page * Constant.FEED_PER_PAGE, Constant.FEED_PER_PAGE, userIdx);
+                    page * Constant.FEED_PER_PAGE, Constant.FEED_PER_PAGE, userIdx);
         } catch (Exception e) {
             log.error(e.getMessage());
         }
@@ -260,7 +269,14 @@ public class SearchDao implements SearchRepository {
                                                                                       String categoryIdx,
                                                                                       String search_keyword,
                                                                                       int page) {
-        Integer searchMemberIdx = findMemberNickNameByMemberIdx(search_keyword);
+        List<Integer> searchMemberIdx = findMemberNickNameByMemberIdx(search_keyword);
+
+        String memberIdxList = null;
+        if (searchMemberIdx == null) {
+            return null;
+        } else {
+            memberIdxList = makeMemberIdxString(searchMemberIdx);
+        }
 
         String query = "select a.*, b.market_like_count\n" +
                 "from (\n" +
@@ -277,7 +293,7 @@ public class SearchDao implements SearchRepository {
                 "\t\t\tm.market_hit,\n" +
                 "\t\t\tm.market_created_at\n" +
                 "\t\tfrom Market m \n" +
-                "        where mem_idx = ? and market_group = ?\n" +
+                "        where mem_idx in" + memberIdxList + " and market_group = ?\n" +
                 "        order by market_created_at DESC\n" +
                 "        limit ?, ? ) m\n" +
                 "\tleft join (\n" +
@@ -296,7 +312,7 @@ public class SearchDao implements SearchRepository {
 
         try {
             return jdbcTemplate.query(query, marketFeedByCategoryRowMapper(),
-                    searchMemberIdx, categoryIdx, page * Constant.FEED_PER_PAGE, Constant.FEED_PER_PAGE, userIdx);
+                    categoryIdx, page * Constant.FEED_PER_PAGE, Constant.FEED_PER_PAGE, userIdx);
         } catch (Exception e) {
             log.error(e.getMessage());
         }
@@ -332,10 +348,10 @@ public class SearchDao implements SearchRepository {
 
     @Override
     public List<GetAllFeedsRes> searchAllDairyFeedByKeywordByTitleInLatest(String search_keyword, int page) {
-        String query = "select D.diary_idx, diary_roomType, D.mem_idx, mem_nickname, diary_title, diary_hit, diary_created_at, \n" +
+        String query = "select D.diary_idx, diary_roomType, D.mem_idx, M.mem_nickname, diary_title, diary_image, diary_hit, diary_created_at,\n" +
                 "if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt\n" +
-                "from Diary_feed D, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt\n" +
-                "where diary_title like \"%" + search_keyword + "%\" and diary_blame < 10  group by diary_idx order by diary_idx desc limit ?, ?;";
+                "from Diary_feed D, Member M, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt\n" +
+                "where diary_blame < 10 && D.mem_idx = M.mem_idx and diary_title like \"%" + search_keyword + "%\" group by diary_idx order by diary_idx desc limit ?, ?;";
         try {
             return jdbcTemplate.query(query, diaryFeedRowMapper(), page * Constant.FEED_PER_PAGE, Constant.FEED_PER_PAGE);
         } catch (Exception e) {
@@ -346,10 +362,11 @@ public class SearchDao implements SearchRepository {
 
     @Override
     public List<GetAllFeedsRes> searchCategoryDairyFeedByKeywordByTitleInLatest(String categoryIdx, String search_keyword, int page) {
-        String query = "select D.diary_idx, diary_roomType, D.mem_idx, mem_nickname, diary_title, diary_hit, diary_created_at, \n" +
+        String query = "select D.diary_idx, diary_roomType, D.mem_idx, M.mem_nickname, diary_title, diary_image, diary_hit, diary_created_at,\n" +
                 "if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt\n" +
-                "from Diary_feed D, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt\n" +
-                "where diary_roomType = ? and diary_title like \"%" + search_keyword + "%\" and diary_blame < 10  group by diary_idx order by diary_idx desc limit ?, ?;";
+                "from Diary_feed D, Member M, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt \n" +
+                "where diary_blame < 10 && D.mem_idx = M.mem_idx and diary_roomType = ? and diary_title like \"%" + search_keyword + "%\" \n" +
+                "group by diary_idx order by diary_idx desc limit ?, ?;";
         try {
             return jdbcTemplate.query(query, diaryFeedRowMapper(), categoryIdx, page * Constant.FEED_PER_PAGE, Constant.FEED_PER_PAGE);
         } catch (Exception e) {
@@ -360,10 +377,11 @@ public class SearchDao implements SearchRepository {
 
     @Override
     public List<GetAllFeedsRes> searchAllDairyFeedByKeywordByTitleContentInLatest(String search_keyword, int page) {
-        String query = "select D.diary_idx, diary_roomType, D.mem_idx, mem_nickname, diary_title, diary_hit, diary_created_at, \n" +
+        String query = "select D.diary_idx, diary_roomType, D.mem_idx, M.mem_nickname, diary_title, diary_image, diary_hit, diary_created_at,\n" +
                 "if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt\n" +
-                "from Diary_feed D, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt\n" +
-                "where (diary_title like \"%"+ search_keyword +"%\" or diary_content like \"%" + search_keyword +"%\") and diary_blame < 10  group by diary_idx order by diary_idx desc limit ?, ?;";
+                "from Diary_feed D, Member M, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt \n" +
+                "where diary_blame < 10 && D.mem_idx = M.mem_idx and (diary_title like \"%"+ search_keyword +"%\" or diary_content like \"%" + search_keyword +"%\") \n" +
+                "group by diary_idx order by diary_idx desc limit ?, ?;";
         try {
             return jdbcTemplate.query(query, diaryFeedRowMapper(), page * Constant.FEED_PER_PAGE, Constant.FEED_PER_PAGE);
         } catch (Exception e) {
@@ -374,10 +392,11 @@ public class SearchDao implements SearchRepository {
 
     @Override
     public List<GetAllFeedsRes> searchCategoryDairyFeedByKeywordByTitleContentInLatest(String categoryIdx, String search_keyword, int page) {
-        String query = "select D.diary_idx, diary_roomType, D.mem_idx, mem_nickname, diary_title, diary_hit, diary_created_at, \n" +
+        String query = "select D.diary_idx, diary_roomType, D.mem_idx, M.mem_nickname, diary_title, diary_image, diary_hit, diary_created_at,\n" +
                 "if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt\n" +
-                "from Diary_feed D, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt\n" +
-                "where diary_roomType = ? and (diary_title like \"%" + search_keyword + "%\" or diary_content like \"%" + search_keyword + "%\") and diary_blame < 10  group by diary_idx order by diary_idx desc limit ?, ?;";
+                "from Diary_feed D, Member M, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt \n" +
+                "where diary_blame < 10 && D.mem_idx = M.mem_idx and diary_roomType = ? and (diary_title like \"%" + search_keyword + "%\" or diary_content like \"%" + search_keyword + "%\") \n" +
+                "group by diary_idx order by diary_idx desc limit ?, ?;";
         try {
             return jdbcTemplate.query(query, diaryFeedRowMapper(), categoryIdx, page * Constant.FEED_PER_PAGE, Constant.FEED_PER_PAGE);
         } catch (Exception e) {
@@ -388,10 +407,14 @@ public class SearchDao implements SearchRepository {
 
     @Override
     public List<GetAllFeedsRes> searchAllDairyFeedByKeywordByMemberNicknameInLatest(String search_keyword, int page) {
-        String query = "select D.diary_idx, diary_roomType, D.mem_idx, mem_nickname, diary_title, diary_hit, diary_created_at, \n" +
+        String query = "select * \n" +
+                "from (\n" +
+                "select D.diary_idx, diary_roomType, D.mem_idx, M.mem_nickname, diary_title, diary_image, diary_hit, diary_created_at, \n" +
                 "if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt\n" +
-                "from Diary_feed D, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt\n" +
-                "where mem_nickname like \"%" + search_keyword + "%\" and diary_blame < 10  group by diary_idx order by diary_idx desc limit ?, ?;";
+                "from Diary_feed D, Member M, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt\n" +
+                "where diary_blame < 10 && D.mem_idx = M.mem_idx group by diary_idx order by diary_idx desc limit ?, ?\n" +
+                ") a\n" +
+                "where mem_nickname like \"%" + search_keyword + "%\";";
         try {
             return jdbcTemplate.query(query, diaryFeedRowMapper(), page * Constant.FEED_PER_PAGE, Constant.FEED_PER_PAGE);
         } catch (Exception e) {
@@ -402,10 +425,14 @@ public class SearchDao implements SearchRepository {
 
     @Override
     public List<GetAllFeedsRes> searchCategoryDairyFeedByKeywordByMemberNicknameInLatest(String categoryIdx, String search_keyword, int page) {
-        String query = "select D.diary_idx, diary_roomType, D.mem_idx, mem_nickname, diary_title, diary_hit, diary_created_at, \n" +
+        String query = "select * \n" +
+                "from (\n" +
+                "select D.diary_idx, diary_roomType, D.mem_idx, M.mem_nickname, diary_title, diary_image, diary_hit, diary_created_at, \n" +
                 "if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt\n" +
-                "from Diary_feed D, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt\n" +
-                "where diary_roomType = ? and mem_nickname like \"%" + search_keyword + "%\" and diary_blame < 10  group by diary_idx order by diary_idx desc limit ?, ?;";
+                "from Diary_feed D, Member M, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt\n" +
+                "where diary_roomType = ? and diary_blame < 10 && D.mem_idx = M.mem_idx group by diary_idx order by diary_idx desc limit ?, ? \n" +
+                ") a\n" +
+                "where mem_nickname like \"%" + search_keyword + "%\";";
         try {
             return jdbcTemplate.query(query, diaryFeedRowMapper(), categoryIdx, page * Constant.FEED_PER_PAGE, Constant.FEED_PER_PAGE);
         } catch (Exception e) {
@@ -416,7 +443,7 @@ public class SearchDao implements SearchRepository {
 
     @Override
     public List<GetAllFeedsRes> searchAllStoryFeedByKeywordByTitleInLatest(String search_keyword, int page) {
-        String query = "select S.story_idx, story_roomType, S.mem_idx, mem_nickname, story_title, story_hit, story_created_at, \n" +
+        String query = "select S.story_idx, story_roomType, S.mem_idx, mem_nickname, story_title, story_image, story_hit, story_created_at, \n" +
                 "if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt\n" +
                 "from Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt\n" +
                 "where S.mem_idx = M.mem_idx && story_blame < 10 and story_title like \"%" + search_keyword + "%\"  group by story_idx order by story_idx desc limit ?, ?;";
@@ -430,7 +457,7 @@ public class SearchDao implements SearchRepository {
 
     @Override
     public List<GetAllFeedsRes> searchCategoryStoryFeedByKeywordByTitleInLatest(String categoryIdx, String search_keyword, int page) {
-        String query = "select S.story_idx, story_roomType, S.mem_idx, mem_nickname, story_title, story_hit, story_created_at, \n" +
+        String query = "select S.story_idx, story_roomType, S.mem_idx, mem_nickname, story_title, story_image, story_hit, story_created_at, \n" +
                 "if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt\n" +
                 "from Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt\n" +
                 "where S.mem_idx = M.mem_idx && story_blame < 10 and story_roomType = ? and story_title like \"%" + search_keyword + "%\"  group by story_idx order by story_idx desc limit ?, ?;";
@@ -444,12 +471,13 @@ public class SearchDao implements SearchRepository {
 
     @Override
     public List<GetAllFeedsRes> searchAllStoryFeedByKeywordByTitleContentInLatest(String search_keyword, int page) {
-        String query = "select S.story_idx, story_roomType, S.mem_idx, mem_nickname, story_title, story_hit, story_created_at, \n" +
+        String query = "select S.story_idx, story_roomType, S.mem_idx, mem_nickname, story_title, story_image, story_hit, story_created_at, \n" +
                 "if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt\n" +
                 "from Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt\n" +
-                "where S.mem_idx = M.mem_idx && story_blame < 10 and (story_title like \"%" + search_keyword + "%\" or story_content like \"%" + search_keyword + "%\")  \n" +
+                "where S.mem_idx = M.mem_idx && story_blame < 10 and (story_title like \"%" + search_keyword + "%\" or story_content like \"%" + search_keyword + "%\") \n" +
                 "group by story_idx order by story_idx desc limit ?, ?;";
         try {
+            log.info("{}", query);
             return jdbcTemplate.query(query, storyFeedRowMapper(), page * Constant.FEED_PER_PAGE, Constant.FEED_PER_PAGE);
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -459,7 +487,7 @@ public class SearchDao implements SearchRepository {
 
     @Override
     public List<GetAllFeedsRes> searchCategoryStoryFeedByKeywordByTitleContentInLatest(String categoryIdx, String search_keyword, int page) {
-        String query = "select S.story_idx, story_roomType, S.mem_idx, mem_nickname, story_title, story_hit, story_created_at, \n" +
+        String query = "select S.story_idx, story_roomType, S.mem_idx, mem_nickname, story_title, story_image, story_hit, story_created_at, \n" +
                 "if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt\n" +
                 "from Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt\n" +
                 "where S.mem_idx = M.mem_idx && story_blame < 10 and story_roomType = ? and (story_title like \"%" + search_keyword + "%\" or story_content like \"%" + search_keyword + "%\")  \n" +
@@ -474,7 +502,7 @@ public class SearchDao implements SearchRepository {
 
     @Override
     public List<GetAllFeedsRes> searchAllStoryFeedByKeywordByMemberNicknameInLatest(String search_keyword, int page) {
-        String query = "select S.story_idx, story_roomType, S.mem_idx, mem_nickname, story_title, story_hit, story_created_at, \n" +
+        String query = "select S.story_idx, story_roomType, S.mem_idx, mem_nickname, story_title, story_image, story_hit, story_created_at, \n" +
                 "if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt\n" +
                 "from Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt\n" +
                 "where S.mem_idx = M.mem_idx && story_blame < 10 and mem_nickname like \"%" + search_keyword + "%\"\n" +
@@ -489,7 +517,7 @@ public class SearchDao implements SearchRepository {
 
     @Override
     public List<GetAllFeedsRes> searchCategoryStoryFeedByKeywordByMemberNicknameInLatest(String categoryIdx, String search_keyword, int page) {
-        String query = "select S.story_idx, story_roomType, S.mem_idx, mem_nickname, story_title, story_hit, story_created_at, \n" +
+        String query = "select S.story_idx, story_roomType, S.mem_idx, mem_nickname, story_title, story_image, story_hit, story_created_at, \n" +
                 "if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt\n" +
                 "from Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt\n" +
                 "where S.mem_idx = M.mem_idx && story_blame < 10 and story_roomType = ? and mem_nickname like \"%" + search_keyword + "%\"\n" +
@@ -571,16 +599,35 @@ public class SearchDao implements SearchRepository {
         return null;
     }
 
-    private Integer findMemberNickNameByMemberIdx(String userNickname) {
-        String query = "select mem_idx from Member where mem_nickname = ?";
+    private List<Integer> findMemberNickNameByMemberIdx(String userNickname) {
+        String query = "select * from Member where mem_nickname like \"%" + userNickname + "%\";";
 
         try {
-            List<Member> result = jdbcTemplate.query(query, memberRowMapper(), userNickname);
-            return result.get(0).getMemIdx();
+            List<Member> result = jdbcTemplate.query(query, memberRowMapper());
+            List<Integer> res = new ArrayList<>();
+            for (Member member : result) {
+                res.add(member.getMemIdx());
+            }
+            return res;
         } catch (Exception e) {
             log.error(e.getMessage());
         }
         return null;
+    }
+
+    private String makeMemberIdxString(List<Integer> memberIdx) {
+        String res = "(";
+        if (memberIdx.size() == 0) {
+            return null;
+        }
+        for (int i = 0; i < memberIdx.size(); i++) {
+            if (i == memberIdx.size() - 1) {
+                res += memberIdx.get(i) + ")";
+            } else {
+                res += memberIdx.get(i) + ", ";
+            }
+        }
+        return res;
     }
 
     private RowMapper<Member> memberRowMapper() {
@@ -617,6 +664,7 @@ public class SearchDao implements SearchRepository {
             res.setMemIdx(rs.getInt("mem_idx"));
             res.setMemNick(rs.getString("mem_nickname"));
             res.setTitle(rs.getString("diary_title"));
+            res.setImg(rs.getString("diary_image"));
             res.setHit(rs.getInt("diary_hit"));
             res.setCommentCnt(rs.getInt("comment_cnt"));
             res.setCreateAt(rs.getString("diary_created_at"));
@@ -631,6 +679,7 @@ public class SearchDao implements SearchRepository {
             res.setMemIdx(rs.getInt("mem_idx"));
             res.setMemNick(rs.getString("mem_nickname"));
             res.setTitle(rs.getString("story_title"));
+            res.setImg(rs.getString("story_image"));
             res.setHit(rs.getInt("story_hit"));
             res.setCommentCnt(rs.getInt("comment_cnt"));
             res.setCreateAt(rs.getString("story_created_at"));
