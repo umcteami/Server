@@ -32,7 +32,7 @@ public class ReivewProvider {
             List<String> filePath = new ArrayList();
             if(img != null) {   // 이미지가 있으면
                 for(int i = 0; i < img.size(); i++) {
-                    filePath.add(uploadImageS3.getS3(img.get(i).getUploadFilePath()));
+                    filePath.add(img.get(i).getUploadFilePath());
                 }
             }
             
