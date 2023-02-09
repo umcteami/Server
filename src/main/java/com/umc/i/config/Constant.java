@@ -1,10 +1,8 @@
 package com.umc.i.config;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.HashMap;
 
 
 // 프로젝트에서 공통적으로 사용하는 상수들
@@ -25,6 +23,12 @@ public class Constant {
         put("nurse", "1");
         put("rainbow", "2");
         put(null, null);
+    }};
+
+    public static final HashMap<String, String> STORY_CATEGORIES = new HashMap<>() {{
+        put("justchat", "1");
+        put("question", "2");
+        put("info", "3");
     }};
 
     public static List<String> SEARCH_TARGET = Arrays.asList("title", "title_content", "member_nickname");
