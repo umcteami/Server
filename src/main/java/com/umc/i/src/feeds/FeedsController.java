@@ -99,7 +99,7 @@ public class FeedsController {
 
     @ResponseBody
     @GetMapping("/story/all")   // 이야기방 전체 조회
-    public BaseResponse getStories(@RequestParam("page") int page) throws BaseException {
+    public BaseResponse getStories(@RequestParam(defaultValue = "0") int page) throws BaseException {
         try {
             return new BaseResponse<>(feedsProvider.getAllStories(page));
         } catch (Exception e) {
@@ -110,7 +110,7 @@ public class FeedsController {
 
     @ResponseBody
     @GetMapping("/story")   // 이야기방 카테고리별 조회
-    public BaseResponse getStoryByRoomType(@RequestParam("roomType") int roomType, @RequestParam("page") int page) throws BaseException {
+    public BaseResponse getStoryByRoomType(@RequestParam("roomType") int roomType, @RequestParam(defaultValue = "0") int page) throws BaseException {
         try {
             return new BaseResponse<>(feedsProvider.getStoryByRoomType(roomType, page));
         } catch (Exception e) {
@@ -132,7 +132,7 @@ public class FeedsController {
 
     @ResponseBody
     @GetMapping("/diary/all")   // 일기장 전체 조회
-    public BaseResponse getDiaries(@RequestParam("page") int page) throws BaseException {
+    public BaseResponse getDiaries(@RequestParam(defaultValue = "0") int page) throws BaseException {
         try {
             return new BaseResponse<>(feedsProvider.getAllDiaries(page));
         } catch (Exception e) {
@@ -143,7 +143,7 @@ public class FeedsController {
 
     @ResponseBody
     @GetMapping("/diary")   // 일기장 카테고리별 조회
-    public BaseResponse getDiariesByRoomType(@RequestParam("roomType") int roomType, @RequestParam("page") int page) throws BaseException {
+    public BaseResponse getDiariesByRoomType(@RequestParam("roomType") int roomType, @RequestParam(defaultValue = "0") int page) throws BaseException {
         try {
             return new BaseResponse<>(feedsProvider.getDiariesByRoomType(roomType, page));
         } catch (Exception e) {
@@ -198,7 +198,7 @@ public class FeedsController {
 
     @ResponseBody
     @GetMapping("") // 아이홈 통합 조회
-    public BaseResponse getAllFeeds(@RequestParam("page") int page) {
+    public BaseResponse getAllFeeds(@RequestParam(defaultValue = "0") int page) {
         try {
             return new BaseResponse<>(feedsProvider.getFeeds(page));
         } catch (Exception e) {
