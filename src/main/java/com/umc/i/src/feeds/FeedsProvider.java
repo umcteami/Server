@@ -30,9 +30,9 @@ public class FeedsProvider {
     private final UploadImageS3 uploadImageS3;
 
     // 이야기방 전체 조회
-    public List<GetAllFeedsRes> getAllStories() throws BaseException {
+    public List<GetAllFeedsRes> getAllStories(int page) throws BaseException {
         try {
-            return feedsDao.getAllStories();
+            return feedsDao.getAllStories(page);
         } catch (BaseException e) {
             e.printStackTrace();
             throw e;
@@ -40,18 +40,18 @@ public class FeedsProvider {
     }
 
     // 일기장 전체 조회
-    public List<GetAllFeedsRes> getAllDiaries() {
-        return feedsDao.getAllDiaries();
+    public List<GetAllFeedsRes> getAllDiaries(int page) {
+        return feedsDao.getAllDiaries(page);
     }
 
     // 이야기방 카테고리별 조회
-    public List<GetAllFeedsRes> getStoryByRoomType(int roomType) {
-        return feedsDao.getStoryRoomType(roomType);
+    public List<GetAllFeedsRes> getStoryByRoomType(int roomType, int page) {
+        return feedsDao.getStoryRoomType(roomType, page);
     }
 
     // 일기장 카테고리별 조회
-    public List<GetAllFeedsRes> getDiariesByRoomType(int roomType) {
-        return feedsDao.getDiariesByRoomType(roomType);
+    public List<GetAllFeedsRes> getDiariesByRoomType(int roomType, int page) {
+        return feedsDao.getDiariesByRoomType(roomType, page);
     }
 
     // 이야기방 상세 조회
@@ -96,7 +96,7 @@ public class FeedsProvider {
     }
 
     // 아이홈 통합 조회
-    public List<GetAllFeedsRes> getFeeds(){
-        return feedsDao.getAllFeeds();
+    public List<GetAllFeedsRes> getFeeds(int page){
+        return feedsDao.getAllFeeds(page);
     }
 }

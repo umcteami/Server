@@ -9,7 +9,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
 public class GetAllFeedsRes {
     private int boardType;      // 1: 이야기방, 2: 일기장
     private int roomType;       // 1: 수다방/간호일기, 2: 질문방/무지개일기, 3:정보방
@@ -20,6 +20,7 @@ public class GetAllFeedsRes {
     private String img;         // 대표 이미지
     private int hit;            // 조회수
     private int commentCnt;     // 댓글수
+    private int likeCnt;        // 좋아요 수
     private String createAt;    // 작성일
 
 }
