@@ -20,6 +20,7 @@ public class GetAllFeedsRes {
     private String img;         // 대표 이미지
     private int hit;            // 조회수
     private int commentCnt;     // 댓글수
+    private int likeCnt;        // 좋아요 수
     private String createAt;    // 작성일
 
 }
