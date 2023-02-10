@@ -21,6 +21,7 @@ public class Feeds {
     private String content;     // 내용
     private int hit;            // 조회수
     private int commentCnt;     // 댓글수
+    private int likeCnt;        // 좋아요 수
     private String createAt;    // 작성일
     private int islike;      // 좋아요 여부
 }

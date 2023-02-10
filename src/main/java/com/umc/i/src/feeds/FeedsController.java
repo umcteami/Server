@@ -66,22 +66,6 @@ public class FeedsController {
         
     }
 
-
-    // @ResponseBody
-    // @PatchMapping("/edit")  // 이야기방, 일기장 게시글 수정
-    // public BaseResponse<PatchFeedsRes> editFeeds(@RequestBody PatchFeedsReq patchFeedsReq) throws BaseException {
-    //     switch(patchFeedsReq.getBoardIdx()) {
-    //         case 1:     // 이야기방
-    //             if(patchFeedsReq.getRoomType() > 3) break;
-    //             return new BaseResponse<>(feedsService.editFeeds(patchFeedsReq, null));
-    //         case 2:     // 일기장
-    //             if(patchFeedsReq.getRoomType() > 2) break;
-    //             return new BaseResponse<>(feedsService.editFeeds(patchFeedsReq, null));
-    //     }
-
-    //     return new BaseResponse<>(BaseResponseStatus.POST_FEEDS_INVALID_TYPE);
-    // }
-
     @ResponseBody
     @PatchMapping("/edit")  // 이야기방, 일기장 게시글 수정(이미지 포함)
     public BaseResponse<PatchFeedsRes> editFeedsWithImg(@RequestPart("request") PatchFeedsReq patchFeedsReq,
@@ -115,9 +99,9 @@ public class FeedsController {
 
     @ResponseBody
     @GetMapping("/story/all")   // 이야기방 전체 조회
-    public BaseResponse getStories() throws BaseException {
+    public BaseResponse getStories(@RequestParam(defaultValue = "0") int page) throws BaseException {
         try {
-            return new BaseResponse<>(feedsProvider.getAllStories());
+            return new BaseResponse<>(feedsProvider.getAllStories(page));
         } catch (Exception e) {
             e.printStackTrace();
             return new BaseResponse<>(BaseResponseStatus.GET_REVIEW_FAIL);
@@ -126,9 +110,9 @@ public class FeedsController {
 
     @ResponseBody
     @GetMapping("/story")   // 이야기방 카테고리별 조회
-    public BaseResponse getStoryByRoomType(@RequestParam("roomType") int roomType) throws BaseException {
+    public BaseResponse getStoryByRoomType(@RequestParam("roomType") int roomType, @RequestParam(defaultValue = "0") int page) throws BaseException {
         try {
-            return new BaseResponse<>(feedsProvider.getStoryByRoomType(roomType));
+            return new BaseResponse<>(feedsProvider.getStoryByRoomType(roomType, page));
         } catch (Exception e) {
             e.printStackTrace();
             return new BaseResponse<>(BaseResponseStatus.GET_REVIEW_FAIL);
@@ -148,9 +132,9 @@ public class FeedsController {
 
     @ResponseBody
     @GetMapping("/diary/all")   // 일기장 전체 조회
-    public BaseResponse getDiaries() throws BaseException {
+    public BaseResponse getDiaries(@RequestParam(defaultValue = "0") int page) throws BaseException {
         try {
-            return new BaseResponse<>(feedsProvider.getAllDiaries());
+            return new BaseResponse<>(feedsProvider.getAllDiaries(page));
         } catch (Exception e) {
             e.printStackTrace();
             return new BaseResponse<>(BaseResponseStatus.GET_REVIEW_FAIL);
@@ -159,9 +143,9 @@ public class FeedsController {
 
     @ResponseBody
     @GetMapping("/diary")   // 일기장 카테고리별 조회
-    public BaseResponse getDiariesByRoomType(@RequestParam("roomType") int roomType) throws BaseException {
+    public BaseResponse getDiariesByRoomType(@RequestParam("roomType") int roomType, @RequestParam(defaultValue = "0") int page) throws BaseException {
         try {
-            return new BaseResponse<>(feedsProvider.getDiariesByRoomType(roomType));
+            return new BaseResponse<>(feedsProvider.getDiariesByRoomType(roomType, page));
         } catch (Exception e) {
             e.printStackTrace();
             return new BaseResponse<>(BaseResponseStatus.GET_REVIEW_FAIL);
@@ -214,9 +198,9 @@ public class FeedsController {
 
     @ResponseBody
     @GetMapping("") // 아이홈 통합 조회
-    public BaseResponse getAllFeeds() {
+    public BaseResponse getAllFeeds(@RequestParam(defaultValue = "0") int page) {
         try {
-            return new BaseResponse<>(feedsProvider.getFeeds());
+            return new BaseResponse<>(feedsProvider.getFeeds(page));
         } catch (Exception e) {
             return new BaseResponse<>(BaseResponseStatus.GET_REVIEW_FAIL);
         }
