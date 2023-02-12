@@ -7,10 +7,10 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ImageUrl {
+public class MarketImage {
     private int imageIdx;
     private int contentCategory;
     private int contentIdx;
     private String imageUrl;
-    
+    private int imageOrder;
 }
