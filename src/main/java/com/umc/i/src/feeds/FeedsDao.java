@@ -208,7 +208,7 @@ public class FeedsDao {
     // 이야기방 전체 조회
     public List<GetAllFeedsRes> getAllStories(int page) throws BaseException {
         try {
-            String getAllFeedsQuery = "select S.story_idx, story_roomType, S.mem_idx, M.mem_nickname, story_title, story_image, story_hit, story_created_at, ";
+            String getAllFeedsQuery = "select S.story_idx, story_roomType, S.mem_idx, M.mem_nickname, mem_profile_url, story_title, story_image, story_hit, story_created_at, ";
             getAllFeedsQuery += " if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt, if(S.story_idx = LikeCnt.story_idx, like_cnt, 0) as like_cnt ";
             getAllFeedsQuery += " from Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt, (select story_idx, count(*) as like_cnt from Story_feed_like group by story_idx) LikeCnt";
             getAllFeedsQuery += " where story_blame < 10 && S.mem_idx = M.mem_idx group by story_idx order by story_idx desc limit 20 offset ?";
@@ -220,6 +220,7 @@ public class FeedsDao {
                 rs.getInt("story_idx"), 
                 rs.getInt("mem_idx"),
                 rs.getString("mem_nickname"),
+                rs.getString("mem_profile_url"),
                 rs.getString("story_title"), 
                 rs.getString("story_image"),
                 rs.getInt("story_hit"),
@@ -236,7 +237,7 @@ public class FeedsDao {
     
     // 이야기방 카테고리별 조회
     public List<GetAllFeedsRes> getStoryRoomType(int roomType, int page) {
-        String getAllFeedsQuery = "select S.story_idx, story_roomType, S.mem_idx, M.mem_nickname, story_title, story_image, story_hit, story_created_at, ";
+        String getAllFeedsQuery = "select S.story_idx, story_roomType, S.mem_idx, M.mem_nickname, mem_profile_url, story_title, story_image, story_hit, story_created_at, ";
         getAllFeedsQuery += " if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt, if(S.story_idx = LikeCnt.story_idx, like_cnt, 0) as like_cnt";
         getAllFeedsQuery += " from Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt, (select story_idx, count(*) as like_cnt from Story_feed_like group by story_idx) LikeCnt";
         getAllFeedsQuery += " where story_roomType = ? && story_blame < 10 && S.mem_idx = M.mem_idx group by story_idx order by story_idx desc limit 20 offset ?";
@@ -248,6 +249,7 @@ public class FeedsDao {
             rs.getInt("story_idx"), 
             rs.getInt("mem_idx"),
             rs.getString("mem_nickname"),
+            rs.getString("mem_profile_url"),
             rs.getString("story_title"), 
             rs.getString("story_image"),
             rs.getInt("story_hit"),
@@ -288,7 +290,7 @@ public class FeedsDao {
 
     // 일기장 전체 조회
     public List<GetAllFeedsRes> getAllDiaries(int page) {
-        String getAllFeedsQuery = "select D.diary_idx, diary_roomType, D.mem_idx, M.mem_nickname, diary_title, diary_image, diary_hit, diary_created_at, ";
+        String getAllFeedsQuery = "select D.diary_idx, diary_roomType, D.mem_idx, M.mem_nickname, mem_profile_url, diary_title, diary_image, diary_hit, diary_created_at, ";
         getAllFeedsQuery += " if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt, if(D.diary_idx = LikeCnt.diary_idx, like_cnt, 0) as like_cnt";
         getAllFeedsQuery += " from Diary_feed D, Member M, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt, (select diary_idx, count(*) as like_cnt from Diary_feed_like group by diary_idx) LikeCnt";
         getAllFeedsQuery += " where diary_blame < 10 && D.mem_idx = M.mem_idx group by diary_idx order by diary_idx desc limit 20 offset ?";
@@ -300,6 +302,7 @@ public class FeedsDao {
             rs.getInt("diary_idx"), 
             rs.getInt("mem_idx"),
             rs.getString("mem_nickname"),
+            rs.getString("mem_profile_url"),
             rs.getString("diary_title"), 
             rs.getString("diary_image"),
             rs.getInt("diary_hit"),
@@ -311,7 +314,7 @@ public class FeedsDao {
 
     // 일기장 카테고리별 조회
     public List<GetAllFeedsRes> getDiariesByRoomType(int roomType, int page) {
-        String getAllFeedsQuery = "select D.diary_idx, diary_roomType, D.mem_idx, M.mem_nickname, diary_title, diary_image, diary_hit, diary_created_at, ";
+        String getAllFeedsQuery = "select D.diary_idx, diary_roomType, D.mem_idx, M.mem_nickname, mem_profile_url, diary_title, diary_image, diary_hit, diary_created_at, ";
         getAllFeedsQuery += " if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt, if(D.diary_idx = LikeCnt.diary_idx, like_cnt, 0) as like_cnt";
         getAllFeedsQuery += " from Diary_feed D, Member M, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt, (select diary_idx, count(*) as like_cnt from Diary_feed_like group by diary_idx) LikeCnt";
         getAllFeedsQuery += " where diary_roomType = ? && diary_blame < 10 && D.mem_idx = M.mem_idx group by diary_idx order by diary_idx desc limit 20 offset ?";
@@ -323,6 +326,7 @@ public class FeedsDao {
             rs.getInt("diary_idx"), 
             rs.getInt("mem_idx"),
             rs.getString("mem_nickname"),
+            rs.getString("mem_profile_url"),
             rs.getString("diary_title"), 
             rs.getString("diary_image"),
             rs.getInt("diary_hit"),
@@ -537,6 +541,7 @@ public class FeedsDao {
             rs.getInt("feedIdx"),
             rs.getInt("mem_idx"),
             rs.getString("mem_nickname"),
+            null,
             rs.getString("title"),
             rs.getString("image"),
             rs.getInt("hit"),

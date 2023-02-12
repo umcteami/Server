@@ -16,6 +16,7 @@ public class GetAllFeedsRes {
     private int feedIdx;        // 게시물 인덱스
     private int memIdx;         // 작성자 인덱스
     private String memNick;     // 작성자 닉네임
+    private String memProfile;  // 작성자 프로필
     private String title;       // 제목
     private String img;         // 대표 이미지
     private int hit;            // 조회수

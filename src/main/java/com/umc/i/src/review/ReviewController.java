@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -79,9 +80,9 @@ public class ReviewController {
 
     @ResponseBody
     @GetMapping("")     // 장터 후기 전체 조회
-    public BaseResponse<List<GetAllReviewsRes>> getAllReviews() throws BaseException {
+    public BaseResponse<List<GetAllReviewsRes>> getAllReviews(@RequestParam(defaultValue = "0") int page) throws BaseException {
         try {
-            return new BaseResponse<>(reivewProvider.getAllReviews());
+            return new BaseResponse<>(reivewProvider.getAllReviews(page));
         } catch (Exception e) {
             e.getStackTrace();
             return new BaseResponse<> (BaseResponseStatus.GET_REVIEW_FAIL);

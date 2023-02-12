@@ -44,8 +44,8 @@ public class ReivewProvider {
     }
 
     // 장터후기 전체 조회
-    public List<GetAllReviewsRes> getAllReviews() {
-        return reviewDao.getAllReviews();
+    public List<GetAllReviewsRes> getAllReviews(int page) {
+        return reviewDao.getAllReviews(page);
 
     }
 

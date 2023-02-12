@@ -157,12 +157,13 @@ public class ReviewDao {
     
     
     // 장터후기 전체 조회
-    public List<GetAllReviewsRes> getAllReviews() {
-        String getAllReviewQuery = "select review_idx, sell_mem_idx, A.mem_nickname as seller_nick, buy_mem_idx, B.mem_nickname as buyer_nick, ";
-        getAllReviewQuery += " I.Market_review.review_goods, review_content, review_hit, review_created_at, review_image ";
-        getAllReviewQuery += " from Market_review, Member A, Member B";
+    public List<GetAllReviewsRes> getAllReviews(int page) {
+        String getAllReviewQuery = "select Market_review.review_idx, sell_mem_idx, A.mem_nickname as seller_nick, buy_mem_idx, B.mem_nickname as buyer_nick, B.mem_profile_url, ";
+        getAllReviewQuery += " I.Market_review.review_goods, review_content, review_hit, review_created_at, review_image, if(likeCnt >= 0, likeCnt, 0) as likeCnt, if(comment_cnt >= 0, comment_cnt, 0) as comment_cnt ";
+        getAllReviewQuery += " from Market_review left join (select market_re_idx, count(*) as likeCnt from Market_review_like where Market_review_like.mrl_status = 1 group by market_re_idx) as MRL on review_idx = market_re_idx ";
+        getAllReviewQuery += " left join (select review_idx, count(*) as comment_cnt from Market_review_comment group by review_idx) as MRC on Market_review.review_idx = MRC.review_idx, Member A, Member B";
         getAllReviewQuery += " where Market_review.sell_mem_idx = A.mem_idx && Market_review.buy_mem_idx = B.mem_idx";
-        getAllReviewQuery += " order by review_created_at desc limit 20 offset 0";
+        getAllReviewQuery += " order by review_created_at desc limit 20 offset ?";
     
         return this.jdbcTemplate.query(getAllReviewQuery, 
         (rs, rowNum) -> new GetAllReviewsRes(
@@ -171,9 +172,13 @@ public class ReviewDao {
             rs.getInt("sell_mem_idx"),
             rs.getString("buyer_nick"),
             rs.getString("seller_nick"),
+            rs.getString("mem_profile_url"),
             rs.getString("review_goods"),
             rs.getInt("review_hit"),
+            rs.getInt("comment_cnt"),
+            rs.getInt("likeCnt"),
             rs.getString("review_created_at"),
-            rs.getString("review_image")));
+            rs.getString("review_image")),
+            page);
     }
 }
