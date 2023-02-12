@@ -205,6 +205,16 @@ public class FeedsController {
             return new BaseResponse<>(BaseResponseStatus.GET_REVIEW_FAIL);
         }
     }
+
+    @ResponseBody
+    @GetMapping("/hot") // 아이홈 통합 조회 - 인기순
+    public BaseResponse getHotFeeds(@RequestParam(defaultValue = "0") int page) {
+        try {
+            return new BaseResponse<>(feedsProvider.getHotFeeds(page));
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
     
     //게시글 신고하기 - clear
     @ResponseBody

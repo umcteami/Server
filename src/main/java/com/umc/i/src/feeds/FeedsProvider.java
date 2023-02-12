@@ -99,4 +99,14 @@ public class FeedsProvider {
     public List<GetAllFeedsRes> getFeeds(int page){
         return feedsDao.getAllFeeds(page);
     }
+
+    // 아이홈 인기순 조회
+    public List<GetAllFeedsRes> getHotFeeds(int page) throws BaseException {
+        try {
+            return feedsDao.getHotFeeds(page);
+        } catch(BaseException e) {
+            throw e;
+        }
+
+    }
 }
