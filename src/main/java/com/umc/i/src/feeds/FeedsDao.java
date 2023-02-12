@@ -581,9 +581,56 @@ public class FeedsDao {
         } catch (Exception e) {
             e.printStackTrace();
             throw new BaseException(BaseResponseStatus.GET_REVIEW_FAIL);
-        }
+        }   
+    }
 
-        
+    // 게시판별 인기순 조회
+    public List<GetAllFeedsRes> getHotStories(int filter, int page) throws BaseException {
+        try {
+            String getHotStoriesQuery = "select 1 as boardType, S.story_idx as feedIdx, story_roomType as roomType, S.mem_idx, mem_nickname, story_title as title, story_image as image, ";
+            getHotStoriesQuery += " story_hit as hit, story_created_at as createAt, if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt, if(S.story_idx = LikeCnt.story_idx, like_cnt, 0) as like_cnt";
+            getHotStoriesQuery += " from Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt, (select story_idx, count(*) as like_cnt from Story_feed_like group by story_idx) LikeCnt";
+            
+            switch(filter) {
+                case 1:     // 오늘(default)
+                    getHotStoriesQuery += " where story_created_at between DATE_FORMAT(now(), '%Y-%m-%d') and now()";
+                    getHotStoriesQuery += " && S.mem_idx = M.mem_idx && S.story_blame < 10";
+                    getHotStoriesQuery += " group by S.story_idx order by hit desc, story_created_at desc limit 30 offset ?";
+                    break;
+
+                case 2:     // 24시간
+                    getHotStoriesQuery += " where story_created_at between DATE_SUB(NOW(), interval 24 hour) and now()";
+                    getHotStoriesQuery += " && S.mem_idx = M.mem_idx && S.story_blame < 10";
+                    getHotStoriesQuery += " group by S.story_idx order by hit desc, story_created_at desc limit 30 offset ?";
+                    break;
+
+                case 3:     // 일주일
+                    getHotStoriesQuery += " where story_created_at between DATE_FORMAT(DATE_SUB(NOW(), INTERVAL WEEKDAY(NOW()) day), '%Y-%m-%d') and now()";
+                    getHotStoriesQuery += " && S.mem_idx = M.mem_idx && S.story_blame < 10";
+                    getHotStoriesQuery += " group by S.story_idx order by hit desc, story_created_at desc limit 30 offset ?";
+                    break;
+            }
+            
+            return this.jdbcTemplate.query(getHotStoriesQuery, 
+            (rs, rowNum) -> new GetAllFeedsRes(
+                rs.getInt("boardType"),
+                rs.getInt("roomType"),
+                rs.getInt("feedIdx"),
+                rs.getInt("mem_idx"),
+                rs.getString("mem_nickname"),
+                null,
+                rs.getString("title"),
+                rs.getString("image"),
+                rs.getInt("hit"),
+                rs.getInt("comment_cnt"),
+                rs.getInt("like_cnt"),
+                rs.getString("createAt")),
+                page);
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BaseException(BaseResponseStatus.GET_REVIEW_FAIL);
+        }
     }
 
     //게시글 신고하기

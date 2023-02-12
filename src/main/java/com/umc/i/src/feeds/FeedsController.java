@@ -215,6 +215,22 @@ public class FeedsController {
             return new BaseResponse<>(e.getStatus());
         }
     }
+
+    @ResponseBody
+    @GetMapping("/hot/{boardType}") // 아이홈 게시판별 조회 - 인기순
+    public BaseResponse getHotFeedsByBoard(@PathVariable("boardType") String boardType, @RequestParam(defaultValue = "1") int filter, @RequestParam(defaultValue = "0") int page) {
+        try {
+            switch (boardType) {
+                case "story":
+                    return new BaseResponse<>(feedsProvider.getHotStories(filter, page));
+                case "diary":
+                case "review":
+            }
+            return new BaseResponse<>(BaseResponseStatus.GET_INVALID_FILTER);
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
     
     //게시글 신고하기 - clear
     @ResponseBody

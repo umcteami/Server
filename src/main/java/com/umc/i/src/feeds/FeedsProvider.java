@@ -107,6 +107,14 @@ public class FeedsProvider {
         } catch(BaseException e) {
             throw e;
         }
+    }
 
+    // 아이홈 게시판별 인기순 조회
+    public List<GetAllFeedsRes> getHotStories(int filter, int page) throws BaseException {
+        try {
+            return feedsDao.getHotStories(filter, page);
+        } catch (BaseException e)  {
+            throw e;
+        }
     }
 }
