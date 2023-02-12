@@ -3,7 +3,11 @@ package com.umc.i.src.market.feed;
 import com.umc.i.config.Constant;
 import com.umc.i.src.market.feed.model.GetMarketFeedRes;
 import com.umc.i.src.market.feed.model.GetMarketFeedReq;
+import com.umc.i.src.market.feed.model.MarketImage;
 import com.umc.i.src.member.model.Member;
+import com.umc.i.utils.S3Storage.Image;
+import com.umc.i.utils.S3Storage.S3Uploader;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;
@@ -19,13 +23,12 @@ import java.util.Optional;
 
 @Slf4j
 @Repository
+@RequiredArgsConstructor
 public class MarketFeedDao implements MarketFeedRepository {
 
     private final JdbcTemplate jdbcTemplate;
-
-    public MarketFeedDao(DataSource dataSource) {
-        jdbcTemplate = new JdbcTemplate(dataSource);
-    }
+    
+    private final S3Uploader s3Uploader;
 
     @Override
     public int getFeedUserIdx(String marketIdx) {
@@ -118,7 +121,25 @@ public class MarketFeedDao implements MarketFeedRepository {
     }
 
     public void deleteImages(int marketIdx) {
-        String query = "delete from Image_url where content_idx = ? and content_category = 4";
+        String query = "select * from Image_url where content_idx = ? and content_category = 4;";
+
+        try {
+            List<MarketImage> imageList = jdbcTemplate.query(query,
+                    (rs, rowNum) -> new MarketImage(
+                            rs.getInt("image_idx"),
+                            rs.getInt("content_category"),
+                            rs.getInt("content_idx"),
+                            rs.getString("image_url"),
+                            rs.getInt("image_order")
+                    ), marketIdx);
+            for (MarketImage image : imageList) {
+                s3Uploader.delete(image.getImageUrl());
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        
+        query = "delete from Image_url where content_idx = ? and content_category = 4";
 
         try {
             jdbcTemplate.update(query, marketIdx);
