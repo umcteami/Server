@@ -633,6 +633,54 @@ public class FeedsDao {
         }
     }
 
+    public List<GetAllFeedsRes> getHotDiaries(int filter, int page) throws BaseException {
+        try {
+            String getHotDiariesQuery = "select 2 as boardType, D.diary_idx as feedIdx, diary_roomType as roomType, D.mem_idx, M.mem_nickname, diary_title as title, diary_image as image,";
+            getHotDiariesQuery += " diary_hit as hit, diary_created_at as createAt, if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt, if(D.diary_idx = LikeCnt.diary_idx, like_cnt, 0) as like_cnt";
+            getHotDiariesQuery += " from Diary_feed D, Member M, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt, (select diary_idx, count(*) as like_cnt from Diary_feed_like group by diary_idx) LikeCnt";
+            
+            switch(filter) {
+                case 1:     // 오늘(default)
+                getHotDiariesQuery += " where diary_created_at between DATE_FORMAT(now(), '%Y-%m-%d') and now()";
+                getHotDiariesQuery += " && D.mem_idx = M.mem_idx && D.diary_blame < 10";
+                getHotDiariesQuery += " group by D.diary_idx order by hit desc, diary_created_at desc limit 30 offset ?";
+                    break;
+
+                case 2:     // 24시간
+                getHotDiariesQuery += " where diary_created_at between DATE_SUB(NOW(), interval 24 hour) and now()";
+                getHotDiariesQuery += " && D.mem_idx = M.mem_idx && D.diary_blame < 10";
+                getHotDiariesQuery += " group by D.diary_idx order by hit desc, diary_created_at desc limit 30 offset ?";
+                    break;
+
+                case 3:     // 일주일
+                getHotDiariesQuery += " where diary_created_at between DATE_FORMAT(DATE_SUB(NOW(), INTERVAL WEEKDAY(NOW()) day), '%Y-%m-%d') and now()";
+                getHotDiariesQuery += " && D.mem_idx = M.mem_idx && D.diary_blame < 10";
+                getHotDiariesQuery += " group by D.diary_idx order by hit desc, diary_created_at desc limit 30 offset ?";
+                    break;
+            }
+            
+            return this.jdbcTemplate.query(getHotDiariesQuery, 
+            (rs, rowNum) -> new GetAllFeedsRes(
+                rs.getInt("boardType"),
+                rs.getInt("roomType"),
+                rs.getInt("feedIdx"),
+                rs.getInt("mem_idx"),
+                rs.getString("mem_nickname"),
+                null,
+                rs.getString("title"),
+                rs.getString("image"),
+                rs.getInt("hit"),
+                rs.getInt("comment_cnt"),
+                rs.getInt("like_cnt"),
+                rs.getString("createAt")),
+                page);
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BaseException(BaseResponseStatus.GET_REVIEW_FAIL);
+        }
+    }
+
     //게시글 신고하기
     public int postBlame(PostBlameReq postBlameReq) {
         String doubleProtectQuery = "select count(*) from Blame where mem_idx = ? and target_type = ? and target_idx = ?";

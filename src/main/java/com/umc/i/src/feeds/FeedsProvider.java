@@ -117,4 +117,12 @@ public class FeedsProvider {
             throw e;
         }
     }
+
+    public List<GetAllFeedsRes> getHotDiaries(int filter, int page) throws BaseException {
+        try {
+            return feedsDao.getHotDiaries(filter, page);
+        } catch (BaseException e)  {
+            throw e;
+        }
+    }
 }
