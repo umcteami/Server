@@ -134,25 +134,37 @@ public class ReviewDao {
     }
 
     // 장터 후기 상세 조회
-    public Review getReview(int reviewIdx) {
-        String getReviewQuery = "update Market_review set review_hit = review_hit + 1";
-        this.jdbcTemplate.update(getReviewQuery);
-
-        getReviewQuery = "select review_idx, sell_mem_idx, A.mem_nickname as seller_nick, buy_mem_idx, B.mem_nickname as buyer_nick, review_goods, review_content, review_hit, review_created_at";
-        getReviewQuery += " from Market_review, Member A, Member B where review_idx = ? && sell_mem_idx = A.mem_idx && buy_mem_idx = B.mem_idx";
+    public Review getReview(int reviewIdx, int memIdx) throws BaseException {
+        try {
+            String getReviewQuery = "update Market_review set review_hit = review_hit + 1";
+            this.jdbcTemplate.update(getReviewQuery);
     
-        return this.jdbcTemplate.queryForObject(getReviewQuery, 
-        (rs, rowNum) -> new Review(
-            rs.getInt("review_idx"),
-            rs.getInt("buy_mem_idx"),
-            rs.getInt("sell_mem_idx"),
-            rs.getString("buyer_nick"),
-            rs.getString("seller_nick"),
-            rs.getString("review_goods"),
-            rs.getString("review_content"),
-            rs.getInt("review_hit"),
-            rs.getString("review_created_at")), 
-            reviewIdx);
+            getReviewQuery = "select review_idx, sell_mem_idx, A.mem_nickname as seller_nick, buy_mem_idx, B.mem_nickname as buyer_nick, B.mem_profile_url, review_goods, review_content, review_hit, review_created_at, comment_cnt, like_cnt, islike";
+            getReviewQuery += " from Market_review , Member A, Member B, (select count(*) as comment_cnt from Market_review_comment where review_idx = ?) RC, ";
+            getReviewQuery += " (select count(*) as like_cnt from Market_review_like where market_re_idx = ? && Market_review_like.mrl_status = 1) RL, (select count(*) as islike from Market_review_like where market_re_idx = ? && mrl_status = 1 && mem_idx = ?) RisLike";
+            getReviewQuery += " where review_idx = ? && sell_mem_idx = A.mem_idx && buy_mem_idx = B.mem_idx && Market_review.review_blame < 10";
+        
+            return this.jdbcTemplate.queryForObject(getReviewQuery, 
+            (rs, rowNum) -> new Review(
+                rs.getInt("review_idx"),
+                rs.getInt("buy_mem_idx"),
+                rs.getInt("sell_mem_idx"),
+                rs.getString("buyer_nick"),
+                rs.getString("seller_nick"),
+                rs.getString("mem_profile_url"),
+                rs.getString("review_goods"),
+                rs.getString("review_content"),
+                rs.getInt("review_hit"),
+                rs.getInt("comment_cnt"),
+                rs.getInt("like_cnt"),
+                rs.getString("review_created_at"),
+                rs.getInt("islIke")), 
+                reviewIdx, reviewIdx, reviewIdx, memIdx, reviewIdx);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BaseException(BaseResponseStatus.GET_REVIEW_FAIL);
+        }
+
     }
     
     

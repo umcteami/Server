@@ -74,8 +74,12 @@ public class ReviewController {
 
     @ResponseBody
     @GetMapping("/{reviewIdx}")     // 장터 후기 조회
-    public BaseResponse getReview(@PathVariable("reviewIdx") int reviewIdx) throws BaseException{
-        return new BaseResponse<>(reivewProvider.getReview(reviewIdx));
+    public BaseResponse getReview(@PathVariable("reviewIdx") int reviewIdx, @RequestParam("memIdx") int memIdx) throws BaseException{
+        try {
+            return new BaseResponse<>(reivewProvider.getReview(reviewIdx, memIdx));
+        } catch(BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
     }
 
     @ResponseBody
