@@ -27,7 +27,7 @@ public class MarketFeedController {
 //    private final JwtServiceImpl jwtService;
 
     @PostMapping("/market")
-    public BaseResponse<PostMarketFeedRes> postNewsFeed(@RequestHeader Map<String, String> headers,
+    public BaseResponse postNewsFeed(@RequestHeader Map<String, String> headers,
                                                         @RequestPart(name = "request") GetMarketFeedReq marketFeedReq,
                                                         @RequestPart(required = false, name = "images") List<MultipartFile> files) {
         /**
@@ -45,10 +45,12 @@ public class MarketFeedController {
 //        marketFeedReq.setUserId(memberId);
 
         int marketIdx = marketFeedService.postNewFeed(marketFeedReq);
-        log.info("markedIdx={}", marketIdx);
 
         if (marketIdx == -1) {
             return new BaseResponse<>(BaseResponseStatus.POST_MARKET_FEED_FAILED);
+        }
+        if (files == null) {
+            return new BaseResponse<>(BaseResponseStatus.FEED_WITHOUT_MEDIA);
         }
 
         List<String> filesUrlList = s3Uploader.upload(files);
@@ -56,7 +58,9 @@ public class MarketFeedController {
         marketFeedService.postFeedImages(filesUrlList, marketIdx);
         marketFeedService.postCoverImage(filesUrlList, String.valueOf(marketIdx));
 
-        return new BaseResponse<>(new PostMarketFeedRes(marketFeedReq.getUserIdx(), marketIdx));
+        GetMarketFeedRes result = marketFeedService.getFeedByMarketIdx(String.valueOf(marketIdx), String.valueOf(marketFeedReq.getUserIdx()));
+
+        return new BaseResponse<>(result);
     }
 
     @PutMapping("/market/edit")
@@ -65,12 +69,14 @@ public class MarketFeedController {
                                          @RequestPart("images") List<MultipartFile> multipartFiles) {
 
         int feedUserIdx = marketFeedService.getFeedUserIdx(marketIdx);
-        log.info("feedUserIdx={}", feedUserIdx);
-        log.info("userIdx={}", marketFeedReq.getUserIdx());
 
         if (marketFeedReq.getUserIdx() != feedUserIdx) {
             return new BaseResponse<>(BaseResponseStatus.FEED_UNAUTHORIZED);
         }
+        if (multipartFiles == null) {
+            return new BaseResponse<>(BaseResponseStatus.FEED_WITHOUT_MEDIA);
+        }
+
 
         marketFeedService.updateFeed(marketIdx, marketFeedReq);
         marketFeedService.deleteImages(Integer.parseInt(marketIdx));
@@ -80,7 +86,9 @@ public class MarketFeedController {
         int uploadedImagesCnt = marketFeedService.postFeedImages(filesUrlList, Integer.parseInt(marketIdx));
         marketFeedService.postCoverImage(filesUrlList, marketIdx);
 
-        return new BaseResponse<>(new PostMarketFeedRes(marketFeedReq.getUserIdx(), Integer.parseInt(marketIdx)));
+        GetMarketFeedRes result = marketFeedService.getFeedByMarketIdx(marketIdx, String.valueOf(feedUserIdx));
+
+        return new BaseResponse<>(result);
     }
 
     @DeleteMapping("/market/delete")
