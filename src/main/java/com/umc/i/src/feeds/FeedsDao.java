@@ -563,6 +563,7 @@ public class FeedsDao {
             getAllFeedsQuery += " from Diary_feed D, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt, (select diary_idx, count(*) as like_cnt from Diary_feed_like group by diary_idx) LikeCnt";
             getAllFeedsQuery += " where diary_created_at between DATE_ADD(now(), interval -1 week) and now() && D.diary_blame < 10 group by D.diary_idx UNION";
             getAllFeedsQuery += "  select 3 as boardType, review_idx as feedIdx, null as roomType, buy_mem_idx as mem_idx, B.mem_nickname as mem_nickname, concat(A.mem_nickname, '님의 ', I.Market_review.review_goods) as title, review_image as image, review_hit as hit, review_created_at as createAt, if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt, if(Market_review.review_idx = LikeCnt.market_re_idx, like_cnt, 0) as like_cnt";
+
             getAllFeedsQuery += " from Market_review, Member A, Member B , (select review_idx, count(*) as comment_cnt from Market_review_comment group by review_idx) Cmt, (select market_re_idx, count(*) as like_cnt from Market_review_like group by market_re_idx) LikeCnt where review_created_at between DATE_ADD(now(), interval -1 week) and now() && Market_review.sell_mem_idx = A.mem_idx && Market_review.buy_mem_idx = B.mem_idx && Market_review.review_blame < 10";
             getAllFeedsQuery += " order by hit desc limit 20 offset ?";
     
