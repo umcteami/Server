@@ -3,7 +3,10 @@ package com.umc.i.src.market.feed;
 import com.umc.i.config.Constant;
 import com.umc.i.src.market.feed.model.GetMarketFeedRes;
 import com.umc.i.src.market.feed.model.GetMarketFeedReq;
+import com.umc.i.src.market.feed.model.MarketImage;
 import com.umc.i.src.member.model.Member;
+import com.umc.i.utils.S3Storage.S3Uploader;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;
@@ -19,13 +22,12 @@ import java.util.Optional;
 
 @Slf4j
 @Repository
+@RequiredArgsConstructor
 public class MarketFeedDao implements MarketFeedRepository {
 
     private final JdbcTemplate jdbcTemplate;
-
-    public MarketFeedDao(DataSource dataSource) {
-        jdbcTemplate = new JdbcTemplate(dataSource);
-    }
+    
+    private final S3Uploader s3Uploader;
 
     @Override
     public int getFeedUserIdx(String marketIdx) {
@@ -118,7 +120,25 @@ public class MarketFeedDao implements MarketFeedRepository {
     }
 
     public void deleteImages(int marketIdx) {
-        String query = "delete from Image_url where content_idx = ? and content_category = 4";
+        String query = "select * from Image_url where content_idx = ? and content_category = 4;";
+
+        try {
+            List<MarketImage> imageList = jdbcTemplate.query(query,
+                    (rs, rowNum) -> new MarketImage(
+                            rs.getInt("image_idx"),
+                            rs.getInt("content_category"),
+                            rs.getInt("content_idx"),
+                            rs.getString("image_url"),
+                            rs.getInt("image_order")
+                    ), marketIdx);
+            for (MarketImage image : imageList) {
+                s3Uploader.delete(image.getImageUrl());
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        
+        query = "delete from Image_url where content_idx = ? and content_category = 4";
 
         try {
             jdbcTemplate.update(query, marketIdx);
@@ -211,127 +231,131 @@ public class MarketFeedDao implements MarketFeedRepository {
 
     @Override
     public List<GetMarketFeedRes> getAllFeed(int userIdx, String soldout, int page) {
-        String query = "select a.*, b.market_like_count\n" +
-                "from (\n" +
-                "\tselect \n" +
-                "\t\tm.market_idx,\n" +
-                "\t\tm.mem_idx, \n" +
-                "\t\tm.market_group, \n" +
-                "\t\tm.market_price, \n" +
-                "\t\tm.market_title, \n" +
-                "\t\tm.market_image, \n" +
-                "\t\tm.market_soldout, \n" +
-                "\t\tm.market_hit, \n" +
-                "\t\tm.market_created_at, \n" +
-                "\t\tIF (ml.mem_idx22 is null, false, true) as mem_liked\n" +
-                "\tfrom Market m \n" +
-                "\tleft join (\n" +
-                "\t\tselect market_idx, mem_idx22 \n" +
-                "\t\tfrom Market_like \n" +
-                "\t\twhere mem_idx22 = ?) ml\n" +
-                "\ton m.market_idx = ml.market_idx \n" +
-                "\twhere m.market_soldout = ?\n" +
-                ") a\n" +
-                "left join (\n" +
-                "\tselect market_idx, count(*) as market_like_count\n" +
-                "\tfrom Market_like\n" +
-                "\tgroup by market_idx\n" +
-                ") b\n" +
+        String query = "select a.*, b.market_like_count \n" +
+                "from ( \n" +
+                "\tselect  \n" +
+                "\t\tm.market_idx, \n" +
+                "\t\tm.mem_idx,  \n" +
+                "\t\tm.market_group,  \n" +
+                "\t\tm.market_price,  \n" +
+                "\t\tm.market_title,  \n" +
+                "\t\tLEFT(m.market_content, 90), as market_content \n" +
+                "\t\tm.market_image,  \n" +
+                "\t\tm.market_soldout,  \n" +
+                "\t\tm.market_hit,  \n" +
+                "\t\tm.market_created_at,  \n" +
+                "\t\tIF (ml.mem_idx22 is null, false, true) as mem_liked \n" +
+                "\t\tfrom Market m  \n" +
+                "\t\tleft join ( \n" +
+                "\t\t\tselect \n" +
+                "\t\t\t\tmarket_idx, mem_idx22  \n" +
+                "\t\t\tfrom Market_like  \n" +
+                "\t\t\twhere mem_idx22 = ?) ml \n" +
+                "\t\ton m.market_idx = ml.market_idx\n" +
+                "\t\t) a \n" +
+                "left join ( \n" +
+                "\tselect market_idx, count(*) as market_like_count \n" +
+                "\tfrom Market_like \n" +
+                "\tgroup by market_idx \n" +
+                ") b \n" +
                 "on a.market_idx = b.market_idx\n" +
+                "where market_soldout in" + soldout + "\n" +
                 "order by a.market_created_at DESC\n" +
-                "limit ?, ?";
+                "limit ?, ?;";
 
         try {
             List<GetMarketFeedRes> result = jdbcTemplate.query(query,
                     marketFeedByCategoryRowMapper(),
-                    userIdx, soldout, page * 9, Constant.FEED_PER_PAGE);
+                    userIdx, page * 9, Constant.FEED_PER_PAGE);
             return result;
         } catch (Exception e) {
             log.error(e.getMessage());
         }
-
         return null;
     }
 
     @Override
     public List<GetMarketFeedRes> getFeedByCategory(String category, int userIdx, String soldout, int page) {
-        String query = "select a.*, b.market_like_count\n" +
-                "from (\n" +
-                "\tselect \n" +
-                "\t\tm.market_idx,\n" +
-                "\t\tm.mem_idx, \n" +
-                "\t\tm.market_group, \n" +
-                "\t\tm.market_price, \n" +
-                "\t\tm.market_title, \n" +
-                "\t\tm.market_image, \n" +
-                "\t\tm.market_soldout, \n" +
-                "\t\tm.market_hit, \n" +
-                "\t\tm.market_created_at, \n" +
-                "\t\tIF (ml.mem_idx22 is null, false, true) as mem_liked\n" +
-                "\tfrom Market m \n" +
-                "\tleft join (\n" +
-                "\t\tselect market_idx, mem_idx22 \n" +
-                "\t\tfrom Market_like \n" +
-                "\t\twhere mem_idx22 = ?) ml\n" +
-                "\ton m.market_idx = ml.market_idx \n" +
-                "\twhere m.market_group = ? and m.market_soldout = ?\n" +
-                ") a\n" +
-                "left join (\n" +
-                "\tselect market_idx, count(*) as market_like_count\n" +
-                "\tfrom Market_like\n" +
-                "\tgroup by market_idx\n" +
-                ") b\n" +
-                "on a.market_idx = b.market_idx\n" +
-                "order by a.market_created_at DESC\n" +
-                "limit ?, ?";
+        String query = "select a.*, b.market_like_count \n" +
+                "from ( \n" +
+                "\tselect  \n" +
+                "\t\tm.market_idx, \n" +
+                "\t\tm.mem_idx,  \n" +
+                "\t\tm.market_group,  \n" +
+                "\t\tm.market_price,  \n" +
+                "\t\tm.market_title,  \n" +
+                "        LEFT(m.market_content, 90) as market_content,\n" +
+                "\t\tm.market_image,  \n" +
+                "\t\tm.market_soldout,  \n" +
+                "\t\tm.market_hit,  \n" +
+                "\t\tm.market_created_at,  \n" +
+                "\t\tIF (ml.mem_idx22 is null, false, true) as mem_liked \n" +
+                "\tfrom Market m  \n" +
+                "\tleft join ( \n" +
+                "\t\tselect market_idx, mem_idx22  \n" +
+                "\t\tfrom Market_like  \n" +
+                "\t\twhere mem_idx22 = ?) ml \n" +
+                "\ton m.market_idx = ml.market_idx  \n" +
+                "\twhere m.market_group = ? and m.market_soldout in " + soldout + "\n" +
+                "\t) a \n" +
+                "left join ( \n" +
+                "\tselect market_idx, count(*) as market_like_count \n" +
+                "\tfrom Market_like \n" +
+                "\tgroup by market_idx \n" +
+                ") b \n" +
+                "on a.market_idx = b.market_idx \n" +
+                "order by a.market_created_at DESC \n" +
+                "limit ?, ?;";
 
         try {
             List<GetMarketFeedRes> result = jdbcTemplate.query(query,
                     marketFeedByCategoryRowMapper(),
-                    userIdx, category, soldout, page * Constant.FEED_PER_PAGE, Constant.FEED_PER_PAGE);
+                    userIdx, category, page * Constant.FEED_PER_PAGE, Constant.FEED_PER_PAGE);
             return result;
         } catch (Exception e) {
             log.error(e.getMessage());
         }
-
         return null;
     }
 
     @Override
     public List<GetMarketFeedRes> getAllHotFeed(int userIdx, String soldout, int page) {
-        String query = "select e.*, f.market_like_count\n" +
-                "from (\n" +
-                "\tselect c.*, if(d.mem_idx22 is null, false, true) as mem_liked\n" +
+        String query = "select e.*, f.market_like_count \n" +
+                "from ( \n" +
+                "\tselect c.*, if(d.mem_idx22 is null, false, true) as mem_liked \n" +
                 "\tfrom (\n" +
-                "\t\tselect\n" +
-                "\t\t\ta.market_idx,\n" +
-                "\t\t\ta.mem_idx,\n" +
-                "\t\t\ta.market_group,\n" +
-                "\t\t\ta.market_price,\n" +
-                "\t\t\ta.market_title, \n" +
-                "\t\t\ta.market_image, \n" +
-                "\t\t\ta.market_soldout, \n" +
-                "\t\t\ta.market_hit, \n" +
-                "\t\t\ta.market_created_at\n" +
-                "\t\tfrom Market a\n" +
-                "\t\tinner join (\n" +
-                "\t\t\tselect market_idx\n" +
-                "\t\t\tfrom Hot_market_feed \n" +
-                "\t\t\tlimit ?, ?) b\n" +
-                "\t\ton a.market_idx = b.market_idx ) c\n" +
-                "\tleft join (\n" +
-                "\t\tselect market_idx, mem_idx22\n" +
-                "\t\tfrom Market_like\n" +
-                "\t\twhere mem_idx22 = ?\n" +
-                "\t) d\n" +
-                "\ton c.market_idx = d.market_idx\n" +
-                ") e\n" +
-                "left join (\n" +
-                "\tselect market_idx, count(*) as market_like_count\n" +
-                "    from Market_like\n" +
-                "    group by market_idx) f\n" +
-                "on e.market_idx = f.market_idx \n" +
-                "order by e.market_created_at DESC";
+                "\t\tselect a.* from (\n" +
+                "\t\tselect \n" +
+                "\t\t\tmarket_idx, \n" +
+                "\t\t\tmem_idx, \n" +
+                "\t\t\tmarket_group, \n" +
+                "\t\t\tmarket_price, \n" +
+                "\t\t\tmarket_title,  \n" +
+                "            left(market_content, 90) as market_content,\n" +
+                "\t\t\tmarket_image,  \n" +
+                "\t\t\tmarket_soldout,  \n" +
+                "\t\t\tmarket_hit,  \n" +
+                "\t\t\tmarket_created_at \n" +
+                "\t\t\tfrom Market\n" +
+                "            where market_soldout in " + soldout + ") a \n" +
+                "\t\t\tinner join ( \n" +
+                "\t\t\t\tselect market_idx \n" +
+                "                from Hot_market_feed  \n" +
+                "                limit ?, ?) b \n" +
+                "\t\t\ton a.market_idx = b.market_idx ) c \n" +
+                "\t\tleft join ( \n" +
+                "\t\t\tselect market_idx, mem_idx22 \n" +
+                "\t\t\tfrom Market_like \n" +
+                "\t\t\twhere mem_idx22 = ?\n" +
+                "\t\t) d \n" +
+                "\t\ton c.market_idx = d.market_idx \n" +
+                "\t) e \n" +
+                "left join ( \n" +
+                "\tselect market_idx, count(*) as market_like_count \n" +
+                "\tfrom Market_like \n" +
+                "\tgroup by market_idx) f \n" +
+                "on e.market_idx = f.market_idx  \n" +
+                "order by e.market_created_at DESC;";
 
         try {
             List<GetMarketFeedRes> result = jdbcTemplate.query(query,
@@ -341,45 +365,47 @@ public class MarketFeedDao implements MarketFeedRepository {
         } catch (Exception e) {
             log.error(e.getMessage());
         }
-
         return null;
     }
 
     @Override
     public List<GetMarketFeedRes> getHotFeedByCategory(String categoryIdx, int userIdx, String soldout, int page) {
-        String query = "select e.*, f.market_like_count\n" +
-                "from (\n" +
-                "\tselect c.*, if(d.mem_idx22 is null, false, true) as mem_liked\n" +
+        String query = "select e.*, f.market_like_count \n" +
+                "from ( \n" +
+                "\tselect c.*, if(d.mem_idx22 is null, false, true) as mem_liked \n" +
                 "\tfrom (\n" +
-                "\t\tselect\n" +
-                "\t\t\ta.market_idx,\n" +
-                "\t\t\ta.mem_idx,\n" +
-                "\t\t\ta.market_group,\n" +
-                "\t\t\ta.market_price,\n" +
-                "\t\t\ta.market_title, \n" +
-                "\t\t\ta.market_image, \n" +
-                "\t\t\ta.market_soldout, \n" +
-                "\t\t\ta.market_hit, \n" +
-                "\t\t\ta.market_created_at\n" +
-                "\t\tfrom Market a\n" +
-                "\t\tinner join (\n" +
-                "\t\t\tselect market_idx\n" +
-                "\t\t\tfrom Hot_market_feed \n" +
-                "\t\t\twhere market_category = ? \n" +
-                "\t\t\tlimit ?, ?) b\n" +
-                "\t\ton a.market_idx = b.market_idx ) c\n" +
-                "\tleft join (\n" +
-                "\t\tselect market_idx, mem_idx22\n" +
-                "\t\tfrom Market_like\n" +
-                "\t\twhere mem_idx22 = ?\n" +
-                "\t) d\n" +
-                "\ton c.market_idx = d.market_idx\n" +
-                ") e\n" +
-                "left join (\n" +
-                "\tselect market_idx, count(*) as market_like_count\n" +
-                "    from Market_like\n" +
-                "    group by market_idx) f\n" +
-                "on e.market_idx = f.market_idx \n" +
+                "\t\tselect a.* from (\n" +
+                "\t\tselect \n" +
+                "\t\t\tmarket_idx, \n" +
+                "\t\t\tmem_idx, \n" +
+                "\t\t\tmarket_group, \n" +
+                "\t\t\tmarket_price, \n" +
+                "\t\t\tmarket_title,  \n" +
+                "\t\t\tleft(market_content, 90) as market_content,\n" +
+                "\t\t\tmarket_image,  \n" +
+                "\t\t\tmarket_soldout,  \n" +
+                "\t\t\tmarket_hit,  \n" +
+                "\t\t\tmarket_created_at \n" +
+                "\t\t\tfrom Market\n" +
+                "            where market_soldout in " + soldout + ") a \n" +
+                "\t\t\tinner join ( \n" +
+                "\t\t\t\tselect market_idx \n" +
+                "                from Hot_market_feed  \n" +
+                "                where market_category = ?\n" +
+                "                limit ?, ?) b \n" +
+                "\t\t\ton a.market_idx = b.market_idx ) c \n" +
+                "\t\tleft join ( \n" +
+                "\t\t\tselect market_idx, mem_idx22 \n" +
+                "\t\t\tfrom Market_like \n" +
+                "\t\t\twhere mem_idx22 = ?\n" +
+                "\t\t) d \n" +
+                "\t\ton c.market_idx = d.market_idx \n" +
+                "\t) e \n" +
+                "left join ( \n" +
+                "\tselect market_idx, count(*) as market_like_count \n" +
+                "\tfrom Market_like \n" +
+                "\tgroup by market_idx) f \n" +
+                "on e.market_idx = f.market_idx  \n" +
                 "order by e.market_created_at DESC;";
 
         try {
@@ -390,7 +416,6 @@ public class MarketFeedDao implements MarketFeedRepository {
         } catch (Exception e) {
             log.error(e.getMessage());
         }
-
         return null;
     }
 
@@ -429,6 +454,7 @@ public class MarketFeedDao implements MarketFeedRepository {
                 "\t\t\tmarket_group,\n" +
                 "\t\t\tmarket_price,\n" +
                 "\t\t\tmarket_title, \n" +
+                "\t\t\tleft(market_content, 90) as market_content, '\n" +
                 "\t\t\tmarket_image, \n" +
                 "\t\t\tmarket_soldout, \n" +
                 "\t\t\tmarket_hit, \n" +
@@ -489,6 +515,7 @@ public class MarketFeedDao implements MarketFeedRepository {
             marketFeed.setUserIdx(rs.getInt("mem_idx"));
             marketFeed.setCategory(rs.getInt("market_group"));
             marketFeed.setTitle(rs.getString("market_title"));
+            marketFeed.setContent(rs.getString("market_content"));
             marketFeed.setPrice(rs.getInt("market_price"));
             marketFeed.setSoldout(rs.getString("market_soldout"));
             marketFeed.setImage(rs.getString("market_image"));
@@ -507,6 +534,7 @@ public class MarketFeedDao implements MarketFeedRepository {
             marketFeed.setUserIdx(rs.getInt("mem_idx"));
             marketFeed.setCategory(rs.getInt("market_group"));
             marketFeed.setTitle(rs.getString("market_title"));
+            marketFeed.setContent(rs.getString("market_content"));
             marketFeed.setPrice(rs.getInt("market_price"));
             marketFeed.setSoldout(rs.getString("market_soldout"));
             marketFeed.setImage(rs.getString("market_image"));

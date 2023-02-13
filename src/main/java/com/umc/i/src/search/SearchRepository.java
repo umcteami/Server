@@ -3,6 +3,7 @@ package com.umc.i.src.search;
 import com.umc.i.src.feeds.model.get.GetAllFeedsRes;
 import com.umc.i.src.market.feed.model.GetMarketFeedRes;
 import com.umc.i.src.review.model.get.GetAllReviewsRes;
+import com.umc.i.src.search.model.Keyword;
 
 import java.util.List;
 
@@ -51,4 +52,6 @@ public interface SearchRepository {
     List<GetAllFeedsRes> searchAllHomeFeedByKeywordByTitleContentInLatest(String search_keyword, int page);
 
     List<GetAllFeedsRes> searchAllHomeFeedByKeywordByMemberNicknameInLatest(String search_keyword, int page);
+
+    List<Keyword> bestSearchKeyword();
 }

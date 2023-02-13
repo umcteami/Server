@@ -136,8 +136,8 @@ public class ReviewDao {
     // 장터 후기 상세 조회
     public Review getReview(int reviewIdx, int memIdx) throws BaseException {
         try {
-            String getReviewQuery = "update Market_review set review_hit = review_hit + 1";
-            this.jdbcTemplate.update(getReviewQuery);
+            String getReviewQuery = "update Market_review set review_hit = review_hit + 1 where review_idx = ?";
+            this.jdbcTemplate.update(getReviewQuery, reviewIdx);
     
             getReviewQuery = "select review_idx, sell_mem_idx, A.mem_nickname as seller_nick, buy_mem_idx, B.mem_nickname as buyer_nick, B.mem_profile_url, review_goods, review_content, review_hit, review_created_at, comment_cnt, like_cnt, islike";
             getReviewQuery += " from Market_review , Member A, Member B, (select count(*) as comment_cnt from Market_review_comment where review_idx = ?) RC, ";

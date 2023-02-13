@@ -1,5 +1,6 @@
 package com.umc.i.utils.S3Storage;
 
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -58,5 +59,14 @@ public class S3Uploader {
         fileOutputStream.close();
 
         return file;
+    }
+
+    public void delete(String imageUrl) {
+        String[] split = imageUrl.split("/");
+        try {
+            amazonS3.deleteObject(bucket, split[3]);
+        } catch (AmazonServiceException e) {
+            log.error(e.getMessage());
+        }
     }
 }

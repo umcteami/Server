@@ -149,4 +149,10 @@ public class SearchServiceImpl implements SearchService {
     public List<GetAllFeedsRes> searchAllHomeFeedByKeywordByMemberNicknameInLatest(String search_keyword, int page) {
         return searchDao.searchAllHomeFeedByKeywordByMemberNicknameInLatest(search_keyword, page);
     }
+
+    @Override
+    public List<String> bestSearchKeyword() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

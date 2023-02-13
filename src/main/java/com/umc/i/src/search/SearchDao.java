@@ -5,6 +5,7 @@ import com.umc.i.src.feeds.model.get.GetAllFeedsRes;
 import com.umc.i.src.market.feed.model.GetMarketFeedRes;
 import com.umc.i.src.member.model.Member;
 import com.umc.i.src.review.model.get.GetAllReviewsRes;
+import com.umc.i.src.search.model.Keyword;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -590,6 +591,21 @@ public class SearchDao implements SearchRepository {
                 "where mem_nickname like \"%" + search_keyword + "%\" order by createAt desc limit ?, ?;";
         try {
             return jdbcTemplate.query(query, homeAllFeedRowMapper(), page * Constant.FEED_PER_PAGE, Constant.FEED_PER_PAGE);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        return null;
+    }
+
+    @Override
+    public List<Keyword> bestSearchKeyword() {
+        String query = "select keyword from Hot_keyword limit 7;";
+
+        try {
+            List<Keyword> keyword = jdbcTemplate.query(query, (rs, rowNum) -> new Keyword(
+                    rs.getString("keyword")
+            ));
+            return keyword;
         } catch (Exception e) {
             log.error(e.getMessage());
         }
