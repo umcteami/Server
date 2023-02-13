@@ -7,6 +7,7 @@ import com.umc.i.src.market.feed.model.GetMarketFeedRes;
 import com.umc.i.src.market.feed.model.MarketFeed;
 import com.umc.i.src.market.feed.model.GetMarketFeedReq;
 import com.umc.i.src.market.feed.model.PostMarketFeedRes;
+import com.umc.i.src.member.model.Member;
 import com.umc.i.utils.S3Storage.S3Uploader;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -76,47 +77,35 @@ public class MarketFeedController {
         if (multipartFiles == null) {
             return new BaseResponse<>(BaseResponseStatus.FEED_WITHOUT_MEDIA);
         }
-
-
         marketFeedService.updateFeed(marketIdx, marketFeedReq);
         marketFeedService.deleteImages(Integer.parseInt(marketIdx));
-
         List<String> filesUrlList = s3Uploader.upload(multipartFiles);
-
         int uploadedImagesCnt = marketFeedService.postFeedImages(filesUrlList, Integer.parseInt(marketIdx));
         marketFeedService.postCoverImage(filesUrlList, marketIdx);
-
         GetMarketFeedRes result = marketFeedService.getFeedByMarketIdx(marketIdx, String.valueOf(feedUserIdx));
-
         return new BaseResponse<>(result);
     }
 
     @DeleteMapping("/market/delete")
     public BaseResponse deleteFeed(@RequestParam String marketIdx,
                                    @RequestBody GetMarketFeedReq marketFeedReq) {
-
         int feedUserIdx = marketFeedService.getFeedUserIdx(marketIdx);
         if (marketFeedReq.getUserIdx() != feedUserIdx) {
             return new BaseResponse<>(BaseResponseStatus.FEED_UNAUTHORIZED);
         }
-
         marketFeedService.deleteFeed(marketIdx);
         marketFeedService.deleteImages(Integer.parseInt(marketIdx));
-
         return new BaseResponse<>();
     }
 
     @PutMapping("/market/soldout")
     public BaseResponse updateFeedSoldoutStatus(@RequestParam String marketIdx,
                                                 @RequestBody GetMarketFeedReq marketFeedReq) {
-
         int feedUserIdx = marketFeedService.getFeedUserIdx(marketIdx);
         if (marketFeedReq.getUserIdx() != feedUserIdx) {
             return new BaseResponse<>(BaseResponseStatus.FEED_UNAUTHORIZED);
         }
-
         marketFeedService.updateFeedSoldout(marketIdx, marketFeedReq);
-
         return new BaseResponse<>();
     }
 
@@ -144,7 +133,6 @@ public class MarketFeedController {
         } else { // category 선택
             feedResList = marketFeedService.getFeedByCategory(categoryIdx, userIdx, soldoutIdx, page);
         }
-
         return new BaseResponse<>(feedResList);
     }
 
@@ -153,7 +141,6 @@ public class MarketFeedController {
                                        @RequestParam(defaultValue = "0") String soldout,
                                        @RequestParam(defaultValue = "0") int page,
                                        @RequestBody GetMarketFeedReq req) throws RuntimeException {
-
         // query string 값 오류
         HashMap<String, String> marketGoodCategories = Constant.MARKET_GOOD_CATEGORIES;
         String[] booleans = Constant.BOOLEANS;
@@ -172,41 +159,32 @@ public class MarketFeedController {
         } else { // category 선택
             feedResList = marketFeedService.getHotFeedByCategory(categoryIdx, userIdx, soldoutIdx, page);
         }
-
         return new BaseResponse<>(feedResList);
     }
 
     @GetMapping("/market/detail")
     public BaseResponse getFeedDetail(@RequestParam String marketIdx,
                                       @RequestBody MarketFeed feed) {
-
         GetMarketFeedRes result = marketFeedService.getFeedByMarketIdx(marketIdx, String.valueOf(feed.getUserIdx()));
-
         if (result == null) {
             return new BaseResponse<>(BaseResponseStatus.FEED_NOT_EXIST);
         }
-
         marketFeedService.updateMarketFeedHitCount(result.getCategory(), marketIdx);
-
         return new BaseResponse<>(result);
     }
 
     @GetMapping("/market/list")
     public BaseResponse getFeedByUserIdx(@RequestParam int userIdx,
-                                         @RequestParam(defaultValue = "0") int page) {
-
-        List<GetMarketFeedRes> result = marketFeedService.getFeedByUserIdx(userIdx, page);
-
+                                         @RequestParam(defaultValue = "0") int page,
+                                         @RequestBody GetMarketFeedReq req) {
+        List<GetMarketFeedRes> result = marketFeedService.getFeedByUserIdx(userIdx, page, req.getUserIdx());
         return new BaseResponse<>(result);
     }
 
     @PostMapping("/market/like")
     public BaseResponse feedLikeByMember(@RequestBody PostMarketFeedRes feed) {
-
         int feedUserIdx = marketFeedService.getFeedUserIdx(String.valueOf(feed.getMarketIdx()));
-
         marketFeedService.feedLike(feed.getUserIdx(), feed.getMarketIdx(), feed.getIsLike(), feedUserIdx);
-
         return new BaseResponse<>();
     }
 }
