@@ -164,12 +164,13 @@ public class MarketFeedController {
 
         int userIdx = req.getUserIdx();
         String categoryIdx = marketGoodCategories.get(category);
+        String soldoutIdx = Constant.MARKET_SOLDOUT[Integer.parseInt(soldout)];
 
         List<GetMarketFeedRes> feedResList;
         if (categoryIdx == null) { // category 무관
-            feedResList= marketFeedService.getAllHotFeed(userIdx, soldout, page);
+            feedResList= marketFeedService.getAllHotFeed(userIdx, soldoutIdx, page);
         } else { // category 선택
-            feedResList = marketFeedService.getHotFeedByCategory(categoryIdx, userIdx, soldout, page);
+            feedResList = marketFeedService.getHotFeedByCategory(categoryIdx, userIdx, soldoutIdx, page);
         }
 
         return new BaseResponse<>(feedResList);
