@@ -82,19 +82,20 @@ public class MypageDao {
                                 rs.getInt("roomType"),
                                 rs.getInt("idx"),
                                 rs.getString("title"),
+                                rs.getString("countImg"),
                                 rs.getInt("hit"),
                                 rs.getInt("likeCount"),
                                 rs.getInt("commentCount"),
                                 rs.getString("createAt")
                         );
-                        //이미지 없을 경우
-                        if(rs.getInt("countImg") != 0){
-                            String getDiaryImgQuery = "select image_url from Image_url where content_category = ? and content_idx = ? and image_order = 0";
-                            String diaryImg = this.jdbcTemplate.queryForObject(getDiaryImgQuery,String.class,getDiaryWriteRes.getBoarIdx(),getDiaryWriteRes.getComuIdx());
-                            getDiaryWriteRes.setFeedImg(diaryImg);
-                        }else{
-                            getDiaryWriteRes.setFeedImg(null);
-                        }
+                        // //이미지 없을 경우
+                        // if(rs.getInt("countImg") != 0){
+                        //     String getDiaryImgQuery = "select image_url from Image_url where content_category = ? and content_idx = ? and image_order = 0";
+                        //     String diaryImg = this.jdbcTemplate.queryForObject(getDiaryImgQuery,String.class,getDiaryWriteRes.getBoarIdx(),getDiaryWriteRes.getComuIdx());
+                        //     getDiaryWriteRes.setFeedImg(diaryImg);
+                        // }else{
+                        //     getDiaryWriteRes.setFeedImg(null);
+                        // }
 
                         return getDiaryWriteRes;
                     },
@@ -155,19 +156,20 @@ public class MypageDao {
                                 rs.getInt("roomType"),
                                 rs.getInt("idx"),
                                 rs.getString("title"),
+                                rs.getString("countImg"),
                                 rs.getInt("hit"),
                                 rs.getInt("likeCount"),
                                 rs.getInt("commentCount"),
                                 rs.getString("createAt")
                         );
-                        //이미지 없을 경우
-                        if (rs.getInt("countImg") != 0) {
-                            String getDiaryImgQuery = "select image_url from Image_url where content_category = ? and content_idx = ? and image_order = 0";
-                            String img = this.jdbcTemplate.queryForObject(getDiaryImgQuery, String.class, getComuWriteRes.getBoarIdx(), getComuWriteRes.getComuIdx());
-                            getComuWriteRes.setFeedImg(img);
-                        } else {
-                            getComuWriteRes.setFeedImg(null);
-                        }
+                        // //이미지 없을 경우
+                        // if (rs.getInt("countImg") != 0) {
+                        //     String getDiaryImgQuery = "select image_url from Image_url where content_category = ? and content_idx = ? and image_order = 0";
+                        //     String img = this.jdbcTemplate.queryForObject(getDiaryImgQuery, String.class, getComuWriteRes.getBoarIdx(), getComuWriteRes.getComuIdx());
+                        //     getComuWriteRes.setFeedImg(img);
+                        // } else {
+                        //     getComuWriteRes.setFeedImg(null);
+                        // }
                         return getComuWriteRes;
                     }, memIdx, memIdx, memIdx,startPoint,page);
         }catch (EmptyResultDataAccessException e) {
@@ -198,19 +200,20 @@ public class MypageDao {
                                 rs.getInt("roomType"),
                                 rs.getInt("idx"),
                                 rs.getString("title"),
+                                rs.getString("countImg"),
                                 rs.getInt("hit"),
                                 rs.getInt("likeCount"),
                                 rs.getInt("commentCount"),
                                 rs.getString("createAt")
                         );
-                        //이미지 없을 경우
-                        if (rs.getInt("countImg") != 0) {
-                            String getDiaryImgQuery = "select image_url from Image_url where content_category = ? and content_idx = ? and image_order = 0";
-                            String img = this.jdbcTemplate.queryForObject(getDiaryImgQuery, String.class, getComuWriteRes.getBoarIdx(), getComuWriteRes.getComuIdx());
-                            getComuWriteRes.setFeedImg(img);
-                        } else {
-                            getComuWriteRes.setFeedImg(null);
-                        }
+                        // //이미지 없을 경우
+                        // if (rs.getInt("countImg") != 0) {
+                        //     String getDiaryImgQuery = "select image_url from Image_url where content_category = ? and content_idx = ? and image_order = 0";
+                        //     String img = this.jdbcTemplate.queryForObject(getDiaryImgQuery, String.class, getComuWriteRes.getBoarIdx(), getComuWriteRes.getComuIdx());
+                        //     getComuWriteRes.setFeedImg(img);
+                        // } else {
+                        //     getComuWriteRes.setFeedImg(null);
+                        // }
                         return getComuWriteRes;
                     }, memIdx, memIdx,startPoint,page);
         }catch (EmptyResultDataAccessException e) {
