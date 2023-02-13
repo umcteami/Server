@@ -260,7 +260,7 @@ public class MemberService {
             if(checkNick != 0){return PATCH_MEMBER_NICK_DOUBLE;}
 
             String saveFilePath = null;
-            if(profile != null) {  // 기본 프로필 아니면
+            if(!profile.isEmpty()) {  // 기본 프로필 아니면
                 String fileName = "image" + File.separator + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMM"));
 
                 // 저장할 새 이름
@@ -276,6 +276,9 @@ public class MemberService {
             String encryptPwd = UserSha256.encrypt(postJoinReq.getPw());
             postJoinReq.setPw(encryptPwd);
 
+            if(profile.isEmpty()) {
+                return memberDao.createMem(postJoinReq, null);
+            }
             return memberDao.createMem(postJoinReq, uploadImageS3.getS3(saveFilePath));
 
         } catch (Exception exception) { // 회원가입 실패시

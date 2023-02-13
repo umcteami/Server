@@ -30,6 +30,8 @@ public enum BaseResponseStatus {
     // [POST] /feeds
     POST_FEEDS_INVALID_TYPE(false, 2020, "타입을 확인해주세요"),
     POST_INVALID_IDX(false, 2022, "인덱스를 확인해주세요"),
+
+    GET_INVALID_FILTER(false, 2023, "필터링 오류"),
     
 
 

@@ -26,7 +26,7 @@ public class ReivewProvider {
 
 
     // 장터 후기 상세 조회
-    public GetReviewRes getReview(int reviewIdx) throws BaseException {
+    public GetReviewRes getReview(int reviewIdx, int memIdx) throws BaseException {
         try {
             List<Image> img = reviewDao.getReviewsImage(reviewIdx);
             List<String> filePath = new ArrayList();
@@ -36,16 +36,16 @@ public class ReivewProvider {
                 }
             }
             
-            return new GetReviewRes(reviewDao.getReview(reviewIdx), filePath);
+            return new GetReviewRes(reviewDao.getReview(reviewIdx, memIdx), filePath);
         } catch (Exception e) {
             e.getStackTrace();
-            throw new BaseException(BaseResponseStatus.GET_REVIEW_FAIL);
+            throw e;
         }
     }
 
     // 장터후기 전체 조회
-    public List<GetAllReviewsRes> getAllReviews() {
-        return reviewDao.getAllReviews();
+    public List<GetAllReviewsRes> getAllReviews(int page) {
+        return reviewDao.getAllReviews(page);
 
     }
 

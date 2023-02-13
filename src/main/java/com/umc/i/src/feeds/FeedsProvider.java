@@ -99,4 +99,38 @@ public class FeedsProvider {
     public List<GetAllFeedsRes> getFeeds(int page){
         return feedsDao.getAllFeeds(page);
     }
+
+    // 아이홈 인기순 조회
+    public List<GetAllFeedsRes> getHotFeeds(int page) throws BaseException {
+        try {
+            return feedsDao.getHotFeeds(page);
+        } catch(BaseException e) {
+            throw e;
+        }
+    }
+
+    // 아이홈 게시판별 인기순 조회
+    public List<GetAllFeedsRes> getHotStories(int filter, int page) throws BaseException {
+        try {
+            return feedsDao.getHotStories(filter, page);
+        } catch (BaseException e)  {
+            throw e;
+        }
+    }
+
+    public List<GetAllFeedsRes> getHotDiaries(int filter, int page) throws BaseException {
+        try {
+            return feedsDao.getHotDiaries(filter, page);
+        } catch (BaseException e)  {
+            throw e;
+        }
+    }
+
+    public List<GetAllFeedsRes> getHotReviews(int filter, int page) throws BaseException {
+        try {
+            return feedsDao.getHotReivews(filter, page);
+        } catch (BaseException e)  {
+            throw e;
+        }
+    }
 }
