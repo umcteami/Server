@@ -17,7 +17,7 @@ public class MarketScheduleTask {
         marketScheduleRepository.resetHitCountTable();
     }
 
-    @Scheduled(cron = "0 5 3/12 * * ?")
+    @Scheduled(cron = "30 0 3/12 * * ?")
     public void getHitRankView() {
         marketScheduleRepository.getHitRankView();
     }
