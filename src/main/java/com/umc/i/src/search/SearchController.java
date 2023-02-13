@@ -83,7 +83,7 @@ public class SearchController {
         if (!isSearchKeywordValid(search_keyword)) {
             return new BaseResponse<>(BaseResponseStatus.SEARCH_KEYWORD_NULL_EXCEPTION);
         }
-
+        searchService.updateSearchKeywordCnt(search_keyword);
         try {
             List<GetAllReviewsRes> feedRes = searchService.searchAllReviewFeedByKeywordByContentInLatest(search_keyword, page);
             return new BaseResponse<>(feedRes);
@@ -107,7 +107,7 @@ public class SearchController {
         if (!isSearchTargetValid(search_target)) {
             return new BaseResponse<>(BaseResponseStatus.SEARCH_TARGET_INVALID);
         }
-
+        searchService.updateSearchKeywordCnt(search_keyword);
         List<GetAllDiaryRes> feedRes = null;
         switch (search_target) {
             case "title":
@@ -186,7 +186,7 @@ public class SearchController {
         if (!isSearchTargetValid(search_target)) {
             return new BaseResponse<>(BaseResponseStatus.SEARCH_TARGET_INVALID);
         }
-
+        searchService.updateSearchKeywordCnt(search_keyword);
         List<GetAllFeedsRes> feedRes = null;
         switch (search_target) {
             case "title":
@@ -260,7 +260,7 @@ public class SearchController {
         if (!isSearchTargetValid(search_target)) {
             return new BaseResponse<>(BaseResponseStatus.SEARCH_TARGET_INVALID);
         }
-
+        searchService.updateSearchKeywordCnt(search_keyword);
         List<GetAllFeedsRes> feedRes = null;
         switch (search_target) {
             case "title":
