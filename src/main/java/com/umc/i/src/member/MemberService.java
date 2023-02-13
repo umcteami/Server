@@ -290,13 +290,18 @@ public class MemberService {
     //회원 정보 수정
     public BaseResponseStatus editMem(int memIdx,PatchMemReq patchMemReq,MultipartFile profile) throws BaseException, IOException {
         try {
-            int editNickNum = memberDao.editNickNum(memIdx);
-            if(editNickNum > 2){
-                return PATCH_MEMBER_NICKNUM_OVER;
+            GetMemRes mem = memberDao.getMem(memIdx);
+            Boolean editNick = false;
+            if(!mem.getNick().equals(patchMemReq.getNick())) {  // 닉네임이 수정되면
+                editNick = true;
+                int editNickNum = memberDao.editNickNum(memIdx);
+                if(editNickNum > 2){
+                    return PATCH_MEMBER_NICKNUM_OVER;
+                }
+    
+                int checkNick = memberDao.checkNick(patchMemReq.getNick());
+                if(checkNick != 0){return PATCH_MEMBER_NICK_DOUBLE;}
             }
-
-            int checkNick = memberDao.checkNick(patchMemReq.getNick());
-            if(checkNick != 0){return PATCH_MEMBER_NICK_DOUBLE;}
 
             //이미지 수정
             String saveFilePath = "";
@@ -312,7 +317,7 @@ public class MemberService {
                 saveFilePath = uploadImageS3.upload(profile, fileName, saveFileName);
             }
 
-            memberDao.editMem(memIdx,patchMemReq,uploadImageS3.getS3(saveFilePath)); // 해당 과정이 무사히 수행되면 True(1), 그렇지 않으면 False(0)입니다.
+            memberDao.editMem(memIdx,patchMemReq,uploadImageS3.getS3(saveFilePath), editNick); // 해당 과정이 무사히 수행되면 True(1), 그렇지 않으면 False(0)입니다.
             return SUCCESS;
         } catch (Exception exception) { // 인터넷 오류
             exception.printStackTrace();
