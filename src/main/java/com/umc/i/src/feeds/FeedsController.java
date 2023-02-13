@@ -218,13 +218,13 @@ public class FeedsController {
 
     @ResponseBody
     @GetMapping("/hot/{boardType}") // 아이홈 게시판별 조회 - 인기순
-    public BaseResponse getHotFeedsByBoard(@PathVariable("boardType") String boardType, @RequestParam(defaultValue = "1") int filter, @RequestParam(defaultValue = "0") int page) {
+    public BaseResponse getHotFeedsByBoard(@PathVariable("boardType") String boardType, @RequestParam(name = "roomType", defaultValue = "0") int roomType, @RequestParam(name = "filter", defaultValue = "1") int filter, @RequestParam(name = "page", defaultValue = "0") int page) {
         try {
             switch (boardType) {
                 case "story":
-                    return new BaseResponse<>(feedsProvider.getHotStories(filter, page));
+                    return new BaseResponse<>(feedsProvider.getHotStories(roomType, filter, page));
                 case "diary":
-                    return new BaseResponse<>(feedsProvider.getHotDiaries(filter, page));
+                    return new BaseResponse<>(feedsProvider.getHotDiaries(roomType, filter, page));
                 case "review":
                     return new BaseResponse<>(feedsProvider.getHotReviews(filter, page));
             }
