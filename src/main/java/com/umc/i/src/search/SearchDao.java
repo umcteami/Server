@@ -37,6 +37,7 @@ public class SearchDao implements SearchRepository {
                 "\t\t\tm.market_group, \n" +
                 "\t\t\tm.market_price, \n" +
                 "\t\t\tm.market_title, \n" +
+                "\t\t\tleft(m.market_content, 90) as market_content, \n" +
                 "\t\t\tm.market_image, \n" +
                 "\t\t\tm.market_soldout,\n" +
                 "\t\t\tm.market_hit,\n" +
@@ -85,6 +86,7 @@ public class SearchDao implements SearchRepository {
                 "\t\t\tm.market_group, \n" +
                 "\t\t\tm.market_price, \n" +
                 "\t\t\tm.market_title, \n" +
+                "\t\t\tleft(m.market_content, 90) as market_content, \n" +
                 "\t\t\tm.market_image, \n" +
                 "\t\t\tm.market_soldout,\n" +
                 "\t\t\tm.market_hit,\n" +
@@ -131,6 +133,7 @@ public class SearchDao implements SearchRepository {
                 "\t\t\tm.market_group, \n" +
                 "\t\t\tm.market_price, \n" +
                 "\t\t\tm.market_title, \n" +
+                "\t\t\tleft(m.market_content, 90) as market_content, \n" +
                 "\t\t\tm.market_image, \n" +
                 "\t\t\tm.market_soldout,\n" +
                 "\t\t\tm.market_hit,\n" +
@@ -178,6 +181,7 @@ public class SearchDao implements SearchRepository {
                 "\t\t\tm.market_group, \n" +
                 "\t\t\tm.market_price, \n" +
                 "\t\t\tm.market_title, \n" +
+                "\t\t\tleft(m.market_content, 90) as market_content, \n" +
                 "\t\t\tm.market_image, \n" +
                 "\t\t\tm.market_soldout,\n" +
                 "\t\t\tm.market_hit,\n" +
@@ -216,7 +220,7 @@ public class SearchDao implements SearchRepository {
                                                                                  int page) {
         List<Integer> searchMemberIdx = findMemberNickNameByMemberIdx(search_keyword);
         String memberIdxList = null;
-        if (searchMemberIdx == null) {
+        if (searchMemberIdx.size() == 0) {
             return null;
         } else {
             memberIdxList = makeMemberIdxString(searchMemberIdx);
@@ -232,12 +236,13 @@ public class SearchDao implements SearchRepository {
                 "\t\t\tm.market_group, \n" +
                 "\t\t\tm.market_price, \n" +
                 "\t\t\tm.market_title, \n" +
+                "\t\t\tleft(m.market_content, 90) as market_content, \n" +
                 "\t\t\tm.market_image, \n" +
                 "\t\t\tm.market_soldout,\n" +
                 "\t\t\tm.market_hit,\n" +
                 "\t\t\tm.market_created_at\n" +
                 "\t\tfrom Market m \n" +
-                "        where mem_idx in" + memberIdxList + " \n" +
+                "        where mem_idx in " + memberIdxList + " \n" +
                 "        order by market_created_at DESC\n" +
                 "        limit ?, ? ) m\n" +
                 "\tleft join (\n" +
@@ -272,7 +277,7 @@ public class SearchDao implements SearchRepository {
         List<Integer> searchMemberIdx = findMemberNickNameByMemberIdx(search_keyword);
 
         String memberIdxList = null;
-        if (searchMemberIdx == null) {
+        if (searchMemberIdx.size() == 0) {
             return null;
         } else {
             memberIdxList = makeMemberIdxString(searchMemberIdx);
@@ -288,12 +293,13 @@ public class SearchDao implements SearchRepository {
                 "\t\t\tm.market_group, \n" +
                 "\t\t\tm.market_price, \n" +
                 "\t\t\tm.market_title, \n" +
+                "\t\t\tleft(m.market_content, 90) as market_content, \n" +
                 "\t\t\tm.market_image, \n" +
                 "\t\t\tm.market_soldout,\n" +
                 "\t\t\tm.market_hit,\n" +
                 "\t\t\tm.market_created_at\n" +
                 "\t\tfrom Market m \n" +
-                "        where mem_idx in" + memberIdxList + " and market_group = ?\n" +
+                "        where mem_idx in " + memberIdxList + " and market_group = ?\n" +
                 "        order by market_created_at DESC\n" +
                 "        limit ?, ? ) m\n" +
                 "\tleft join (\n" +
@@ -652,6 +658,7 @@ public class SearchDao implements SearchRepository {
             marketFeed.setUserIdx(rs.getInt("mem_idx"));
             marketFeed.setCategory(rs.getInt("market_group"));
             marketFeed.setTitle(rs.getString("market_title"));
+            marketFeed.setContent(rs.getString("market_content"));
             marketFeed.setPrice(rs.getInt("market_price"));
             marketFeed.setSoldout(rs.getString("market_soldout"));
             marketFeed.setImage(rs.getString("market_image"));
