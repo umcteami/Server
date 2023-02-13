@@ -28,7 +28,7 @@ public class MarketScheduleDao implements MarketScheduleRepository {
 
     @Override
     public void getHitRankView() {
-        String query = "drop view if exists Hot_market_feed";
+        String query = "drop table if exists Hot_market_feed";
 
         try {
             log.info("getHitRankView={}", query);
@@ -37,7 +37,7 @@ public class MarketScheduleDao implements MarketScheduleRepository {
             log.error(e.getMessage());
         }
 
-        query = "create view Hot_market_feed as\n" +
+        query = "create table Hot_market_feed as\n" +
                 "select market_idx, market_category, count(*) as count\n" +
                 "from Daily_market_feed_hit\n" +
                 "group by market_idx\n" +
