@@ -751,7 +751,7 @@ public class FeedsDao {
                 rs.getInt("boardType"),
                 rs.getInt("roomType"),
                 rs.getInt("feedIdx"),
-                rs.getInt("mem_idx"),
+                rs.getInt("buy_mem_idx"),
                 rs.getString("mem_nickname"),
                 null,
                 rs.getString("title"),
