@@ -52,4 +52,6 @@ public interface SearchService {
     List<GetAllFeedsRes> searchAllHomeFeedByKeywordByTitleContentInLatest(String search_keyword, int page);
 
     List<GetAllFeedsRes> searchAllHomeFeedByKeywordByMemberNicknameInLatest(String search_keyword, int page);
+
+    List<String> bestSearchKeyword();
 }

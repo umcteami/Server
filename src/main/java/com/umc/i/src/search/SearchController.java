@@ -288,7 +288,11 @@ public class SearchController {
         return null;
     }
 
-
+    @GetMapping("search/bestkeyword")
+    public BaseResponse bestSearchKeyword() {
+        List<String> keyword = searchService.bestSearchKeyword();
+        return new BaseResponse<>(keyword);
+    }
 
     private boolean isMarketCategoryValid(String category) {
         return Constant.MARKET_GOOD_CATEGORIES.containsKey(category);
