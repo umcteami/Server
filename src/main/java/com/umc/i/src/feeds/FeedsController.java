@@ -226,6 +226,7 @@ public class FeedsController {
                 case "diary":
                     return new BaseResponse<>(feedsProvider.getHotDiaries(filter, page));
                 case "review":
+                    return new BaseResponse<>(feedsProvider.getHotReviews(filter, page));
             }
             return new BaseResponse<>(BaseResponseStatus.GET_INVALID_FILTER);
         } catch (BaseException e) {

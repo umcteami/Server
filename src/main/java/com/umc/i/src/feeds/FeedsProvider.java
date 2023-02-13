@@ -125,4 +125,12 @@ public class FeedsProvider {
             throw e;
         }
     }
+
+    public List<GetAllFeedsRes> getHotReviews(int filter, int page) throws BaseException {
+        try {
+            return feedsDao.getHotReivews(filter, page);
+        } catch (BaseException e)  {
+            throw e;
+        }
+    }
 }
