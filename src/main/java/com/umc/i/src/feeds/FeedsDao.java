@@ -349,7 +349,7 @@ public class FeedsDao {
         getFeedQuery += " where D.diary_idx = ? && diary_blame < 10";
 
         return this.jdbcTemplate.query(getFeedQuery, 
-        (rs, rowNum) -> new Feeds(
+        (rs, rowNum) -> new Feeds( 
             2, 
             rs.getInt("diary_roomType"), 
             rs.getInt("diary_idx"), 
@@ -588,7 +588,7 @@ public class FeedsDao {
     }
 
     // 게시판별 인기순 조회
-    public List<GetAllFeedsRes> getHotStories(int filter, int page) throws BaseException {
+    public List<GetAllFeedsRes> getHotStories(int roomType, int filter, int page) throws BaseException {
         try {
             String getHotStoriesQuery = "select 1 as boardType, S.story_idx as feedIdx, story_roomType as roomType, S.mem_idx, mem_nickname, story_title as title, story_image as image, ";
             getHotStoriesQuery += " story_hit as hit, story_created_at as createAt, if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt, if(S.story_idx = LikeCnt.story_idx, like_cnt, 0) as like_cnt";
@@ -596,19 +596,40 @@ public class FeedsDao {
             
             switch(filter) {
                 case 1:     // 1시간(default)
+                    if(roomType == 0) 
                     getHotStoriesQuery += " where story_created_at between DATE_SUB(NOW(), interval 1 hour) and now()";
+                    else if(roomType == 1)
+                    getHotStoriesQuery += " where story_roomType = 1 && story_created_at between DATE_SUB(NOW(), interval 1 hour) and now()";
+                    else if(roomType == 2)
+                    getHotStoriesQuery += " where story_roomType = 2 && story_created_at between DATE_SUB(NOW(), interval 1 hour) and now()";
+                    else if(roomType == 3)
+                    getHotStoriesQuery += " where story_roomType = 3 && story_created_at between DATE_SUB(NOW(), interval 1 hour) and now()";
                     getHotStoriesQuery += " && S.mem_idx = M.mem_idx && S.story_blame < 10";
                     getHotStoriesQuery += " group by S.story_idx order by hit desc, story_created_at desc limit 30 offset ?";
                     break;
 
                 case 2:     // 24시간
+                    if(roomType == 0)
                     getHotStoriesQuery += " where story_created_at between DATE_SUB(NOW(), interval 24 hour) and now()";
+                    else if(roomType == 1)
+                    getHotStoriesQuery += " where story_roomType = 1 && story_created_at between DATE_SUB(NOW(), interval 24 hour) and now()";
+                    else if(roomType == 2)
+                    getHotStoriesQuery += " where story_roomType = 2 && story_created_at between DATE_SUB(NOW(), interval 24 hour) and now()";
+                    else if(roomType == 3)
+                    getHotStoriesQuery += " where story_roomType = 3 && story_created_at between DATE_SUB(NOW(), interval 24 hour) and now()";
                     getHotStoriesQuery += " && S.mem_idx = M.mem_idx && S.story_blame < 10";
                     getHotStoriesQuery += " group by S.story_idx order by hit desc, story_created_at desc limit 30 offset ?";
                     break;
 
                 case 3:     // 일주일
+                    if(roomType == 0)
                     getHotStoriesQuery += " where story_created_at between DATE_FORMAT(DATE_SUB(NOW(), INTERVAL WEEKDAY(NOW()) day), '%Y-%m-%d') and now()";
+                    else if(roomType == 1)
+                    getHotStoriesQuery += " where story_roomType = 1 && story_created_at between DATE_FORMAT(DATE_SUB(NOW(), INTERVAL WEEKDAY(NOW()) day), '%Y-%m-%d') and now()";
+                    else if(roomType == 2)
+                    getHotStoriesQuery += " where story_roomType = 2 && story_created_at between DATE_FORMAT(DATE_SUB(NOW(), INTERVAL WEEKDAY(NOW()) day), '%Y-%m-%d') and now()";
+                    else if(roomType == 3)
+                    getHotStoriesQuery += " where story_roomType = 3 && story_created_at between DATE_FORMAT(DATE_SUB(NOW(), INTERVAL WEEKDAY(NOW()) day), '%Y-%m-%d') and now()";
                     getHotStoriesQuery += " && S.mem_idx = M.mem_idx && S.story_blame < 10";
                     getHotStoriesQuery += " group by S.story_idx order by hit desc, story_created_at desc limit 30 offset ?";
                     break;
@@ -636,7 +657,7 @@ public class FeedsDao {
         }
     }
 
-    public List<GetAllFeedsRes> getHotDiaries(int filter, int page) throws BaseException {
+    public List<GetAllFeedsRes> getHotDiaries(int roomType, int filter, int page) throws BaseException {
         try {
             String getHotDiariesQuery = "select 2 as boardType, D.diary_idx as feedIdx, diary_roomType as roomType, D.mem_idx, M.mem_nickname, diary_title as title, diary_image as image,";
             getHotDiariesQuery += " diary_hit as hit, diary_created_at as createAt, if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt, if(D.diary_idx = LikeCnt.diary_idx, like_cnt, 0) as like_cnt";
@@ -644,19 +665,34 @@ public class FeedsDao {
             
             switch(filter) {
                 case 1:     // 1시간(default)
+                if(roomType == 0)
                 getHotDiariesQuery += " where diary_created_at between DATE_SUB(NOW(), interval 1 hour) and now()";
+                else if(roomType == 1)
+                getHotDiariesQuery += " where diary_roomType = 1 && diary_created_at between DATE_SUB(NOW(), interval 1 hour) and now()";
+                else if(roomType == 2)
+                getHotDiariesQuery += " where diary_roomType = 2 && diary_created_at between DATE_SUB(NOW(), interval 1 hour) and now()";
                 getHotDiariesQuery += " && D.mem_idx = M.mem_idx && D.diary_blame < 10";
                 getHotDiariesQuery += " group by D.diary_idx order by hit desc, diary_created_at desc limit 30 offset ?";
                     break;
 
                 case 2:     // 24시간
+                if(roomType == 0)
                 getHotDiariesQuery += " where diary_created_at between DATE_SUB(NOW(), interval 24 hour) and now()";
+                else if(roomType == 1)
+                getHotDiariesQuery += " where diary_roomType = 1 && diary_created_at between DATE_SUB(NOW(), interval 24 hour) and now()";
+                else if(roomType == 2)
+                getHotDiariesQuery += " where diary_roomType = 2 && diary_created_at between DATE_SUB(NOW(), interval 24 hour) and now()";
                 getHotDiariesQuery += " && D.mem_idx = M.mem_idx && D.diary_blame < 10";
                 getHotDiariesQuery += " group by D.diary_idx order by hit desc, diary_created_at desc limit 30 offset ?";
                     break;
 
                 case 3:     // 일주일
+                if(roomType == 0)
                 getHotDiariesQuery += " where diary_created_at between DATE_FORMAT(DATE_SUB(NOW(), INTERVAL WEEKDAY(NOW()) day), '%Y-%m-%d') and now()";
+                else if(roomType == 1)
+                getHotDiariesQuery += " where diary_roomType = 1 && diary_created_at between DATE_FORMAT(DATE_SUB(NOW(), INTERVAL WEEKDAY(NOW()) day), '%Y-%m-%d') and now()";
+                else if(roomType == 2)
+                getHotDiariesQuery += " where diary_roomType = 2 && diary_created_at between DATE_FORMAT(DATE_SUB(NOW(), INTERVAL WEEKDAY(NOW()) day), '%Y-%m-%d') and now()";
                 getHotDiariesQuery += " && D.mem_idx = M.mem_idx && D.diary_blame < 10";
                 getHotDiariesQuery += " group by D.diary_idx order by hit desc, diary_created_at desc limit 30 offset ?";
                     break;

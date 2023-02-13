@@ -111,17 +111,25 @@ public class FeedsProvider {
     }
 
     // 아이홈 게시판별 인기순 조회
-    public List<GetAllFeedsRes> getHotStories(int filter, int page) throws BaseException {
+    public List<GetAllFeedsRes> getHotStories(int roomType, int filter, int page) throws BaseException {
+        if(roomType < 0 || roomType > 3) {
+            throw new BaseException(BaseResponseStatus.POST_INVALID_IDX);
+        }
+
         try {
-            return feedsDao.getHotStories(filter, page);
+            return feedsDao.getHotStories(roomType, filter, page);
         } catch (BaseException e)  {
             throw e;
         }
     }
 
-    public List<GetAllFeedsRes> getHotDiaries(int filter, int page) throws BaseException {
+    public List<GetAllFeedsRes> getHotDiaries(int roomType, int filter, int page) throws BaseException {
+        if(roomType < 0 || roomType > 2) {
+            throw new BaseException(BaseResponseStatus.POST_INVALID_IDX);
+        }
+
         try {
-            return feedsDao.getHotDiaries(filter, page);
+            return feedsDao.getHotDiaries(roomType, filter, page);
         } catch (BaseException e)  {
             throw e;
         }
