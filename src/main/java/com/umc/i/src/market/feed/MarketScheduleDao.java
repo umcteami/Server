@@ -19,7 +19,6 @@ public class MarketScheduleDao implements MarketScheduleRepository {
     public void resetHitCountTable() {
         String query = "delete from Daily_market_feed_hit where created_at < (now() - interval 12 HOUR)";
         try {
-            log.info("resetHitCountTable={}", query);
             jdbcTemplate.update(query);
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -31,7 +30,6 @@ public class MarketScheduleDao implements MarketScheduleRepository {
         String query = "drop table if exists Hot_market_feed";
 
         try {
-            log.info("getHitRankView={}", query);
             jdbcTemplate.update(query);
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -44,7 +42,6 @@ public class MarketScheduleDao implements MarketScheduleRepository {
                 "order by count DESC";
 
         try {
-            log.info("getHitRankView={}", query);
             jdbcTemplate.update(query);
         } catch (Exception e) {
             log.error(e.getMessage());
