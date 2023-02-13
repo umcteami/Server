@@ -4,6 +4,7 @@ import com.umc.i.config.BaseException;
 import com.umc.i.config.BaseResponse;
 import com.umc.i.config.BaseResponseStatus;
 import com.umc.i.config.Constant;
+import com.umc.i.src.feeds.model.get.GetAllDiaryRes;
 import com.umc.i.src.feeds.model.get.GetAllFeedsRes;
 import com.umc.i.src.market.feed.model.GetMarketFeedReq;
 import com.umc.i.src.market.feed.model.GetMarketFeedRes;
@@ -42,6 +43,8 @@ public class SearchController {
         if (!isSearchTargetValid(search_target)) {
             return new BaseResponse<>(BaseResponseStatus.SEARCH_TARGET_INVALID);
         }
+
+        searchService.updateSearchKeywordCnt(search_keyword);
 
         List<GetMarketFeedRes> feedRes = null;
         switch (search_target) {
@@ -105,7 +108,7 @@ public class SearchController {
             return new BaseResponse<>(BaseResponseStatus.SEARCH_TARGET_INVALID);
         }
 
-        List<GetAllFeedsRes> feedRes = null;
+        List<GetAllDiaryRes> feedRes = null;
         switch (search_target) {
             case "title":
                 if (category == null) {
