@@ -129,18 +129,20 @@ public class MarketFeedController {
         HashMap<String, String> marketGoodCategories = Constant.MARKET_GOOD_CATEGORIES;
         String[] booleans = Constant.BOOLEANS;
 
+
         if (!marketGoodCategories.containsKey(category) || !Arrays.asList(booleans).contains(soldout)) {
             return new BaseResponse<>(BaseResponseStatus.FEED_BY_CATEGORY_FAILED);
         }
 
         int userIdx = req.getUserIdx();
         String categoryIdx = marketGoodCategories.get(category);
+        String soldoutIdx = Constant.MARKET_SOLDOUT[Integer.parseInt(soldout)];
 
         List<GetMarketFeedRes> feedResList;
         if (categoryIdx == null) { // category 무관
-            feedResList= marketFeedService.getAllFeed(userIdx, soldout, page);
+            feedResList= marketFeedService.getAllFeed(userIdx, soldoutIdx, page);
         } else { // category 선택
-            feedResList = marketFeedService.getFeedByCategory(categoryIdx, userIdx, soldout, page);
+            feedResList = marketFeedService.getFeedByCategory(categoryIdx, userIdx, soldoutIdx, page);
         }
 
         return new BaseResponse<>(feedResList);
@@ -162,7 +164,6 @@ public class MarketFeedController {
 
         int userIdx = req.getUserIdx();
         String categoryIdx = marketGoodCategories.get(category);
-        log.info("categoryIdx={}", categoryIdx);
 
         List<GetMarketFeedRes> feedResList;
         if (categoryIdx == null) { // category 무관

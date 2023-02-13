@@ -232,45 +232,46 @@ public class MarketFeedDao implements MarketFeedRepository {
 
     @Override
     public List<GetMarketFeedRes> getAllFeed(int userIdx, String soldout, int page) {
-        String query = "select a.*, b.market_like_count\n" +
-                "from (\n" +
-                "\tselect \n" +
-                "\t\tm.market_idx,\n" +
-                "\t\tm.mem_idx, \n" +
-                "\t\tm.market_group, \n" +
-                "\t\tm.market_price, \n" +
-                "\t\tm.market_title, \n" +
-                "\t\tm.market_image, \n" +
-                "\t\tm.market_soldout, \n" +
-                "\t\tm.market_hit, \n" +
-                "\t\tm.market_created_at, \n" +
-                "\t\tIF (ml.mem_idx22 is null, false, true) as mem_liked\n" +
-                "\tfrom Market m \n" +
-                "\tleft join (\n" +
-                "\t\tselect market_idx, mem_idx22 \n" +
-                "\t\tfrom Market_like \n" +
-                "\t\twhere mem_idx22 = ?) ml\n" +
-                "\ton m.market_idx = ml.market_idx \n" +
-                "\twhere m.market_soldout = ?\n" +
-                ") a\n" +
-                "left join (\n" +
-                "\tselect market_idx, count(*) as market_like_count\n" +
-                "\tfrom Market_like\n" +
-                "\tgroup by market_idx\n" +
-                ") b\n" +
+        String query = "select a.*, b.market_like_count \n" +
+                "from ( \n" +
+                "\tselect  \n" +
+                "\t\tm.market_idx, \n" +
+                "\t\tm.mem_idx,  \n" +
+                "\t\tm.market_group,  \n" +
+                "\t\tm.market_price,  \n" +
+                "\t\tm.market_title,  \n" +
+                "\t\tLEFT(m.market_content, 90), \n" +
+                "\t\tm.market_image,  \n" +
+                "\t\tm.market_soldout,  \n" +
+                "\t\tm.market_hit,  \n" +
+                "\t\tm.market_created_at,  \n" +
+                "\t\tIF (ml.mem_idx22 is null, false, true) as mem_liked \n" +
+                "\t\tfrom Market m  \n" +
+                "\t\tleft join ( \n" +
+                "\t\t\tselect \n" +
+                "\t\t\t\tmarket_idx, mem_idx22  \n" +
+                "\t\t\tfrom Market_like  \n" +
+                "\t\t\twhere mem_idx22 = ?) ml \n" +
+                "\t\ton m.market_idx = ml.market_idx\n" +
+                "\t\t) a \n" +
+                "left join ( \n" +
+                "\tselect market_idx, count(*) as market_like_count \n" +
+                "\tfrom Market_like \n" +
+                "\tgroup by market_idx \n" +
+                ") b \n" +
                 "on a.market_idx = b.market_idx\n" +
+                "where market_soldout in" + soldout + "\n" +
                 "order by a.market_created_at DESC\n" +
-                "limit ?, ?";
+                "limit ?, ?;";
 
         try {
             List<GetMarketFeedRes> result = jdbcTemplate.query(query,
                     marketFeedByCategoryRowMapper(),
-                    userIdx, soldout, page * 9, Constant.FEED_PER_PAGE);
+                    userIdx, page * 9, Constant.FEED_PER_PAGE);
             return result;
         } catch (Exception e) {
             log.error(e.getMessage());
         }
-
         return null;
     }
 
@@ -510,6 +511,7 @@ public class MarketFeedDao implements MarketFeedRepository {
             marketFeed.setUserIdx(rs.getInt("mem_idx"));
             marketFeed.setCategory(rs.getInt("market_group"));
             marketFeed.setTitle(rs.getString("market_title"));
+            marketFeed.setContent(rs.getString("market_content"));
             marketFeed.setPrice(rs.getInt("market_price"));
             marketFeed.setSoldout(rs.getString("market_soldout"));
             marketFeed.setImage(rs.getString("market_image"));
