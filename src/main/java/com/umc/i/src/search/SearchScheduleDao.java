@@ -33,7 +33,7 @@ public class SearchScheduleDao implements SearchScheduleRepository {
         }
         query = "create table Hot_keyword as\n" +
                 "select keyword, count(*) as count\n" +
-                "from Hot_keyword\n" +
+                "from Keyword\n" +
                 "group by keyword\n" +
                 "order by count DESC\n" +
                 "limit 0, 7;";
