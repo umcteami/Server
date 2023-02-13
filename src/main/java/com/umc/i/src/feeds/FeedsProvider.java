@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.umc.i.config.BaseException;
 import com.umc.i.config.BaseResponseStatus;
+import com.umc.i.src.feeds.model.get.GetAllDiaryRes;
 import com.umc.i.src.feeds.model.get.GetAllFeedsRes;
 import com.umc.i.src.feeds.model.get.GetCommentRes;
 import com.umc.i.src.feeds.model.get.GetFeedRes;
@@ -40,7 +41,7 @@ public class FeedsProvider {
     }
 
     // 일기장 전체 조회
-    public List<GetAllFeedsRes> getAllDiaries(int page) {
+    public List<GetAllDiaryRes> getAllDiaries(int page) {
         return feedsDao.getAllDiaries(page);
     }
 
@@ -50,7 +51,7 @@ public class FeedsProvider {
     }
 
     // 일기장 카테고리별 조회
-    public List<GetAllFeedsRes> getDiariesByRoomType(int roomType, int page) {
+    public List<GetAllDiaryRes> getDiariesByRoomType(int roomType, int page) {
         return feedsDao.getDiariesByRoomType(roomType, page);
     }
 

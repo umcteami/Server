@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 import com.umc.i.config.BaseException;
 import com.umc.i.config.BaseResponseStatus;
 import com.umc.i.src.feeds.model.Feeds;
+import com.umc.i.src.feeds.model.get.GetAllDiaryRes;
 import com.umc.i.src.feeds.model.get.GetAllFeedsRes;
 import com.umc.i.src.feeds.model.get.GetCommentRes;
 import com.umc.i.src.feeds.model.patch.PatchFeedsReq;
@@ -288,14 +289,14 @@ public class FeedsDao {
     }
 
     // 일기장 전체 조회
-    public List<GetAllFeedsRes> getAllDiaries(int page) {
-        String getAllFeedsQuery = "select D.diary_idx, diary_roomType, D.mem_idx, M.mem_nickname, mem_profile_url, diary_title, diary_image, diary_hit, diary_created_at, ";
+    public List<GetAllDiaryRes> getAllDiaries(int page) {
+        String getAllFeedsQuery = "select D.diary_idx, diary_roomType, D.mem_idx, M.mem_nickname, mem_profile_url, diary_title, left(diary_content, 100) as content, diary_image, diary_hit, diary_created_at, ";
         getAllFeedsQuery += " if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt, if(D.diary_idx = LikeCnt.diary_idx, like_cnt, 0) as like_cnt";
         getAllFeedsQuery += " from Diary_feed D, Member M, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt, (select diary_idx, count(*) as like_cnt from Diary_feed_like group by diary_idx) LikeCnt";
         getAllFeedsQuery += " where diary_blame < 10 && D.mem_idx = M.mem_idx group by diary_idx order by diary_idx desc limit 20 offset ?";
 
         return this.jdbcTemplate.query(getAllFeedsQuery, 
-        (rs, rowNum) -> new GetAllFeedsRes(
+        (rs, rowNum) -> new GetAllDiaryRes(
             2, 
             rs.getInt("diary_roomType"), 
             rs.getInt("diary_idx"), 
@@ -303,6 +304,7 @@ public class FeedsDao {
             rs.getString("mem_nickname"),
             rs.getString("mem_profile_url"),
             rs.getString("diary_title"), 
+            rs.getString("content"),
             rs.getString("diary_image"),
             rs.getInt("diary_hit"),
             rs.getInt("comment_cnt"),
@@ -312,14 +314,14 @@ public class FeedsDao {
     }
 
     // 일기장 카테고리별 조회
-    public List<GetAllFeedsRes> getDiariesByRoomType(int roomType, int page) {
-        String getAllFeedsQuery = "select D.diary_idx, diary_roomType, D.mem_idx, M.mem_nickname, mem_profile_url, diary_title, diary_image, diary_hit, diary_created_at, ";
+    public List<GetAllDiaryRes> getDiariesByRoomType(int roomType, int page) {
+        String getAllFeedsQuery = "select D.diary_idx, diary_roomType, D.mem_idx, M.mem_nickname, mem_profile_url, diary_title, left(diary_content, 100) as content, diary_image, diary_hit, diary_created_at, ";
         getAllFeedsQuery += " if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt, if(D.diary_idx = LikeCnt.diary_idx, like_cnt, 0) as like_cnt";
         getAllFeedsQuery += " from Diary_feed D, Member M, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt, (select diary_idx, count(*) as like_cnt from Diary_feed_like group by diary_idx) LikeCnt";
         getAllFeedsQuery += " where diary_roomType = ? && diary_blame < 10 && D.mem_idx = M.mem_idx group by diary_idx order by diary_idx desc limit 20 offset ?";
 
         return this.jdbcTemplate.query(getAllFeedsQuery, 
-        (rs, rowNum) -> new GetAllFeedsRes(
+        (rs, rowNum) -> new GetAllDiaryRes(
             2, 
             rs.getInt("diary_roomType"), 
             rs.getInt("diary_idx"), 
@@ -327,6 +329,7 @@ public class FeedsDao {
             rs.getString("mem_nickname"),
             rs.getString("mem_profile_url"),
             rs.getString("diary_title"), 
+            rs.getString("content"),
             rs.getString("diary_image"),
             rs.getInt("diary_hit"),
             rs.getInt("comment_cnt"),
