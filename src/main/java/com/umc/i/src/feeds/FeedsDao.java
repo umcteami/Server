@@ -262,8 +262,8 @@ public class FeedsDao {
 
     // 이야기방 상세 조회
     public List<Feeds> getStory(int feedIdx, int memIdx) {
-        String getFeedQuery = "update Story_feed set story_hit = story_hit + 1";
-        this.jdbcTemplate.update(getFeedQuery);
+        String getFeedQuery = "update Story_feed set story_hit = story_hit + 1 where story_idx = ?";
+        this.jdbcTemplate.update(getFeedQuery, feedIdx);
         
         getFeedQuery = "select S.story_idx, story_roomType, S.mem_idx, M.mem_nickname, mem_profile_url, story_title, story_content, story_hit, story_created_at, SC.comment_cnt, like_cnt, islike";
         getFeedQuery += " from Story_feed S join Member M on S.mem_idx = M.mem_idx, (select count(*) as comment_cnt from Story_feed_comment where story_idx = ?) SC, ";
@@ -340,8 +340,8 @@ public class FeedsDao {
 
     // 일기장 상세조회
     public List<Feeds> getDiary(int diaryIdx, int memIdx) {
-        String getFeedQuery = "update Diary_feed set diary_hit = diary_hit + 1";
-        this.jdbcTemplate.update(getFeedQuery);
+        String getFeedQuery = "update Diary_feed set diary_hit = diary_hit + 1 where diary_idx = ?";
+        this.jdbcTemplate.update(getFeedQuery, diaryIdx);
 
         getFeedQuery = "select D.diary_idx, diary_roomType, D.mem_idx, M.mem_nickname, mem_profile_url, diary_title, diary_content, diary_hit, diary_created_at, DC.comment_cnt, like_cnt, islike";
         getFeedQuery += " from Diary_feed D join Member M on D.mem_idx = M.mem_idx, (select count(*) as comment_cnt from Diary_comment where diary_idx = ?) DC, ";
