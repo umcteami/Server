@@ -3,6 +3,7 @@ package com.umc.i.src.search;
 import com.umc.i.src.feeds.model.get.GetAllFeedsRes;
 import com.umc.i.src.market.feed.model.GetMarketFeedRes;
 import com.umc.i.src.review.model.get.GetAllReviewsRes;
+import com.umc.i.src.search.model.Keyword;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -148,5 +149,10 @@ public class SearchServiceImpl implements SearchService {
     @Override
     public List<GetAllFeedsRes> searchAllHomeFeedByKeywordByMemberNicknameInLatest(String search_keyword, int page) {
         return searchDao.searchAllHomeFeedByKeywordByMemberNicknameInLatest(search_keyword, page);
+    }
+
+    @Override
+    public List<Keyword> bestSearchKeyword() {
+        return searchDao.bestSearchKeyword();
     }
 }

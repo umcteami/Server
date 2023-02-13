@@ -8,6 +8,7 @@ import com.umc.i.src.feeds.model.get.GetAllFeedsRes;
 import com.umc.i.src.market.feed.model.GetMarketFeedReq;
 import com.umc.i.src.market.feed.model.GetMarketFeedRes;
 import com.umc.i.src.review.model.get.GetAllReviewsRes;
+import com.umc.i.src.search.model.Keyword;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -290,7 +291,7 @@ public class SearchController {
 
     @GetMapping("search/bestkeyword")
     public BaseResponse bestSearchKeyword() {
-        List<String> keyword = searchService.bestSearchKeyword();
+        List<Keyword> keyword = searchService.bestSearchKeyword();
         return new BaseResponse<>(keyword);
     }
 
