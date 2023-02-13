@@ -67,20 +67,23 @@ public class MemberDao {
     }
 
     //유저 정보 변경
-    public void editMem(int memIdx,PatchMemReq patchMemReq, String profileUrl) {
+    public void editMem(int memIdx,PatchMemReq patchMemReq, String profileUrl, boolean editNick) {
         String editMemQuery = "update Member set mem_email = ? ,mem_phone = ?,mem_nickname = ?, mem_profile_content = ?, mem_profile_url = ?, mem_birth = ?,mem_address = ?,mem_address_code=?,mem_address_detail=? where mem_idx = ? ";
         Object[] editMemParams = new Object[]{patchMemReq.getEmail(),patchMemReq.getPhone(), patchMemReq.getNick(),patchMemReq.getIntro(),profileUrl,
                 patchMemReq.getBirth(),patchMemReq.getAddres(),patchMemReq.getAddresCode(),patchMemReq.getAddresPlus(),memIdx};
         this.jdbcTemplate.update(editMemQuery,editMemParams);
 
-        //변경된 닉네임 닉네임테이블로 이동
-        String uploadNickQuery = "insert into Member_nickname (mem_idx,nickname) VALUES (?,?)";
-        Object[] uploadNickParams = new Object[]{memIdx,patchMemReq.getNick()};
-        this.jdbcTemplate.update(uploadNickQuery,uploadNickParams);
+        if(editNick) {
+            //변경된 닉네임 닉네임테이블로 이동
+            String uploadNickQuery = "insert into Member_nickname (mem_idx,nickname) VALUES (?,?)";
+            Object[] uploadNickParams = new Object[]{memIdx,patchMemReq.getNick()};
+            this.jdbcTemplate.update(uploadNickQuery,uploadNickParams);
+        }
+        
     }
     // 닉네임 변경횟수
     public int editNickNum(int memIdx){
-        String editNickNumQuery = "select count(mem_idx) from Member_nickname where mem_idx = ?";
+        String editNickNumQuery = "select count(*) from Member_nickname where mem_idx = ?";
 
         int num = this.jdbcTemplate.queryForObject(editNickNumQuery, int.class, memIdx);
         return num;

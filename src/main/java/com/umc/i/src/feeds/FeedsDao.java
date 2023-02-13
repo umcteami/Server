@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 import com.umc.i.config.BaseException;
 import com.umc.i.config.BaseResponseStatus;
 import com.umc.i.src.feeds.model.Feeds;
+import com.umc.i.src.feeds.model.get.GetAllDiaryRes;
 import com.umc.i.src.feeds.model.get.GetAllFeedsRes;
 import com.umc.i.src.feeds.model.get.GetCommentRes;
 import com.umc.i.src.feeds.model.patch.PatchFeedsReq;
@@ -261,8 +262,8 @@ public class FeedsDao {
 
     // 이야기방 상세 조회
     public List<Feeds> getStory(int feedIdx, int memIdx) {
-        String getFeedQuery = "update Story_feed set story_hit = story_hit + 1";
-        this.jdbcTemplate.update(getFeedQuery);
+        String getFeedQuery = "update Story_feed set story_hit = story_hit + 1 where story_idx = ?";
+        this.jdbcTemplate.update(getFeedQuery, feedIdx);
         
         getFeedQuery = "select S.story_idx, story_roomType, S.mem_idx, M.mem_nickname, mem_profile_url, story_title, story_content, story_hit, story_created_at, SC.comment_cnt, like_cnt, islike";
         getFeedQuery += " from Story_feed S join Member M on S.mem_idx = M.mem_idx, (select count(*) as comment_cnt from Story_feed_comment where story_idx = ?) SC, ";
@@ -288,14 +289,14 @@ public class FeedsDao {
     }
 
     // 일기장 전체 조회
-    public List<GetAllFeedsRes> getAllDiaries(int page) {
-        String getAllFeedsQuery = "select D.diary_idx, diary_roomType, D.mem_idx, M.mem_nickname, mem_profile_url, diary_title, diary_image, diary_hit, diary_created_at, ";
+    public List<GetAllDiaryRes> getAllDiaries(int page) {
+        String getAllFeedsQuery = "select D.diary_idx, diary_roomType, D.mem_idx, M.mem_nickname, mem_profile_url, diary_title, left(diary_content, 100) as content, diary_image, diary_hit, diary_created_at, ";
         getAllFeedsQuery += " if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt, if(D.diary_idx = LikeCnt.diary_idx, like_cnt, 0) as like_cnt";
         getAllFeedsQuery += " from Diary_feed D, Member M, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt, (select diary_idx, count(*) as like_cnt from Diary_feed_like group by diary_idx) LikeCnt";
         getAllFeedsQuery += " where diary_blame < 10 && D.mem_idx = M.mem_idx group by diary_idx order by diary_idx desc limit 20 offset ?";
 
         return this.jdbcTemplate.query(getAllFeedsQuery, 
-        (rs, rowNum) -> new GetAllFeedsRes(
+        (rs, rowNum) -> new GetAllDiaryRes(
             2, 
             rs.getInt("diary_roomType"), 
             rs.getInt("diary_idx"), 
@@ -303,6 +304,7 @@ public class FeedsDao {
             rs.getString("mem_nickname"),
             rs.getString("mem_profile_url"),
             rs.getString("diary_title"), 
+            rs.getString("content"),
             rs.getString("diary_image"),
             rs.getInt("diary_hit"),
             rs.getInt("comment_cnt"),
@@ -312,14 +314,14 @@ public class FeedsDao {
     }
 
     // 일기장 카테고리별 조회
-    public List<GetAllFeedsRes> getDiariesByRoomType(int roomType, int page) {
-        String getAllFeedsQuery = "select D.diary_idx, diary_roomType, D.mem_idx, M.mem_nickname, mem_profile_url, diary_title, diary_image, diary_hit, diary_created_at, ";
+    public List<GetAllDiaryRes> getDiariesByRoomType(int roomType, int page) {
+        String getAllFeedsQuery = "select D.diary_idx, diary_roomType, D.mem_idx, M.mem_nickname, mem_profile_url, diary_title, left(diary_content, 100) as content, diary_image, diary_hit, diary_created_at, ";
         getAllFeedsQuery += " if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt, if(D.diary_idx = LikeCnt.diary_idx, like_cnt, 0) as like_cnt";
         getAllFeedsQuery += " from Diary_feed D, Member M, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt, (select diary_idx, count(*) as like_cnt from Diary_feed_like group by diary_idx) LikeCnt";
         getAllFeedsQuery += " where diary_roomType = ? && diary_blame < 10 && D.mem_idx = M.mem_idx group by diary_idx order by diary_idx desc limit 20 offset ?";
 
         return this.jdbcTemplate.query(getAllFeedsQuery, 
-        (rs, rowNum) -> new GetAllFeedsRes(
+        (rs, rowNum) -> new GetAllDiaryRes(
             2, 
             rs.getInt("diary_roomType"), 
             rs.getInt("diary_idx"), 
@@ -327,6 +329,7 @@ public class FeedsDao {
             rs.getString("mem_nickname"),
             rs.getString("mem_profile_url"),
             rs.getString("diary_title"), 
+            rs.getString("content"),
             rs.getString("diary_image"),
             rs.getInt("diary_hit"),
             rs.getInt("comment_cnt"),
@@ -337,8 +340,8 @@ public class FeedsDao {
 
     // 일기장 상세조회
     public List<Feeds> getDiary(int diaryIdx, int memIdx) {
-        String getFeedQuery = "update Diary_feed set diary_hit = diary_hit + 1";
-        this.jdbcTemplate.update(getFeedQuery);
+        String getFeedQuery = "update Diary_feed set diary_hit = diary_hit + 1 where diary_idx = ?";
+        this.jdbcTemplate.update(getFeedQuery, diaryIdx);
 
         getFeedQuery = "select D.diary_idx, diary_roomType, D.mem_idx, M.mem_nickname, mem_profile_url, diary_title, diary_content, diary_hit, diary_created_at, DC.comment_cnt, like_cnt, islike";
         getFeedQuery += " from Diary_feed D join Member M on D.mem_idx = M.mem_idx, (select count(*) as comment_cnt from Diary_comment where diary_idx = ?) DC, ";
@@ -346,7 +349,7 @@ public class FeedsDao {
         getFeedQuery += " where D.diary_idx = ? && diary_blame < 10";
 
         return this.jdbcTemplate.query(getFeedQuery, 
-        (rs, rowNum) -> new Feeds(
+        (rs, rowNum) -> new Feeds( 
             2, 
             rs.getInt("diary_roomType"), 
             rs.getInt("diary_idx"), 
@@ -591,27 +594,48 @@ public class FeedsDao {
     }
 
     // 게시판별 인기순 조회
-    public List<GetAllFeedsRes> getHotStories(int filter, int page) throws BaseException {
+    public List<GetAllFeedsRes> getHotStories(int roomType, int filter, int page) throws BaseException {
         try {
             String getHotStoriesQuery = "select 1 as boardType, S.story_idx as feedIdx, story_roomType as roomType, S.mem_idx, mem_nickname, story_title as title, story_image as image, ";
             getHotStoriesQuery += " story_hit as hit, story_created_at as createAt, if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt, if(S.story_idx = LikeCnt.story_idx, like_cnt, 0) as like_cnt";
             getHotStoriesQuery += " from Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt, (select story_idx, count(*) as like_cnt from Story_feed_like group by story_idx) LikeCnt";
             
             switch(filter) {
-                case 1:     // 오늘(default)
-                    getHotStoriesQuery += " where story_created_at between DATE_FORMAT(now(), '%Y-%m-%d') and now()";
+                case 1:     // 1시간(default)
+                    if(roomType == 0) 
+                    getHotStoriesQuery += " where story_created_at between DATE_SUB(NOW(), interval 1 hour) and now()";
+                    else if(roomType == 1)
+                    getHotStoriesQuery += " where story_roomType = 1 && story_created_at between DATE_SUB(NOW(), interval 1 hour) and now()";
+                    else if(roomType == 2)
+                    getHotStoriesQuery += " where story_roomType = 2 && story_created_at between DATE_SUB(NOW(), interval 1 hour) and now()";
+                    else if(roomType == 3)
+                    getHotStoriesQuery += " where story_roomType = 3 && story_created_at between DATE_SUB(NOW(), interval 1 hour) and now()";
                     getHotStoriesQuery += " && S.mem_idx = M.mem_idx && S.story_blame < 10";
                     getHotStoriesQuery += " group by S.story_idx order by hit desc, story_created_at desc limit 30 offset ?";
                     break;
 
                 case 2:     // 24시간
+                    if(roomType == 0)
                     getHotStoriesQuery += " where story_created_at between DATE_SUB(NOW(), interval 24 hour) and now()";
+                    else if(roomType == 1)
+                    getHotStoriesQuery += " where story_roomType = 1 && story_created_at between DATE_SUB(NOW(), interval 24 hour) and now()";
+                    else if(roomType == 2)
+                    getHotStoriesQuery += " where story_roomType = 2 && story_created_at between DATE_SUB(NOW(), interval 24 hour) and now()";
+                    else if(roomType == 3)
+                    getHotStoriesQuery += " where story_roomType = 3 && story_created_at between DATE_SUB(NOW(), interval 24 hour) and now()";
                     getHotStoriesQuery += " && S.mem_idx = M.mem_idx && S.story_blame < 10";
                     getHotStoriesQuery += " group by S.story_idx order by hit desc, story_created_at desc limit 30 offset ?";
                     break;
 
                 case 3:     // 일주일
+                    if(roomType == 0)
                     getHotStoriesQuery += " where story_created_at between DATE_FORMAT(DATE_SUB(NOW(), INTERVAL WEEKDAY(NOW()) day), '%Y-%m-%d') and now()";
+                    else if(roomType == 1)
+                    getHotStoriesQuery += " where story_roomType = 1 && story_created_at between DATE_FORMAT(DATE_SUB(NOW(), INTERVAL WEEKDAY(NOW()) day), '%Y-%m-%d') and now()";
+                    else if(roomType == 2)
+                    getHotStoriesQuery += " where story_roomType = 2 && story_created_at between DATE_FORMAT(DATE_SUB(NOW(), INTERVAL WEEKDAY(NOW()) day), '%Y-%m-%d') and now()";
+                    else if(roomType == 3)
+                    getHotStoriesQuery += " where story_roomType = 3 && story_created_at between DATE_FORMAT(DATE_SUB(NOW(), INTERVAL WEEKDAY(NOW()) day), '%Y-%m-%d') and now()";
                     getHotStoriesQuery += " && S.mem_idx = M.mem_idx && S.story_blame < 10";
                     getHotStoriesQuery += " group by S.story_idx order by hit desc, story_created_at desc limit 30 offset ?";
                     break;
@@ -639,27 +663,42 @@ public class FeedsDao {
         }
     }
 
-    public List<GetAllFeedsRes> getHotDiaries(int filter, int page) throws BaseException {
+    public List<GetAllFeedsRes> getHotDiaries(int roomType, int filter, int page) throws BaseException {
         try {
             String getHotDiariesQuery = "select 2 as boardType, D.diary_idx as feedIdx, diary_roomType as roomType, D.mem_idx, M.mem_nickname, diary_title as title, diary_image as image,";
             getHotDiariesQuery += " diary_hit as hit, diary_created_at as createAt, if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt, if(D.diary_idx = LikeCnt.diary_idx, like_cnt, 0) as like_cnt";
             getHotDiariesQuery += " from Diary_feed D, Member M, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt, (select diary_idx, count(*) as like_cnt from Diary_feed_like group by diary_idx) LikeCnt";
             
             switch(filter) {
-                case 1:     // 오늘(default)
-                getHotDiariesQuery += " where diary_created_at between DATE_FORMAT(now(), '%Y-%m-%d') and now()";
+                case 1:     // 1시간(default)
+                if(roomType == 0)
+                getHotDiariesQuery += " where diary_created_at between DATE_SUB(NOW(), interval 1 hour) and now()";
+                else if(roomType == 1)
+                getHotDiariesQuery += " where diary_roomType = 1 && diary_created_at between DATE_SUB(NOW(), interval 1 hour) and now()";
+                else if(roomType == 2)
+                getHotDiariesQuery += " where diary_roomType = 2 && diary_created_at between DATE_SUB(NOW(), interval 1 hour) and now()";
                 getHotDiariesQuery += " && D.mem_idx = M.mem_idx && D.diary_blame < 10";
                 getHotDiariesQuery += " group by D.diary_idx order by hit desc, diary_created_at desc limit 30 offset ?";
                     break;
 
                 case 2:     // 24시간
+                if(roomType == 0)
                 getHotDiariesQuery += " where diary_created_at between DATE_SUB(NOW(), interval 24 hour) and now()";
+                else if(roomType == 1)
+                getHotDiariesQuery += " where diary_roomType = 1 && diary_created_at between DATE_SUB(NOW(), interval 24 hour) and now()";
+                else if(roomType == 2)
+                getHotDiariesQuery += " where diary_roomType = 2 && diary_created_at between DATE_SUB(NOW(), interval 24 hour) and now()";
                 getHotDiariesQuery += " && D.mem_idx = M.mem_idx && D.diary_blame < 10";
                 getHotDiariesQuery += " group by D.diary_idx order by hit desc, diary_created_at desc limit 30 offset ?";
                     break;
 
                 case 3:     // 일주일
+                if(roomType == 0)
                 getHotDiariesQuery += " where diary_created_at between DATE_FORMAT(DATE_SUB(NOW(), INTERVAL WEEKDAY(NOW()) day), '%Y-%m-%d') and now()";
+                else if(roomType == 1)
+                getHotDiariesQuery += " where diary_roomType = 1 && diary_created_at between DATE_FORMAT(DATE_SUB(NOW(), INTERVAL WEEKDAY(NOW()) day), '%Y-%m-%d') and now()";
+                else if(roomType == 2)
+                getHotDiariesQuery += " where diary_roomType = 2 && diary_created_at between DATE_FORMAT(DATE_SUB(NOW(), INTERVAL WEEKDAY(NOW()) day), '%Y-%m-%d') and now()";
                 getHotDiariesQuery += " && D.mem_idx = M.mem_idx && D.diary_blame < 10";
                 getHotDiariesQuery += " group by D.diary_idx order by hit desc, diary_created_at desc limit 30 offset ?";
                     break;
@@ -694,8 +733,8 @@ public class FeedsDao {
             getHotReviewsQuery += "  from Market_review R, Member A, Member B, (select review_idx, count(*) as comment_cnt from Market_review_comment group by review_idx) Cmt, (select market_re_idx, count(*) as like_cnt from Market_review_like group by market_re_idx) LikeCnt";
 
             switch(filter) {
-                case 1:     // 오늘(default)
-                getHotReviewsQuery += " where review_created_at between DATE_FORMAT(now(), '%Y-%m-%d') and now()";
+                case 1:     // 1시간(default)
+                getHotReviewsQuery += " where review_created_at between DATE_SUB(NOW(), interval 1 hour) and now()";
                 getHotReviewsQuery += " && R.sell_mem_idx = A.mem_idx && R.buy_mem_idx = B.mem_idx && R.review_blame < 10";
                 getHotReviewsQuery += " group by R.review_idx order by hit desc, review_created_at desc limit 30 offset ?";
                     break;
