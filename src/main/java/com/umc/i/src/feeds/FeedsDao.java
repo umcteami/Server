@@ -595,8 +595,8 @@ public class FeedsDao {
             getHotStoriesQuery += " from Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt, (select story_idx, count(*) as like_cnt from Story_feed_like group by story_idx) LikeCnt";
             
             switch(filter) {
-                case 1:     // 오늘(default)
-                    getHotStoriesQuery += " where story_created_at between DATE_FORMAT(now(), '%Y-%m-%d') and now()";
+                case 1:     // 1시간(default)
+                    getHotStoriesQuery += " where story_created_at between DATE_SUB(NOW(), interval 1 hour) and now()";
                     getHotStoriesQuery += " && S.mem_idx = M.mem_idx && S.story_blame < 10";
                     getHotStoriesQuery += " group by S.story_idx order by hit desc, story_created_at desc limit 30 offset ?";
                     break;
@@ -643,8 +643,8 @@ public class FeedsDao {
             getHotDiariesQuery += " from Diary_feed D, Member M, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt, (select diary_idx, count(*) as like_cnt from Diary_feed_like group by diary_idx) LikeCnt";
             
             switch(filter) {
-                case 1:     // 오늘(default)
-                getHotDiariesQuery += " where diary_created_at between DATE_FORMAT(now(), '%Y-%m-%d') and now()";
+                case 1:     // 1시간(default)
+                getHotDiariesQuery += " where diary_created_at between DATE_SUB(NOW(), interval 1 hour) and now()";
                 getHotDiariesQuery += " && D.mem_idx = M.mem_idx && D.diary_blame < 10";
                 getHotDiariesQuery += " group by D.diary_idx order by hit desc, diary_created_at desc limit 30 offset ?";
                     break;
@@ -691,8 +691,8 @@ public class FeedsDao {
             getHotReviewsQuery += "  from Market_review R, Member A, Member B, (select review_idx, count(*) as comment_cnt from Market_review_comment group by review_idx) Cmt, (select market_re_idx, count(*) as like_cnt from Market_review_like group by market_re_idx) LikeCnt";
 
             switch(filter) {
-                case 1:     // 오늘(default)
-                getHotReviewsQuery += " where review_created_at between DATE_FORMAT(now(), '%Y-%m-%d') and now()";
+                case 1:     // 1시간(default)
+                getHotReviewsQuery += " where review_created_at between DATE_SUB(NOW(), interval 1 hour) and now()";
                 getHotReviewsQuery += " && R.sell_mem_idx = A.mem_idx && R.buy_mem_idx = B.mem_idx && R.review_blame < 10";
                 getHotReviewsQuery += " group by R.review_idx order by hit desc, review_created_at desc limit 30 offset ?";
                     break;

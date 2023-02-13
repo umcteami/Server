@@ -218,7 +218,7 @@ public class FeedsController {
 
     @ResponseBody
     @GetMapping("/hot/{boardType}") // 아이홈 게시판별 조회 - 인기순
-    public BaseResponse getHotFeedsByBoard(@PathVariable("boardType") String boardType, @RequestParam(defaultValue = "1") int filter, @RequestParam(defaultValue = "0") int page) {
+    public BaseResponse getHotFeedsByBoard(@PathVariable("boardType") String boardType, @RequestParam(name = "filter", defaultValue = "1") int filter, @RequestParam(name = "page", defaultValue = "0") int page) {
         try {
             switch (boardType) {
                 case "story":
