@@ -15,7 +15,7 @@ public class SearchScheduleDao implements SearchScheduleRepository {
 
     @Override
     public void resetKeywordTable() {
-        String query = "delete from Keyword where created_at < (now() - interval 12 HOUR)";
+        String query = "delete from Keyword where created_at < (now() - interval 1 HOUR)";
         try {
             jdbcTemplate.update(query);
         } catch (Exception e) {
@@ -38,6 +38,7 @@ public class SearchScheduleDao implements SearchScheduleRepository {
                 "order by count DESC\n" +
                 "limit 0, 7;";
         try {
+            log.info("createHotKeyword={}", query);
             jdbcTemplate.update(query);
         } catch (Exception e) {
             log.error(e.getMessage());
