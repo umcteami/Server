@@ -174,7 +174,7 @@ public class MarketFeedController {
     @GetMapping("/market/list")
     public BaseResponse getFeedByUserIdx(@RequestParam int postUserIdx,
                                          @RequestParam(defaultValue = "0") int page,
-                                         @RequestBody int userIdx) {
+                                         @RequestParam int userIdx) {
         List<GetMarketFeedRes> result = marketFeedService.getFeedByUserIdx(postUserIdx, page, userIdx);
         return new BaseResponse<>(result);
     }
