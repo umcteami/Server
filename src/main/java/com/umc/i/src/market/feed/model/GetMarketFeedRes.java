@@ -12,7 +12,8 @@ import java.util.Date;
 public class GetMarketFeedRes {
     private int marketIdx;
     private int userIdx; // 게시물 작성자
-    private String userNickname;
+    private String userNickname; // 게시물 작성자 닉네임
+    private String userProfileUrl; // 게시물 작성자 프로필 URL
     private int category;
     private String title;
     private String content;

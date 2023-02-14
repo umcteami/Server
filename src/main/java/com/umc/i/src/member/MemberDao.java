@@ -60,27 +60,23 @@ public class MemberDao {
     public int checkNick(String nick) {
         String checkNickQuery = "select count(*) from Member_nickname where nickname = ?";
         int num = this.jdbcTemplate.queryForObject(checkNickQuery, int.class, nick);
+        if(num != 0){ num = 1;}
+        //중복 있으면 1 없으면 0
         return num;
     }
 
     //유저 정보 변경
-    public void editMem(int memIdx,PatchMemReq patchMemReq, String profileUrl) throws BaseException{
-        String getNickQuery = "select mem_nickname from Member where mem_idx = ?";
-        String preNick = this.jdbcTemplate.queryForObject(getNickQuery,String.class,memIdx);
-
+    public void editMem(int memIdx,PatchMemReq patchMemReq, String profileUrl, boolean editNick) {
         String editMemQuery = "update Member set mem_email = ? ,mem_phone = ?,mem_nickname = ?, mem_profile_content = ?, mem_profile_url = ?, mem_birth = ?,mem_address = ?,mem_address_code=?,mem_address_detail=? where mem_idx = ? ";
         Object[] editMemParams = new Object[]{patchMemReq.getEmail(),patchMemReq.getPhone(), patchMemReq.getNick(),patchMemReq.getIntro(),profileUrl,
                 patchMemReq.getBirth(),patchMemReq.getAddres(),patchMemReq.getAddresCode(),patchMemReq.getAddresPlus(),memIdx};
         this.jdbcTemplate.update(editMemQuery,editMemParams);
-        if(!preNick.equals(patchMemReq.getNick())){
-            if(editNickNum(memIdx)<3){
-                //변경된 닉네임 닉네임테이블로 이동
-                String uploadNickQuery = "insert into Member_nickname (mem_idx,nickname) VALUES (?,?)";
-                Object[] uploadNickParams = new Object[]{memIdx,patchMemReq.getNick()};
-                this.jdbcTemplate.update(uploadNickQuery,uploadNickParams);
-            }else{
-                throw new BaseException(PATCH_MEMBER_NICKNUM_OVER);
-            }
+
+        if(editNick) {
+            //변경된 닉네임 닉네임테이블로 이동
+            String uploadNickQuery = "insert into Member_nickname (mem_idx,nickname) VALUES (?,?)";
+            Object[] uploadNickParams = new Object[]{memIdx,patchMemReq.getNick()};
+            this.jdbcTemplate.update(uploadNickQuery,uploadNickParams);
         }
 
     }

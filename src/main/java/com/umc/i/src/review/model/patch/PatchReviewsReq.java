@@ -14,5 +14,4 @@ public class PatchReviewsReq {
     private int reviewIdx;      // 장터후기 인덱스
     private String goods;       // 구매 물품
     private String content;     // 내용
-    private int imgCnt;         // 이미지 개수
 }

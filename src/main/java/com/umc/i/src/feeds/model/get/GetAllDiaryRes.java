@@ -1,4 +1,4 @@
-package com.umc.i.src.feeds.model;
+package com.umc.i.src.feeds.model.get;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Feeds {
+public class GetAllDiaryRes {
     private int boardType;      // 1: 이야기방, 2: 일기장
     private int roomType;       // 1: 수다방/간호일기, 2: 질문방/무지개일기, 3:정보방
     private int feedIdx;        // 게시물 인덱스
@@ -19,9 +19,9 @@ public class Feeds {
     private String memProfile;  // 작성자 프로필
     private String title;       // 제목
     private String content;     // 내용
+    private String img;         // 대표 이미지
     private int hit;            // 조회수
     private int commentCnt;     // 댓글수
     private int likeCnt;        // 좋아요 수
     private String createAt;    // 작성일
-    private int islike;      // 좋아요 여부
 }

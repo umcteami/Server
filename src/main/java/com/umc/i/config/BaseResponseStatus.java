@@ -30,6 +30,8 @@ public enum BaseResponseStatus {
     // [POST] /feeds
     POST_FEEDS_INVALID_TYPE(false, 2020, "타입을 확인해주세요"),
     POST_INVALID_IDX(false, 2022, "인덱스를 확인해주세요"),
+
+    GET_INVALID_FILTER(false, 2023, "필터링 오류"),
     
 
 
@@ -88,9 +90,10 @@ public enum BaseResponseStatus {
 
     // search
     SEARCH_KEYWORD_NULL_EXCEPTION(false, 2112, "검색 키워드 오류"),
-    MARKET_FEED_BY_CATEGORY_FAILED(false, 2113, "존재하지 않는 카테고리"),
+    FEED_BY_CATEGORY_FAILED(false, 2113, "존재하지 않는 카테고리"),
     FEED_NOT_EXIST(false, 2114, "존재하지 않는 게시물"),
-    SEARCH_TARGET_INVALID(false, 2115, "지원하지 않는 검색 방식"),;
+    SEARCH_TARGET_INVALID(false, 2115, "지원하지 않는 검색 방식"),
+    FEED_WITHOUT_MEDIA(false, 2116, "이미지 파일 미첨부"),;
 
     private final boolean isSuccess;
     private final int code;
