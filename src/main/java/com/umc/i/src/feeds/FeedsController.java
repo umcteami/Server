@@ -168,7 +168,7 @@ public class FeedsController {
     public BaseResponse changeLike(@RequestBody PostFeedsLikeReq postFeedsLikeReq) {
         try {
             boolean isSuccess = feedsService.changeLike(postFeedsLikeReq);
-            return new BaseResponse<>("");
+            return new BaseResponse<>(isSuccess);
         } catch (BaseException e) {
             e.printStackTrace();
             return new BaseResponse<>(e.getStatus());
