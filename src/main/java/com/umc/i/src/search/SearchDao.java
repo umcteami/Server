@@ -327,10 +327,11 @@ public class SearchDao implements SearchRepository {
 
     @Override
     public List<GetAllReviewsRes> searchAllReviewFeedByKeywordByContentInLatest(String search_keyword, int page) {
-        String query = "select review_idx, sell_mem_idx, A.mem_nickname as seller_nick, buy_mem_idx, B.mem_nickname as buyer_nick, \n" +
-                "I.Market_review.review_goods, review_content, review_hit, review_created_at \n" +
-                "from Market_review, Member A, Member B\n" +
-                "where Market_review.sell_mem_idx = A.mem_idx && Market_review.buy_mem_idx = B.mem_idx and review_content like \"%" + search_keyword + "%\"\n" +
+        String query = "select Market_review.review_idx, sell_mem_idx, A.mem_nickname as seller_nick, buy_mem_idx, B.mem_nickname as buyer_nick, B.mem_profile_url,\n" +
+                "I.Market_review.review_goods, review_content, review_hit, review_created_at, review_image, if(likeCnt >= 0, likeCnt, 0) as likeCnt, if(comment_cnt >= 0, comment_cnt, 0) as comment_cnt\n" +
+                "from Market_review left join (select market_re_idx, count(*) as likeCnt from Market_review_like where Market_review_like.mrl_status = 1 group by market_re_idx) as MRL on review_idx = market_re_idx\n" +
+                "left join (select review_idx, count(*) as comment_cnt from Market_review_comment group by review_idx) as MRC on Market_review.review_idx = MRC.review_idx, Member A, Member B\n" +
+                "where Market_review.sell_mem_idx = A.mem_idx && Market_review.buy_mem_idx = B.mem_idx and review_content like \"%"+search_keyword+"%\"\n" +
                 "order by review_created_at desc limit ?, ?;";
 
         try {
@@ -341,9 +342,13 @@ public class SearchDao implements SearchRepository {
                             rs.getInt("sell_mem_idx"),
                             rs.getString("buyer_nick"),
                             rs.getString("seller_nick"),
+                            rs.getString("mem_profile_url"),
                             rs.getString("review_goods"),
                             rs.getInt("review_hit"),
-                            rs.getString("review_created_at")),
+                            rs.getInt("comment_cnt"),
+                            rs.getInt("likeCnt"),
+                            rs.getString("review_created_at"),
+                            rs.getString("review_image")),
                     page * Constant.FEED_PER_PAGE, Constant.FEED_PER_PAGE);
         } catch (Exception e) {
             log.error(e.getMessage());
