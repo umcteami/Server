@@ -15,5 +15,4 @@ public class PostReviewReq<MultipartFile> {
     private int buyerIdx;   // 사는 사람 인덱스
     private String goods;   // 구매한 물품
     private String content; // 내용
-    private int imgCnt;     // 이미지 개수
 }
