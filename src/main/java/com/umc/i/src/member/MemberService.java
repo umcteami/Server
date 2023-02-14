@@ -99,9 +99,9 @@ public class MemberService {
     }
 
     // 메일 전송
-    public PostAuthRes sendEmail(String toEmail) throws BaseException {
+    public PostAuthRes sendEmail(String toEmail, int isFind) throws BaseException {
         // 메일 중복 확인
-        if(memberDao.checkEmail(toEmail) == 0) {
+        if(memberDao.checkEmail(toEmail) == 0 || isFind == 1) {
             createCode();   // 인증코드 생성
 
             // 메일 전송에 필요한 정보 설정
@@ -125,9 +125,9 @@ public class MemberService {
 
     // 전화번호 인증
     @SuppressWarnings("unchecked")
-	public PostAuthRes send_msg(String tel) throws BaseException {
+	public PostAuthRes send_msg(String tel, int isFind) throws BaseException {
         //전화번호 중복 확인
-        if(memberDao.checkPhone(tel) == 0) {
+        if(memberDao.checkPhone(tel) == 0 || isFind == 1) {
             // 인증코드 생성
             createCode();
 
