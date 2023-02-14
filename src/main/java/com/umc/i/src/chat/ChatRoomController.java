@@ -44,8 +44,9 @@ public class ChatRoomController {
         try {
             return new BaseResponse<>(chatRoomRepository.createChatRoom(postChatRoom));
         }catch (BaseException e){
-            return new BaseResponse<>(BaseResponseStatus.CHATTING_BLAME_NOTABLE);
+            return new BaseResponse<>(e.getStatus());
         } catch (Exception e){
+            e.printStackTrace();
             return new BaseResponse(BaseResponseStatus.INTERNET_ERROR);
         }
     }
