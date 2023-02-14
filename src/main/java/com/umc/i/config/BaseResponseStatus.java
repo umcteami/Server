@@ -87,7 +87,7 @@ public enum BaseResponseStatus {
     
     //chatting
     CHATTING_BLAME_NOTABLE(false,2050,"차단 당했습니다."),
-
+    CHATTING_POST_DOUBLE(false,2051,"이미 생성된 채팅방입니다."),
     // search
     SEARCH_KEYWORD_NULL_EXCEPTION(false, 2112, "검색 키워드 오류"),
     FEED_BY_CATEGORY_FAILED(false, 2113, "존재하지 않는 카테고리"),

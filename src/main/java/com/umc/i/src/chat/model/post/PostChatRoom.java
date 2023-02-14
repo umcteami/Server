@@ -4,9 +4,12 @@ import lombok.*;
 
 @Getter
 @Setter
-@AllArgsConstructor
+@RequiredArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PostChatRoom {
+    private int roomIdx;
+    @NonNull
     private int memIdx1;
+    @NonNull
     private int memIdx2;
 }
