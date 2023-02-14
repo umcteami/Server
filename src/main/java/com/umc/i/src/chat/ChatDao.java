@@ -1,5 +1,6 @@
 package com.umc.i.src.chat;
 import com.umc.i.config.BaseException;
+import com.umc.i.config.BaseResponse;
 import com.umc.i.config.BaseResponseStatus;
 import com.umc.i.src.chat.model.ChatImg;
 import com.umc.i.src.chat.model.ChatMessage;
@@ -27,17 +28,25 @@ public class ChatDao {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
     //방생성
-    public void postChatRoom(PostChatRoom postChatRoom) throws BaseException {
+    public void postChatRoom(PostChatRoom postChatRoom) throws BaseException{
         String blockCheckQuery = "select count(*) from Member_block where (mem_idx = ? and blocked_mem_idx = ?) or\n" +
                 "                                        (mem_idx = ? and blocked_mem_idx = ?)";
         int block = this.jdbcTemplate.queryForObject(blockCheckQuery,int.class,postChatRoom.getMemIdx1(),postChatRoom.getMemIdx2(),
                 postChatRoom.getMemIdx2(),postChatRoom.getMemIdx1());
+        String noDoubleQuery = "select count(*) from Chatting_room where mem1_idx = ? and mem2_idx = ?\n" +
+                "                                      or mem2_idx = ? and mem1_idx = ?";
+        int noDouble = this.jdbcTemplate.queryForObject(noDoubleQuery,int.class,postChatRoom.getMemIdx1(),postChatRoom.getMemIdx2(),
+                postChatRoom.getMemIdx1(),postChatRoom.getMemIdx2());
         if(block !=0){
             throw new BaseException(BaseResponseStatus.CHATTING_BLAME_NOTABLE);
+        } else if(noDouble > 0){
+            throw new BaseException(BaseResponseStatus.CHATTING_POST_DOUBLE);
         }else{
             String postChatRoomQuery = "insert into Chatting_room(mem1_idx, mem2_idx,room_created_at,room_quit1,room_quit2) values (?,?,now(),0,0)";
             this.jdbcTemplate.update(postChatRoomQuery, postChatRoom.getMemIdx1(), postChatRoom.getMemIdx2());
         }
+        String last = "select last_insert_id()";
+        postChatRoom.setRoomIdx(this.jdbcTemplate.queryForObject(last,int.class));
     }
     //메세지 보내기
     public void sendMsg(ChatMessage chatMsg){

@@ -1,6 +1,7 @@
 package com.umc.i.src.chat;
 
 import com.umc.i.config.BaseException;
+import com.umc.i.config.BaseResponseStatus;
 import com.umc.i.src.chat.model.ChatImg;
 import com.umc.i.src.chat.model.ChatMessage;
 import com.umc.i.src.chat.model.get.GetChatRoomRes;
