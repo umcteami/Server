@@ -182,16 +182,19 @@ public class FeedsDao {
         getAllFeedsQuery += " from Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt";
         getAllFeedsQuery += " where S.mem_idx = M.mem_idx && story_blame < 10 group by story_idx order by story_idx desc limit 20 offset 0";
 
-        return this.jdbcTemplate.query(getAllFeedsQuery, 
+        return this.jdbcTemplate.query(getAllFeedsQuery,
         (rs, rowNum) -> new GetAllFeedsRes(
-            1, 
-            rs.getInt("story_roomType"), 
-            rs.getInt("story_idx"), 
+                1,
+            rs.getInt("story_roomType"),
+            rs.getInt("story_idx"),
             rs.getInt("mem_idx"),
             rs.getString("mem_nickname"),
-            rs.getString("story_title"), 
+            rs.getString("mem_profile_url"),
+            rs.getString("story_title"),
+            rs.getString("story_image"),
             rs.getInt("story_hit"),
             rs.getInt("comment_cnt"),
+            rs.getInt("like_cnt"),
             rs.getString("story_created_at")));
     }
     
@@ -209,9 +212,12 @@ public class FeedsDao {
             rs.getInt("story_idx"), 
             rs.getInt("mem_idx"),
             rs.getString("mem_nickname"),
-            rs.getString("story_title"), 
+            rs.getString("mem_profile_url"),
+            rs.getString("story_title"),
+            rs.getString("story_image"),
             rs.getInt("story_hit"),
             rs.getInt("comment_cnt"),
+            rs.getInt("like_cnt"),
             rs.getString("story_created_at")),
             roomType);
     }
@@ -226,19 +232,19 @@ public class FeedsDao {
         getFeedQuery += " from Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt";
         getFeedQuery += " where S.story_idx = ? && S.mem_idx = M.mem_idx && story_blame < 10";
 
-        return this.jdbcTemplate.query(getFeedQuery, 
-        (rs, rowNum) -> new Feeds(
-            1, 
-            rs.getInt("story_roomType"), 
-            rs.getInt("story_idx"), 
-            rs.getInt("mem_idx"),
-            rs.getString("mem_nickname"),
-            rs.getString("story_title"), 
-            rs.getString("story_content"),
-            rs.getInt("story_hit"),
-            rs.getInt("comment_cnt"),
-            rs.getString("story_created_at")),
-            feedIdx);
+        return this.jdbcTemplate.query(getFeedQuery,
+                (rs, rowNum) -> new Feeds(
+                        1,
+                        rs.getInt("story_roomType"),
+                        rs.getInt("story_idx"),
+                        rs.getInt("mem_idx"),
+                        rs.getString("mem_nickname"),
+                        rs.getString("story_title"),
+                        rs.getString("story_content"),
+                        rs.getInt("story_hit"),
+                        rs.getInt("comment_cnt"),
+                        rs.getString("story_created_at")),
+                feedIdx);
     }
 
     // 일기장 전체 조회
@@ -248,17 +254,20 @@ public class FeedsDao {
         getAllFeedsQuery += " from Diary_feed D, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt";
         getAllFeedsQuery += " where diary_blame < 10 group by diary_idx order by diary_idx desc limit 20 offset 0";
 
-        return this.jdbcTemplate.query(getAllFeedsQuery, 
-        (rs, rowNum) -> new GetAllFeedsRes(
-            2, 
-            rs.getInt("diary_roomType"), 
-            rs.getInt("diary_idx"), 
-            rs.getInt("mem_idx"),
-            rs.getString("mem_nickname"),
-            rs.getString("diary_title"), 
-            rs.getInt("diary_hit"),
-            rs.getInt("comment_cnt"),
-            rs.getString("diary_created_at")));
+        return this.jdbcTemplate.query(getAllFeedsQuery,
+                (rs, rowNum) -> new GetAllFeedsRes(
+                        2,
+                        rs.getInt("diary_roomType"),
+                        rs.getInt("diary_idx"),
+                        rs.getInt("mem_idx"),
+                        rs.getString("mem_nickname"),
+                        rs.getString("mem_profile_url"),
+                        rs.getString("diary_title"),
+                        rs.getString("dairy_image"),
+                        rs.getInt("diary_hit"),
+                        rs.getInt("comment_cnt"),
+                        rs.getInt("like_cnt"),
+                        rs.getString("diary_created_at")));
     }
 
     // 일기장 카테고리별 조회
@@ -268,18 +277,21 @@ public class FeedsDao {
         getAllFeedsQuery += " from Diary_feed D, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt";
         getAllFeedsQuery += " where diary_roomType = ? && diary_blame < 10 group by diary_idx order by diary_idx desc limit 20 offset 0";
 
-        return this.jdbcTemplate.query(getAllFeedsQuery, 
-        (rs, rowNum) -> new GetAllFeedsRes(
-            2, 
-            rs.getInt("diary_roomType"), 
-            rs.getInt("diary_idx"), 
-            rs.getInt("mem_idx"),
-            rs.getString("mem_nickname"),
-            rs.getString("diary_title"), 
-            rs.getInt("diary_hit"),
-            rs.getInt("comment_cnt"),
-            rs.getString("diary_created_at")),
-            roomType);
+        return this.jdbcTemplate.query(getAllFeedsQuery,
+                (rs, rowNum) -> new GetAllFeedsRes(
+                        2,
+                        rs.getInt("diary_roomType"),
+                        rs.getInt("diary_idx"),
+                        rs.getInt("mem_idx"),
+                        rs.getString("mem_nickname"),
+                        rs.getString("mem_profile_url"),
+                        rs.getString("diary_title"),
+                        rs.getString("dairy_image"),
+                        rs.getInt("diary_hit"),
+                        rs.getInt("comment_cnt"),
+                        rs.getInt("like_cnt"),
+                        rs.getString("diary_created_at")),
+                roomType);
     }
 
     // 일기장 상세조회
@@ -476,18 +488,21 @@ public class FeedsDao {
         getAllFeedsQuery += " from Market_review, Member A, Member B where Market_review.sell_mem_idx = A.mem_idx && Market_review.buy_mem_idx = B.mem_idx && Market_review.review_blame < 10";
         getAllFeedsQuery += " order by createAt desc limit 20 offset 0 ";
 
-        return this.jdbcTemplate.query(getAllFeedsQuery, 
-        (rs, rowNum) -> new GetAllFeedsRes(
-            rs.getInt("boardType"),
-            rs.getInt("roomType"),
-            rs.getInt("feedIdx"),
-            rs.getInt("mem_idx"),
-            rs.getString("mem_nickname"),
-            rs.getString("title"),
-            rs.getInt("hit"),
-            rs.getInt("comment_cnt"),
-            rs.getString("createAt")
-        ));
+        return this.jdbcTemplate.query(getAllFeedsQuery,
+                (rs, rowNum) -> new GetAllFeedsRes(
+                        rs.getInt("boardType"),
+                        rs.getInt("roomType"),
+                        rs.getInt("feedIdx"),
+                        rs.getInt("mem_idx"),
+                        rs.getString("mem_nickname"),
+                        rs.getString("mem_profile_url"),
+                        rs.getString("title"),
+                        rs.getString("image"),
+                        rs.getInt("hit"),
+                        rs.getInt("comment_cnt"),
+                        rs.getInt("like_cnt"),
+                        rs.getString("createAt")
+                ));
     }
 
     //게시글 신고하기
