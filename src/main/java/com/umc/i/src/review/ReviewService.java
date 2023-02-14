@@ -102,9 +102,9 @@ public class ReviewService {
         try {
             List<Image> img = reviewDao.getReviewsImage(reviewIdx);
             if(img != null) {
-                for (int i = 0; i < img.size(); i++) {
-                    uploadImageS3.remove(img.get(i).getUploadFilePath());       // s3에 있는 이미지 삭제
-                }
+                // for (int i = 0; i < img.size(); i++) {
+                //     uploadImageS3.remove(img.get(i).getUploadFilePath());       // s3에 있는 이미지 삭제
+                // }
             }
             
         } catch (Exception e) {
