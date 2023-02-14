@@ -1,5 +1,6 @@
 package com.umc.i.src.search;
 
+import com.umc.i.src.feeds.model.get.GetAllDiaryRes;
 import com.umc.i.src.feeds.model.get.GetAllFeedsRes;
 import com.umc.i.src.market.feed.model.GetMarketFeedRes;
 import com.umc.i.src.review.model.get.GetAllReviewsRes;
@@ -23,17 +24,17 @@ public interface SearchRepository {
 
     List<GetAllReviewsRes> searchAllReviewFeedByKeywordByContentInLatest(String search_keyword, int page);
 
-    List<GetAllFeedsRes> searchAllDairyFeedByKeywordByTitleInLatest(String search_keyword, int page);
+    List<GetAllDiaryRes> searchAllDairyFeedByKeywordByTitleInLatest(String search_keyword, int page);
 
-    List<GetAllFeedsRes> searchCategoryDairyFeedByKeywordByTitleInLatest(String categoryIdx, String search_keyword, int page);
+    List<GetAllDiaryRes> searchCategoryDairyFeedByKeywordByTitleInLatest(String categoryIdx, String search_keyword, int page);
 
-    List<GetAllFeedsRes> searchAllDairyFeedByKeywordByTitleContentInLatest(String search_keyword, int page);
+    List<GetAllDiaryRes> searchAllDairyFeedByKeywordByTitleContentInLatest(String search_keyword, int page);
 
-    List<GetAllFeedsRes> searchCategoryDairyFeedByKeywordByTitleContentInLatest(String categoryIdx, String search_keyword, int page);
+    List<GetAllDiaryRes> searchCategoryDairyFeedByKeywordByTitleContentInLatest(String categoryIdx, String search_keyword, int page);
 
-    List<GetAllFeedsRes> searchAllDairyFeedByKeywordByMemberNicknameInLatest(String search_keyword, int page);
+    List<GetAllDiaryRes> searchAllDairyFeedByKeywordByMemberNicknameInLatest(String search_keyword, int page);
 
-    List<GetAllFeedsRes> searchCategoryDairyFeedByKeywordByMemberNicknameInLatest(String categoryIdx, String search_keyword, int page);
+    List<GetAllDiaryRes> searchCategoryDairyFeedByKeywordByMemberNicknameInLatest(String categoryIdx, String search_keyword, int page);
 
     List<GetAllFeedsRes> searchAllStoryFeedByKeywordByTitleInLatest(String search_keyword, int page);
 
@@ -54,4 +55,6 @@ public interface SearchRepository {
     List<GetAllFeedsRes> searchAllHomeFeedByKeywordByMemberNicknameInLatest(String search_keyword, int page);
 
     List<Keyword> bestSearchKeyword();
+
+    void updateSearchKeywordCnt(String search_keyword);
 }

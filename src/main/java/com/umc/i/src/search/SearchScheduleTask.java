@@ -17,7 +17,7 @@ public class SearchScheduleTask {
         searchScheduleRepository.resetKeywordTable();
     }
 
-    @Scheduled(cron = "0 1 * * * ?")
+    @Scheduled(cron = "30 0 * * * ?")
     public void getHitRankView() {
         searchScheduleRepository.getSearchKeywordTable();
     }

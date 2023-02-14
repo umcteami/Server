@@ -239,7 +239,7 @@ public class MarketFeedDao implements MarketFeedRepository {
                 "\t\tm.market_group,  \n" +
                 "\t\tm.market_price,  \n" +
                 "\t\tm.market_title,  \n" +
-                "\t\tLEFT(m.market_content, 90), as market_content \n" +
+                "\t\tLEFT(m.market_content, 90) as market_content, \n" +
                 "\t\tm.market_image,  \n" +
                 "\t\tm.market_soldout,  \n" +
                 "\t\tm.market_hit,  \n" +
@@ -259,10 +259,9 @@ public class MarketFeedDao implements MarketFeedRepository {
                 "\tgroup by market_idx \n" +
                 ") b \n" +
                 "on a.market_idx = b.market_idx\n" +
-                "where market_soldout in" + soldout + "\n" +
+                "where market_soldout in " + soldout + "\n" +
                 "order by a.market_created_at DESC\n" +
                 "limit ?, ?;";
-
         try {
             List<GetMarketFeedRes> result = jdbcTemplate.query(query,
                     marketFeedByCategoryRowMapper(),
@@ -284,7 +283,7 @@ public class MarketFeedDao implements MarketFeedRepository {
                 "\t\tm.market_group,  \n" +
                 "\t\tm.market_price,  \n" +
                 "\t\tm.market_title,  \n" +
-                "        LEFT(m.market_content, 90) as market_content,\n" +
+                "\t\tLEFT(m.market_content, 90) as market_content,\n" +
                 "\t\tm.market_image,  \n" +
                 "\t\tm.market_soldout,  \n" +
                 "\t\tm.market_hit,  \n" +
@@ -306,7 +305,6 @@ public class MarketFeedDao implements MarketFeedRepository {
                 "on a.market_idx = b.market_idx \n" +
                 "order by a.market_created_at DESC \n" +
                 "limit ?, ?;";
-
         try {
             List<GetMarketFeedRes> result = jdbcTemplate.query(query,
                     marketFeedByCategoryRowMapper(),
@@ -331,7 +329,7 @@ public class MarketFeedDao implements MarketFeedRepository {
                 "\t\t\tmarket_group, \n" +
                 "\t\t\tmarket_price, \n" +
                 "\t\t\tmarket_title,  \n" +
-                "            left(market_content, 90) as market_content,\n" +
+                "\t\t\tleft(market_content, 90) as market_content,\n" +
                 "\t\t\tmarket_image,  \n" +
                 "\t\t\tmarket_soldout,  \n" +
                 "\t\t\tmarket_hit,  \n" +
@@ -356,7 +354,6 @@ public class MarketFeedDao implements MarketFeedRepository {
                 "\tgroup by market_idx) f \n" +
                 "on e.market_idx = f.market_idx  \n" +
                 "order by e.market_created_at DESC;";
-
         try {
             List<GetMarketFeedRes> result = jdbcTemplate.query(query,
                     marketFeedByCategoryRowMapper(),
@@ -443,7 +440,7 @@ public class MarketFeedDao implements MarketFeedRepository {
     }
 
     @Override
-    public List<GetMarketFeedRes> getFeedByUserIdx(int userIdx, int page) {
+    public List<GetMarketFeedRes> getFeedByUserIdx(int userIdx, int page, int myUserIdx) {
         String query = "select c.*, if(d.mem_idx22 is null, false, true) as mem_liked\n" +
                 "from (\n" +
                 "\tselect a.*, b.market_like_count\n" +
@@ -454,7 +451,7 @@ public class MarketFeedDao implements MarketFeedRepository {
                 "\t\t\tmarket_group,\n" +
                 "\t\t\tmarket_price,\n" +
                 "\t\t\tmarket_title, \n" +
-                "\t\t\tleft(market_content, 90) as market_content, '\n" +
+                "\t\t\tleft(market_content, 90) as market_content, \n" +
                 "\t\t\tmarket_image, \n" +
                 "\t\t\tmarket_soldout, \n" +
                 "\t\t\tmarket_hit, \n" +
@@ -479,7 +476,7 @@ public class MarketFeedDao implements MarketFeedRepository {
 
         try {
             List<GetMarketFeedRes> result = jdbcTemplate.query(query, marketFeedByUserIdxRowMapper(),
-                    userIdx, page * Constant.FEED_PER_PAGE, Constant.FEED_PER_PAGE, userIdx);
+                    userIdx, page * Constant.FEED_PER_PAGE, Constant.FEED_PER_PAGE, myUserIdx);
             return result;
         } catch (Exception e) {
             log.error(e.getMessage());
