@@ -7,7 +7,6 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PatchMemReq {
-    private int memIdx;
     private String email;
     private String pw;
     private String phone;
