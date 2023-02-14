@@ -145,13 +145,17 @@ public class ReviewDao {
     
         return this.jdbcTemplate.query(getAllReviewQuery, 
         (rs, rowNum) -> new GetAllReviewsRes(
-            rs.getInt("review_idx"),
-            rs.getInt("buy_mem_idx"),
-            rs.getInt("sell_mem_idx"),
-            rs.getString("buyer_nick"),
-            rs.getString("seller_nick"),
-            rs.getString("review_goods"),
-            rs.getInt("review_hit"),
-            rs.getString("review_created_at")));
+                rs.getInt("review_idx"),
+                rs.getInt("buy_mem_idx"),
+                rs.getInt("sell_mem_idx"),
+                rs.getString("buyer_nick"),
+                rs.getString("seller_nick"),
+                rs.getString("mem_profile_url"),
+                rs.getString("review_goods"),
+                rs.getInt("review_hit"),
+                rs.getInt("comment_cnt"),
+                rs.getInt("likeCnt"),
+                rs.getString("review_created_at"),
+                rs.getString("review_image")));
     }
 }
