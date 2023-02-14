@@ -194,9 +194,9 @@ public class MemberController {
     // 이메일 찾기
     @ResponseBody
     @GetMapping("/find/email")
-    public BaseResponse findEmail(@RequestBody GetMemberEmailReq getMemberEmailReq) throws BaseException {
+    public BaseResponse findEmail(@RequestParam(name = "phone") String phone) throws BaseException {
         try {
-            return new BaseResponse<>(memberProvider.findEmail(getMemberEmailReq.getPhone()));
+            return new BaseResponse<>(memberProvider.findEmail(phone));
         } catch(BaseException e) {
             return new BaseResponse<>(e.getStatus());
         }
