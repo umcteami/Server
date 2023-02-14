@@ -146,9 +146,7 @@ public class MemberController {
 
 
     @GetMapping("/join/auth")
-    public BaseResponse<PostAuthNumberRes> checkAuthNumber(@RequestBody PostAuthNumberReq postAuthNumberReq) {
-        int authIdx = postAuthNumberReq.getAuthIdx();
-
+    public BaseResponse<PostAuthNumberRes> checkAuthNumber(@RequestParam int authIdx) {
         PostAuthNumberReq res = memberService.getSignAuthNumberObject(authIdx);
 
         if (res == null) {

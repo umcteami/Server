@@ -113,7 +113,7 @@ public class MarketFeedController {
     public BaseResponse getNewsFeed(@RequestParam(required = false) String category,
                                     @RequestParam(defaultValue = "0") String soldout,
                                     @RequestParam(defaultValue = "0") int page,
-                                    @RequestBody GetMarketFeedReq req) throws RuntimeException {
+                                    @RequestParam int userIdx) throws RuntimeException {
         // query string 값 오류
         HashMap<String, String> marketGoodCategories = Constant.MARKET_GOOD_CATEGORIES;
         String[] booleans = Constant.BOOLEANS;
@@ -123,7 +123,6 @@ public class MarketFeedController {
             return new BaseResponse<>(BaseResponseStatus.FEED_BY_CATEGORY_FAILED);
         }
 
-        int userIdx = req.getUserIdx();
         String categoryIdx = marketGoodCategories.get(category);
         String soldoutIdx = Constant.MARKET_SOLDOUT[Integer.parseInt(soldout)];
 
@@ -140,7 +139,7 @@ public class MarketFeedController {
     public BaseResponse getHotNewsFeed(@RequestParam(required = false) String category,
                                        @RequestParam(defaultValue = "0") String soldout,
                                        @RequestParam(defaultValue = "0") int page,
-                                       @RequestBody GetMarketFeedReq req) throws RuntimeException {
+                                       @RequestParam int userIdx) throws RuntimeException {
         // query string 값 오류
         HashMap<String, String> marketGoodCategories = Constant.MARKET_GOOD_CATEGORIES;
         String[] booleans = Constant.BOOLEANS;
@@ -149,7 +148,6 @@ public class MarketFeedController {
             return new BaseResponse<>(BaseResponseStatus.FEED_BY_CATEGORY_FAILED);
         }
 
-        int userIdx = req.getUserIdx();
         String categoryIdx = marketGoodCategories.get(category);
         String soldoutIdx = Constant.MARKET_SOLDOUT[Integer.parseInt(soldout)];
 
@@ -164,8 +162,8 @@ public class MarketFeedController {
 
     @GetMapping("/market/detail")
     public BaseResponse getFeedDetail(@RequestParam String marketIdx,
-                                      @RequestBody MarketFeed feed) {
-        GetMarketFeedRes result = marketFeedService.getFeedByMarketIdx(marketIdx, String.valueOf(feed.getUserIdx()));
+                                      @RequestParam String userIdx) {
+        GetMarketFeedRes result = marketFeedService.getFeedByMarketIdx(marketIdx, userIdx);
         if (result == null) {
             return new BaseResponse<>(BaseResponseStatus.FEED_NOT_EXIST);
         }
@@ -174,10 +172,10 @@ public class MarketFeedController {
     }
 
     @GetMapping("/market/list")
-    public BaseResponse getFeedByUserIdx(@RequestParam int userIdx,
+    public BaseResponse getFeedByUserIdx(@RequestParam int postUserIdx,
                                          @RequestParam(defaultValue = "0") int page,
-                                         @RequestBody GetMarketFeedReq req) {
-        List<GetMarketFeedRes> result = marketFeedService.getFeedByUserIdx(userIdx, page, req.getUserIdx());
+                                         @RequestParam int userIdx) {
+        List<GetMarketFeedRes> result = marketFeedService.getFeedByUserIdx(postUserIdx, page, userIdx);
         return new BaseResponse<>(result);
     }
 

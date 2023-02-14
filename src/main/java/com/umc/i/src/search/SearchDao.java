@@ -344,7 +344,8 @@ public class SearchDao implements SearchRepository {
                             rs.getString("mem_profile_url"),
                             rs.getString("review_goods"),
                             rs.getInt("review_hit"),
-                            0, 0,
+                            rs.getInt("comment_cnt"),
+                            rs.getInt("likeCnt"),
                             rs.getString("review_created_at"),
                             rs.getString("review_image")),
                     page * Constant.FEED_PER_PAGE, Constant.FEED_PER_PAGE);

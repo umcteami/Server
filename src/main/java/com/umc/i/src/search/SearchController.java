@@ -31,9 +31,7 @@ public class SearchController {
                                                   @RequestParam String search_keyword,
                                                   @RequestParam String search_target,
                                                   @RequestParam(defaultValue = "0") int page,
-                                                  @RequestBody GetMarketFeedReq req) {
-        int userIdx = req.getUserIdx();
-
+                                                  @RequestParam int userIdx) {
         if (!isMarketCategoryValid(category)) {
             return new BaseResponse<>(BaseResponseStatus.FEED_BY_CATEGORY_FAILED);
         }
