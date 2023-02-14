@@ -67,22 +67,22 @@ public class FeedsDao {
             }
 
             if(img == null) {
-                Object[] createFeedsParams = new Object[] {postFeedsReq.getRoomType(), postFeedsReq.getUserIdx(), 
-                    postFeedsReq.getTitle(), postFeedsReq.getContent(), null, 0, 0};
-                this.jdbcTemplate.update(createFeedsQuery, createFeedsParams);  // 게시물 저장  
+                Object[] createFeedsParams = new Object[] {postFeedsReq.getRoomType(), postFeedsReq.getUserIdx(),
+                        postFeedsReq.getTitle(), postFeedsReq.getContent(), null, 0, 0};
+                this.jdbcTemplate.update(createFeedsQuery, createFeedsParams);  // 게시물 저장
 
                 String lastInserIdQuery = "select last_insert_id()"; // 가장 마지막에 삽입된(생성된) id값은 가져온다.
                 feedsIdx = this.jdbcTemplate.queryForObject(lastInserIdQuery, int.class);
             } else {
-                Object[] createFeedsParams = new Object[] {postFeedsReq.getRoomType(), postFeedsReq.getUserIdx(), 
-                    postFeedsReq.getTitle(), postFeedsReq.getContent(), img.get(0).getUploadFilePath(), 0, 0};
-                this.jdbcTemplate.update(createFeedsQuery, createFeedsParams);  // 게시물 저장  
+                Object[] createFeedsParams = new Object[] {postFeedsReq.getRoomType(), postFeedsReq.getUserIdx(),
+                        postFeedsReq.getTitle(), postFeedsReq.getContent(), img.get(0).getUploadFilePath(), 0, 0};
+                this.jdbcTemplate.update(createFeedsQuery, createFeedsParams);  // 게시물 저장
 
                 String lastInserIdQuery = "select last_insert_id()"; // 가장 마지막에 삽입된(생성된) id값은 가져온다.
                 feedsIdx = this.jdbcTemplate.queryForObject(lastInserIdQuery, int.class);
                 createFeedsImage(img, feedsIdx);
             }
-            
+
             return feedsIdx;
         } catch (Exception e) {
             e.printStackTrace();
@@ -114,20 +114,20 @@ public class FeedsDao {
 
         try {
             if(img == null) {
-                Object[] editFeedsParams = new Object[] {patchFeedsReq.getTitle(), patchFeedsReq.getContent(), 
-                    null, patchFeedsReq.getFeedsIdx()};
+                Object[] editFeedsParams = new Object[] {patchFeedsReq.getTitle(), patchFeedsReq.getContent(),
+                        null, patchFeedsReq.getFeedsIdx()};
                 this.jdbcTemplate.update(editFeedsQuery, editFeedsParams);
             } else {
-                Object[] editFeedsParams = new Object[] {patchFeedsReq.getTitle(), patchFeedsReq.getContent(), 
-                    img.get(0).getUploadFilePath(), patchFeedsReq.getFeedsIdx()};
+                Object[] editFeedsParams = new Object[] {patchFeedsReq.getTitle(), patchFeedsReq.getContent(),
+                        img.get(0).getUploadFilePath(), patchFeedsReq.getFeedsIdx()};
                 this.jdbcTemplate.update(editFeedsQuery, editFeedsParams);
             }
-            
+
         } catch(Exception e) {
             e.printStackTrace();
             throw new BaseException(BaseResponseStatus.PATCH_EDIT_FEEDS_FAIL);
-        }        
-        
+        }
+
         return patchFeedsReq.getFeedsIdx();
     }
 
@@ -169,29 +169,29 @@ public class FeedsDao {
     public List<Image> getFeedsImage(int boardType, int feedsIdx) {
         String getFeedsImageQuery = "select * from Image_url where content_category = ? && content_idx = ?";
         Object[] getFeedsImageParams = new Object[] {boardType, feedsIdx};
-        
-        return this.jdbcTemplate.query(getFeedsImageQuery, 
-        (rs, rowNum) -> new Image(
-            rs.getString("image_url"), 
-            rs.getString("image_url"),
-            rs.getInt("content_category"), 
-            rs.getInt("content_idx")), 
-            getFeedsImageParams);
+
+        return this.jdbcTemplate.query(getFeedsImageQuery,
+                (rs, rowNum) -> new Image(
+                        rs.getString("image_url"),
+                        rs.getString("image_url"),
+                        rs.getInt("content_category"),
+                        rs.getInt("content_idx")),
+                getFeedsImageParams);
     }
-        
+
 
     // 이야기방, 일기장 게시글 삭제
     public void deleteFeeds(int boardType, int feedsIdx) throws BaseException {
         String deleteFeedsQuery = null;
 
-        try {  
+        try {
             // feed table 삭제
             if(boardType == 1) {    // 이야기방
                 deleteFeedsQuery = "delete from Story_feed where story_idx = ?";
             } else if(boardType == 2) {     // 일기장
                 deleteFeedsQuery = "delete from Diary_feed where diary_idx = ?";
             }
-            this.jdbcTemplate.update(deleteFeedsQuery, feedsIdx);   
+            this.jdbcTemplate.update(deleteFeedsQuery, feedsIdx);
 
             // image_url table 삭제
             deleteFeedsQuery = "delete from Image_url where content_category = ? && content_idx = ?";
@@ -200,65 +200,42 @@ public class FeedsDao {
 
         } catch (Exception e) {
             e.printStackTrace();
-             throw new BaseException(BaseResponseStatus.PATCH_DELETE_FEEDS_FAIL);
+            throw new BaseException(BaseResponseStatus.PATCH_DELETE_FEEDS_FAIL);
         }
         return;
     }
 
 
     // 이야기방 전체 조회
-<<<<<<< HEAD
-    public List<GetAllFeedsRes> getAllStories() {
-        String getAllFeedsQuery = "select S.story_idx, story_roomType, S.mem_idx, mem_nickname, story_title, story_hit, story_created_at, ";
-        getAllFeedsQuery += " if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt";
-        getAllFeedsQuery += " from Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt";
-        getAllFeedsQuery += " where S.mem_idx = M.mem_idx && story_blame < 10 group by story_idx order by story_idx desc limit 20 offset 0";
-
-        return this.jdbcTemplate.query(getAllFeedsQuery,
-        (rs, rowNum) -> new GetAllFeedsRes(
-                1,
-            rs.getInt("story_roomType"),
-            rs.getInt("story_idx"),
-            rs.getInt("mem_idx"),
-            rs.getString("mem_nickname"),
-            rs.getString("mem_profile_url"),
-            rs.getString("story_title"),
-            rs.getString("story_image"),
-            rs.getInt("story_hit"),
-            rs.getInt("comment_cnt"),
-            rs.getInt("like_cnt"),
-            rs.getString("story_created_at")));
-=======
     public List<GetAllFeedsRes> getAllStories(int page) throws BaseException {
         try {
             String getAllFeedsQuery = "select S.story_idx, story_roomType, S.mem_idx, M.mem_nickname, mem_profile_url, story_title, story_image, story_hit, story_created_at, ";
             getAllFeedsQuery += " if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt, if(S.story_idx = LikeCnt.story_idx, like_cnt, 0) as like_cnt ";
             getAllFeedsQuery += " from Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt, (select story_idx, count(*) as like_cnt from Story_feed_like group by story_idx) LikeCnt";
             getAllFeedsQuery += " where story_blame < 10 && S.mem_idx = M.mem_idx group by story_idx order by story_idx desc limit 20 offset ?";
-    
-            return this.jdbcTemplate.query(getAllFeedsQuery, 
-            (rs, rowNum) -> new GetAllFeedsRes(
-                1, 
-                rs.getInt("story_roomType"), 
-                rs.getInt("story_idx"), 
-                rs.getInt("mem_idx"),
-                rs.getString("mem_nickname"),
-                rs.getString("mem_profile_url"),
-                rs.getString("story_title"), 
-                rs.getString("story_image"),
-                rs.getInt("story_hit"),
-                rs.getInt("comment_cnt"),
-                rs.getInt("like_cnt"),
-                rs.getString("story_created_at")),
-                page);
+
+            return this.jdbcTemplate.query(getAllFeedsQuery,
+                    (rs, rowNum) -> new GetAllFeedsRes(
+                            1,
+                            rs.getInt("story_roomType"),
+                            rs.getInt("story_idx"),
+                            rs.getInt("mem_idx"),
+                            rs.getString("mem_nickname"),
+                            rs.getString("mem_profile_url"),
+                            rs.getString("story_title"),
+                            rs.getString("story_image"),
+                            rs.getInt("story_hit"),
+                            rs.getInt("comment_cnt"),
+                            rs.getInt("like_cnt"),
+                            rs.getString("story_created_at")),
+                    page);
         } catch (Exception e) {
             e.printStackTrace();
             throw new BaseException(BaseResponseStatus.GET_REVIEW_FAIL);
         }
-        
->>>>>>> c982a63d96fc7dc0fa353610f444f76f3f40d905
+
     }
-    
+
     // 이야기방 카테고리별 조회
     public List<GetAllFeedsRes> getStoryRoomType(int roomType, int page) {
         String getAllFeedsQuery = "select S.story_idx, story_roomType, S.mem_idx, M.mem_nickname, mem_profile_url, story_title, story_image, story_hit, story_created_at, ";
@@ -266,38 +243,33 @@ public class FeedsDao {
         getAllFeedsQuery += " from Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt, (select story_idx, count(*) as like_cnt from Story_feed_like group by story_idx) LikeCnt";
         getAllFeedsQuery += " where story_roomType = ? && story_blame < 10 && S.mem_idx = M.mem_idx group by story_idx order by story_idx desc limit 20 offset ?";
 
-        return this.jdbcTemplate.query(getAllFeedsQuery, 
-        (rs, rowNum) -> new GetAllFeedsRes(
-            1, 
-            rs.getInt("story_roomType"), 
-            rs.getInt("story_idx"), 
-            rs.getInt("mem_idx"),
-            rs.getString("mem_nickname"),
-            rs.getString("mem_profile_url"),
-<<<<<<< HEAD
-            rs.getString("story_title"),
-=======
-            rs.getString("story_title"), 
->>>>>>> c982a63d96fc7dc0fa353610f444f76f3f40d905
-            rs.getString("story_image"),
-            rs.getInt("story_hit"),
-            rs.getInt("comment_cnt"),
-            rs.getInt("like_cnt"),
-            rs.getString("story_created_at")),
-            roomType, page);
+        return this.jdbcTemplate.query(getAllFeedsQuery,
+                (rs, rowNum) -> new GetAllFeedsRes(
+                        1,
+                        rs.getInt("story_roomType"),
+                        rs.getInt("story_idx"),
+                        rs.getInt("mem_idx"),
+                        rs.getString("mem_nickname"),
+                        rs.getString("mem_profile_url"),
+                        rs.getString("story_title"),
+                        rs.getString("story_image"),
+                        rs.getInt("story_hit"),
+                        rs.getInt("comment_cnt"),
+                        rs.getInt("like_cnt"),
+                        rs.getString("story_created_at")),
+                roomType, page);
     }
 
     // 이야기방 상세 조회
     public List<Feeds> getStory(int feedIdx, int memIdx) {
         String getFeedQuery = "update Story_feed set story_hit = story_hit + 1 where story_idx = ?";
         this.jdbcTemplate.update(getFeedQuery, feedIdx);
-        
+
         getFeedQuery = "select S.story_idx, story_roomType, S.mem_idx, M.mem_nickname, mem_profile_url, story_title, story_content, story_hit, story_created_at, SC.comment_cnt, like_cnt, islike";
         getFeedQuery += " from Story_feed S join Member M on S.mem_idx = M.mem_idx, (select count(*) as comment_cnt from Story_feed_comment where story_idx = ?) SC, ";
         getFeedQuery += " (select count(*) as like_cnt from Story_feed_like where story_idx = ? && sfl_status = 1) SFL, (select count(*) as islike from Story_feed_like where story_idx = ? && sfl_status = 1 && Story_feed_like.mem_idx = ?) SFisLike";
         getFeedQuery += " where S.story_idx = ? && S.story_blame < 10";
 
-<<<<<<< HEAD
         return this.jdbcTemplate.query(getFeedQuery,
                 (rs, rowNum) -> new Feeds(
                         1,
@@ -305,30 +277,15 @@ public class FeedsDao {
                         rs.getInt("story_idx"),
                         rs.getInt("mem_idx"),
                         rs.getString("mem_nickname"),
+                        rs.getString("mem_profile_url"),
                         rs.getString("story_title"),
                         rs.getString("story_content"),
                         rs.getInt("story_hit"),
                         rs.getInt("comment_cnt"),
-                        rs.getString("story_created_at")),
-                feedIdx);
-=======
-        return this.jdbcTemplate.query(getFeedQuery, 
-        (rs, rowNum) -> new Feeds(
-            1, 
-            rs.getInt("story_roomType"), 
-            rs.getInt("story_idx"), 
-            rs.getInt("mem_idx"),
-            rs.getString("mem_nickname"),
-            rs.getString("mem_profile_url"),
-            rs.getString("story_title"), 
-            rs.getString("story_content"),
-            rs.getInt("story_hit"),
-            rs.getInt("comment_cnt"),
-            rs.getInt("like_cnt"),
-            rs.getString("story_created_at"),
-            rs.getInt("islike")),
-            feedIdx, feedIdx, feedIdx, memIdx, feedIdx);
->>>>>>> c982a63d96fc7dc0fa353610f444f76f3f40d905
+                        rs.getInt("like_cnt"),
+                        rs.getString("story_created_at"),
+                        rs.getInt("islike")),
+                feedIdx, feedIdx, feedIdx, memIdx, feedIdx);
     }
 
     // 일기장 전체 조회
@@ -338,9 +295,8 @@ public class FeedsDao {
         getAllFeedsQuery += " from Diary_feed D, Member M, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt, (select diary_idx, count(*) as like_cnt from Diary_feed_like group by diary_idx) LikeCnt";
         getAllFeedsQuery += " where diary_blame < 10 && D.mem_idx = M.mem_idx group by diary_idx order by diary_idx desc limit 20 offset ?";
 
-<<<<<<< HEAD
         return this.jdbcTemplate.query(getAllFeedsQuery,
-                (rs, rowNum) -> new GetAllFeedsRes(
+                (rs, rowNum) -> new GetAllDiaryRes(
                         2,
                         rs.getInt("diary_roomType"),
                         rs.getInt("diary_idx"),
@@ -348,29 +304,13 @@ public class FeedsDao {
                         rs.getString("mem_nickname"),
                         rs.getString("mem_profile_url"),
                         rs.getString("diary_title"),
-                        rs.getString("dairy_image"),
+                        rs.getString("content"),
+                        rs.getString("diary_image"),
                         rs.getInt("diary_hit"),
                         rs.getInt("comment_cnt"),
                         rs.getInt("like_cnt"),
-                        rs.getString("diary_created_at")));
-=======
-        return this.jdbcTemplate.query(getAllFeedsQuery, 
-        (rs, rowNum) -> new GetAllDiaryRes(
-            2, 
-            rs.getInt("diary_roomType"), 
-            rs.getInt("diary_idx"), 
-            rs.getInt("mem_idx"),
-            rs.getString("mem_nickname"),
-            rs.getString("mem_profile_url"),
-            rs.getString("diary_title"), 
-            rs.getString("content"),
-            rs.getString("diary_image"),
-            rs.getInt("diary_hit"),
-            rs.getInt("comment_cnt"),
-            rs.getInt("like_cnt"),
-            rs.getString("diary_created_at")),
-            page);
->>>>>>> c982a63d96fc7dc0fa353610f444f76f3f40d905
+                        rs.getString("diary_created_at")),
+                page);
     }
 
     // 일기장 카테고리별 조회
@@ -380,9 +320,8 @@ public class FeedsDao {
         getAllFeedsQuery += " from Diary_feed D, Member M, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt, (select diary_idx, count(*) as like_cnt from Diary_feed_like group by diary_idx) LikeCnt";
         getAllFeedsQuery += " where diary_roomType = ? && diary_blame < 10 && D.mem_idx = M.mem_idx group by diary_idx order by diary_idx desc limit 20 offset ?";
 
-<<<<<<< HEAD
         return this.jdbcTemplate.query(getAllFeedsQuery,
-                (rs, rowNum) -> new GetAllFeedsRes(
+                (rs, rowNum) -> new GetAllDiaryRes(
                         2,
                         rs.getInt("diary_roomType"),
                         rs.getInt("diary_idx"),
@@ -390,30 +329,13 @@ public class FeedsDao {
                         rs.getString("mem_nickname"),
                         rs.getString("mem_profile_url"),
                         rs.getString("diary_title"),
-                        rs.getString("dairy_image"),
+                        rs.getString("content"),
+                        rs.getString("diary_image"),
                         rs.getInt("diary_hit"),
                         rs.getInt("comment_cnt"),
                         rs.getInt("like_cnt"),
                         rs.getString("diary_created_at")),
-                roomType);
-=======
-        return this.jdbcTemplate.query(getAllFeedsQuery, 
-        (rs, rowNum) -> new GetAllDiaryRes(
-            2, 
-            rs.getInt("diary_roomType"), 
-            rs.getInt("diary_idx"), 
-            rs.getInt("mem_idx"),
-            rs.getString("mem_nickname"),
-            rs.getString("mem_profile_url"),
-            rs.getString("diary_title"), 
-            rs.getString("content"),
-            rs.getString("diary_image"),
-            rs.getInt("diary_hit"),
-            rs.getInt("comment_cnt"),
-            rs.getInt("like_cnt"),
-            rs.getString("diary_created_at")),
-            roomType, page);
->>>>>>> c982a63d96fc7dc0fa353610f444f76f3f40d905
+                roomType, page);
     }
 
     // 일기장 상세조회
@@ -426,22 +348,22 @@ public class FeedsDao {
         getFeedQuery += " (select count(*) as like_cnt from Diary_feed_like where diary_idx = ? && dfl_status = 1) DFL, (select count(*) as islike from Diary_feed_like where diary_idx = ? && dfl_status = 1 && Diary_feed_like.mem_idx = ?) DFisLike";
         getFeedQuery += " where D.diary_idx = ? && diary_blame < 10";
 
-        return this.jdbcTemplate.query(getFeedQuery, 
-        (rs, rowNum) -> new Feeds( 
-            2, 
-            rs.getInt("diary_roomType"), 
-            rs.getInt("diary_idx"), 
-            rs.getInt("mem_idx"),
-            rs.getString("mem_nickname"),
-            rs.getString("mem_profile_url"),
-            rs.getString("diary_title"), 
-            rs.getString("diary_content"),
-            rs.getInt("diary_hit"),
-            rs.getInt("comment_cnt"),
-            rs.getInt("like_cnt"),
-            rs.getString("diary_created_at"),
-            rs.getInt("islike")),
-            diaryIdx, diaryIdx, diaryIdx, memIdx, diaryIdx);
+        return this.jdbcTemplate.query(getFeedQuery,
+                (rs, rowNum) -> new Feeds(
+                        2,
+                        rs.getInt("diary_roomType"),
+                        rs.getInt("diary_idx"),
+                        rs.getInt("mem_idx"),
+                        rs.getString("mem_nickname"),
+                        rs.getString("mem_profile_url"),
+                        rs.getString("diary_title"),
+                        rs.getString("diary_content"),
+                        rs.getInt("diary_hit"),
+                        rs.getInt("comment_cnt"),
+                        rs.getInt("like_cnt"),
+                        rs.getString("diary_created_at"),
+                        rs.getInt("islike")),
+                diaryIdx, diaryIdx, diaryIdx, memIdx, diaryIdx);
     }
 
     // 좋아요, 좋아요 취소
@@ -484,12 +406,12 @@ public class FeedsDao {
             e.printStackTrace();
             throw new BaseException(BaseResponseStatus.POST_INVALID_IDX);
         }
-        
+
         try {
             postCommentQuery = "insert into Story_feed_comment (story_idx, mem_idx, mem_nickname, story_parent_idx, story_cmt_content, story_cmt_created_at) ";
             postCommentQuery += " values (?, ?, ?, ?, ?, ?)";
             Object[] postCommentParams = new Object[] {postCommentReq.getFeedIdx(), postCommentReq.getMemIdx(), nickname, postCommentReq.getParentCmt(), postCommentReq.getComment(), currentTime};
-    
+
             this.jdbcTemplate.update(postCommentQuery, postCommentParams);
         } catch (Exception e) {
             e.printStackTrace();
@@ -513,12 +435,12 @@ public class FeedsDao {
             e.printStackTrace();
             throw new BaseException(BaseResponseStatus.POST_INVALID_IDX);
         }
-        
+
         try {
             postCommentQuery = "insert into Diary_comment (diary_idx, mem_idx, mem_nickname, diary_parent_idx, diary_cmt_content, diary_cmt_created_at) ";
             postCommentQuery += " values (?, ?, ?, ?, ?, ?)";
             Object[] postCommentParams = new Object[] {postCommentReq.getFeedIdx(), postCommentReq.getMemIdx(), nickname, postCommentReq.getParentCmt(), postCommentReq.getComment(), currentTime};
-    
+
             this.jdbcTemplate.update(postCommentQuery, postCommentParams);
         } catch (Exception e) {
             e.printStackTrace();
@@ -543,12 +465,12 @@ public class FeedsDao {
             e.printStackTrace();
             throw new BaseException(BaseResponseStatus.POST_INVALID_IDX);
         }
-        
+
         try {
             postCommentQuery = "insert into Market_review_comment (review_idx, mem_idx, mem_nickname, market_re_parent_idx, market_re_cmt_content, market_re_cmt_create_at) ";
             postCommentQuery += " values (?, ?, ?, ?, ?, ?)";
             Object[] postCommentParams = new Object[] {postCommentReq.getFeedIdx(), postCommentReq.getMemIdx(), nickname, postCommentReq.getParentCmt(), postCommentReq.getComment(), currentTime};
-    
+
             this.jdbcTemplate.update(postCommentQuery, postCommentParams);
         } catch (Exception e) {
             e.printStackTrace();
@@ -557,44 +479,44 @@ public class FeedsDao {
 
         return;
     }
-    
+
     // 댓글 조회
     public List<GetCommentRes> getComments(int boardType, int feedIdx) throws BaseException {
         String getCommentQuery;
         switch (boardType) {
             case 1:     // 이야기방
                 getCommentQuery = "select * from Story_feed_comment where story_idx = ?";
-                return this.jdbcTemplate.query(getCommentQuery, 
-                (rs, rowNum) -> new GetCommentRes(
-                    rs.getInt("story_cmt_idx"), 
-                    1, feedIdx,
-                    rs.getInt("story_parent_idx"),
-                    rs.getInt("mem_idx"),
-                    rs.getString("mem_nickname"),
-                    rs.getString("story_cmt_content"),
-                    rs.getString("story_cmt_created_at")), feedIdx);
+                return this.jdbcTemplate.query(getCommentQuery,
+                        (rs, rowNum) -> new GetCommentRes(
+                                rs.getInt("story_cmt_idx"),
+                                1, feedIdx,
+                                rs.getInt("story_parent_idx"),
+                                rs.getInt("mem_idx"),
+                                rs.getString("mem_nickname"),
+                                rs.getString("story_cmt_content"),
+                                rs.getString("story_cmt_created_at")), feedIdx);
             case 2:     // 일기장
                 getCommentQuery = "select * from Diary_comment where diary_idx = ?";
-                 return this.jdbcTemplate.query(getCommentQuery, 
-                    (rs, rowNum) -> new GetCommentRes(
-                    rs.getInt("diary_cmt_idx"), 
-                    2, feedIdx,
-                    rs.getInt("diary_parent_idx"),
-                    rs.getInt("mem_idx"),
-                    rs.getString("mem_nickname"),
-                    rs.getString("diary_cmt_content"),
-                    rs.getString("diary_cmt_created_at")), feedIdx);
+                return this.jdbcTemplate.query(getCommentQuery,
+                        (rs, rowNum) -> new GetCommentRes(
+                                rs.getInt("diary_cmt_idx"),
+                                2, feedIdx,
+                                rs.getInt("diary_parent_idx"),
+                                rs.getInt("mem_idx"),
+                                rs.getString("mem_nickname"),
+                                rs.getString("diary_cmt_content"),
+                                rs.getString("diary_cmt_created_at")), feedIdx);
             case 3:     // 장터후기
                 getCommentQuery = "select * from Market_review_comment where review_idx = ?";
-                return this.jdbcTemplate.query(getCommentQuery, 
-                (rs, rowNum) -> new GetCommentRes(
-                    rs.getInt("market_re_cmt_idx"), 
-                    3, feedIdx,
-                    rs.getInt("market_re_parent_idx"),
-                    rs.getInt("mem_idx"),
-                    rs.getString("mem_nickname"),
-                    rs.getString("market_re_cmt_content"),
-                    rs.getString("market_re_cmt_create_at")), feedIdx);
+                return this.jdbcTemplate.query(getCommentQuery,
+                        (rs, rowNum) -> new GetCommentRes(
+                                rs.getInt("market_re_cmt_idx"),
+                                3, feedIdx,
+                                rs.getInt("market_re_parent_idx"),
+                                rs.getInt("mem_idx"),
+                                rs.getString("mem_nickname"),
+                                rs.getString("market_re_cmt_content"),
+                                rs.getString("market_re_cmt_create_at")), feedIdx);
         }
         throw new BaseException(BaseResponseStatus.POST_FEEDS_INVALID_TYPE);
     }
@@ -602,37 +524,17 @@ public class FeedsDao {
 
 
     // 통합 조회 -> 최신순
-    public List<GetAllFeedsRes> getAllFeeds(int page) { 
-            String getAllFeedsQuery = "select 1 as boardType, S.story_idx as feedIdx, story_roomType as roomType, S.mem_idx, mem_nickname, story_title as title, story_image as image, story_hit as hit, story_created_at as createAt, if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt, if(S.story_idx = LikeCnt.story_idx, like_cnt, 0) as like_cnt ";
-            getAllFeedsQuery += " from Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt, (select story_idx, count(*) as like_cnt from Story_feed_like group by story_idx) LikeCnt";
-            getAllFeedsQuery += " where S.mem_idx = M.mem_idx && S.story_blame < 10 group by S.story_idx UNION";
-            getAllFeedsQuery += " select 2 as boardType, D.diary_idx as feedIdx, diary_roomType as roomType, D.mem_idx, mem_nickname, diary_title as title, diary_image as image, diary_hit as hit, diary_created_at as createAt, if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt, if(D.diary_idx = LikeCnt.diary_idx, like_cnt, 0) as like_cnt ";
-            getAllFeedsQuery += " from Diary_feed D, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt, (select diary_idx, count(*) as like_cnt from Diary_feed_like group by diary_idx) LikeCnt";
-            getAllFeedsQuery += " where D.diary_blame < 10 group by D.diary_idx UNION";
-            getAllFeedsQuery += "  select 3 as boardType,  Market_review.review_idx as feedIdx, null as roomType, buy_mem_idx as mem_idx, B.mem_nickname as mem_nickname, concat(A.mem_nickname, '님의 ', I.Market_review.review_goods) as title, review_image as image, review_hit as hit, review_created_at as createAt, if(Market_review.review_idx = Cmt.review_idx, comment_cnt, 0) as comment_cnt, if(Market_review.review_idx = LikeCnt.market_re_idx, like_cnt, 0) as like_cnt";
-            getAllFeedsQuery += " from Market_review, Member A, Member B , (select review_idx, count(*) as comment_cnt from Market_review_comment group by review_idx) Cmt, (select market_re_idx, count(*) as like_cnt from Market_review_like group by market_re_idx) LikeCnt where Market_review.sell_mem_idx = A.mem_idx && Market_review.buy_mem_idx = B.mem_idx && Market_review.review_blame < 10";
-            getAllFeedsQuery += " order by createAt desc limit 20 offset ? ";
-    
-            return this.jdbcTemplate.query(getAllFeedsQuery, 
-            (rs, rowNum) -> new GetAllFeedsRes(
-                rs.getInt("boardType"),
-                rs.getInt("roomType"),
-                rs.getInt("feedIdx"),
-                rs.getInt("mem_idx"),
-                rs.getString("mem_nickname"),
-                null,
-                rs.getString("title"),
-                rs.getString("image"),
-                rs.getInt("hit"),
-                rs.getInt("comment_cnt"),
-                rs.getInt("like_cnt"),
-                rs.getString("createAt")),
-                page);
-        
-        
-    }
+    public List<GetAllFeedsRes> getAllFeeds(int page) {
+        String getAllFeedsQuery = "select 1 as boardType, S.story_idx as feedIdx, story_roomType as roomType, S.mem_idx, mem_nickname, story_title as title, story_image as image, story_hit as hit, story_created_at as createAt, if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt, if(S.story_idx = LikeCnt.story_idx, like_cnt, 0) as like_cnt ";
+        getAllFeedsQuery += " from Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt, (select story_idx, count(*) as like_cnt from Story_feed_like group by story_idx) LikeCnt";
+        getAllFeedsQuery += " where S.mem_idx = M.mem_idx && S.story_blame < 10 group by S.story_idx UNION";
+        getAllFeedsQuery += " select 2 as boardType, D.diary_idx as feedIdx, diary_roomType as roomType, D.mem_idx, mem_nickname, diary_title as title, diary_image as image, diary_hit as hit, diary_created_at as createAt, if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt, if(D.diary_idx = LikeCnt.diary_idx, like_cnt, 0) as like_cnt ";
+        getAllFeedsQuery += " from Diary_feed D, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt, (select diary_idx, count(*) as like_cnt from Diary_feed_like group by diary_idx) LikeCnt";
+        getAllFeedsQuery += " where D.diary_blame < 10 group by D.diary_idx UNION";
+        getAllFeedsQuery += "  select 3 as boardType,  Market_review.review_idx as feedIdx, null as roomType, buy_mem_idx as mem_idx, B.mem_nickname as mem_nickname, concat(A.mem_nickname, '님의 ', I.Market_review.review_goods) as title, review_image as image, review_hit as hit, review_created_at as createAt, if(Market_review.review_idx = Cmt.review_idx, comment_cnt, 0) as comment_cnt, if(Market_review.review_idx = LikeCnt.market_re_idx, like_cnt, 0) as like_cnt";
+        getAllFeedsQuery += " from Market_review, Member A, Member B , (select review_idx, count(*) as comment_cnt from Market_review_comment group by review_idx) Cmt, (select market_re_idx, count(*) as like_cnt from Market_review_like group by market_re_idx) LikeCnt where Market_review.sell_mem_idx = A.mem_idx && Market_review.buy_mem_idx = B.mem_idx && Market_review.review_blame < 10";
+        getAllFeedsQuery += " order by createAt desc limit 20 offset ? ";
 
-<<<<<<< HEAD
         return this.jdbcTemplate.query(getAllFeedsQuery,
                 (rs, rowNum) -> new GetAllFeedsRes(
                         rs.getInt("boardType"),
@@ -640,15 +542,18 @@ public class FeedsDao {
                         rs.getInt("feedIdx"),
                         rs.getInt("mem_idx"),
                         rs.getString("mem_nickname"),
-                        rs.getString("mem_profile_url"),
+                        null,
                         rs.getString("title"),
                         rs.getString("image"),
                         rs.getInt("hit"),
                         rs.getInt("comment_cnt"),
                         rs.getInt("like_cnt"),
-                        rs.getString("createAt")
-                ));
-=======
+                        rs.getString("createAt")),
+                page);
+
+
+    }
+
     // 아이홈 인기순 조회
     public List<GetAllFeedsRes> getHotFeeds(int page) throws BaseException {
         try {
@@ -662,26 +567,26 @@ public class FeedsDao {
 
             getAllFeedsQuery += " from Market_review, Member A, Member B , (select review_idx, count(*) as comment_cnt from Market_review_comment group by review_idx) Cmt, (select market_re_idx, count(*) as like_cnt from Market_review_like group by market_re_idx) LikeCnt where review_created_at between DATE_ADD(now(), interval -1 week) and now() && Market_review.sell_mem_idx = A.mem_idx && Market_review.buy_mem_idx = B.mem_idx && Market_review.review_blame < 10";
             getAllFeedsQuery += " order by hit desc limit 20 offset ?";
-    
-            return this.jdbcTemplate.query(getAllFeedsQuery, 
-            (rs, rowNum) -> new GetAllFeedsRes(
-                rs.getInt("boardType"),
-                rs.getInt("roomType"),
-                rs.getInt("feedIdx"),
-                rs.getInt("mem_idx"),
-                rs.getString("mem_nickname"),
-                null,
-                rs.getString("title"),
-                rs.getString("image"),
-                rs.getInt("hit"),
-                rs.getInt("comment_cnt"),
-                rs.getInt("like_cnt"),
-                rs.getString("createAt")),
-                page);
+
+            return this.jdbcTemplate.query(getAllFeedsQuery,
+                    (rs, rowNum) -> new GetAllFeedsRes(
+                            rs.getInt("boardType"),
+                            rs.getInt("roomType"),
+                            rs.getInt("feedIdx"),
+                            rs.getInt("mem_idx"),
+                            rs.getString("mem_nickname"),
+                            null,
+                            rs.getString("title"),
+                            rs.getString("image"),
+                            rs.getInt("hit"),
+                            rs.getInt("comment_cnt"),
+                            rs.getInt("like_cnt"),
+                            rs.getString("createAt")),
+                    page);
         } catch (Exception e) {
             e.printStackTrace();
             throw new BaseException(BaseResponseStatus.GET_REVIEW_FAIL);
-        }   
+        }
     }
 
     // 게시판별 인기순 조회
@@ -690,64 +595,64 @@ public class FeedsDao {
             String getHotStoriesQuery = "select 1 as boardType, S.story_idx as feedIdx, story_roomType as roomType, S.mem_idx, mem_nickname, story_title as title, story_image as image, ";
             getHotStoriesQuery += " story_hit as hit, story_created_at as createAt, if(S.story_idx = Cmt.story_idx, comment_cnt, 0) as comment_cnt, if(S.story_idx = LikeCnt.story_idx, like_cnt, 0) as like_cnt";
             getHotStoriesQuery += " from Story_feed S, Member M, (select story_idx, count(*) as comment_cnt from Story_feed_comment group by story_idx) Cmt, (select story_idx, count(*) as like_cnt from Story_feed_like group by story_idx) LikeCnt";
-            
+
             switch(filter) {
                 case 1:     // 1시간(default)
-                    if(roomType == 0) 
-                    getHotStoriesQuery += " where story_created_at between DATE_SUB(NOW(), interval 1 hour) and now()";
+                    if(roomType == 0)
+                        getHotStoriesQuery += " where story_created_at between DATE_SUB(NOW(), interval 1 hour) and now()";
                     else if(roomType == 1)
-                    getHotStoriesQuery += " where story_roomType = 1 && story_created_at between DATE_SUB(NOW(), interval 1 hour) and now()";
+                        getHotStoriesQuery += " where story_roomType = 1 && story_created_at between DATE_SUB(NOW(), interval 1 hour) and now()";
                     else if(roomType == 2)
-                    getHotStoriesQuery += " where story_roomType = 2 && story_created_at between DATE_SUB(NOW(), interval 1 hour) and now()";
+                        getHotStoriesQuery += " where story_roomType = 2 && story_created_at between DATE_SUB(NOW(), interval 1 hour) and now()";
                     else if(roomType == 3)
-                    getHotStoriesQuery += " where story_roomType = 3 && story_created_at between DATE_SUB(NOW(), interval 1 hour) and now()";
+                        getHotStoriesQuery += " where story_roomType = 3 && story_created_at between DATE_SUB(NOW(), interval 1 hour) and now()";
                     getHotStoriesQuery += " && S.mem_idx = M.mem_idx && S.story_blame < 10";
                     getHotStoriesQuery += " group by S.story_idx order by hit desc, story_created_at desc limit 30 offset ?";
                     break;
 
                 case 2:     // 24시간
                     if(roomType == 0)
-                    getHotStoriesQuery += " where story_created_at between DATE_SUB(NOW(), interval 24 hour) and now()";
+                        getHotStoriesQuery += " where story_created_at between DATE_SUB(NOW(), interval 24 hour) and now()";
                     else if(roomType == 1)
-                    getHotStoriesQuery += " where story_roomType = 1 && story_created_at between DATE_SUB(NOW(), interval 24 hour) and now()";
+                        getHotStoriesQuery += " where story_roomType = 1 && story_created_at between DATE_SUB(NOW(), interval 24 hour) and now()";
                     else if(roomType == 2)
-                    getHotStoriesQuery += " where story_roomType = 2 && story_created_at between DATE_SUB(NOW(), interval 24 hour) and now()";
+                        getHotStoriesQuery += " where story_roomType = 2 && story_created_at between DATE_SUB(NOW(), interval 24 hour) and now()";
                     else if(roomType == 3)
-                    getHotStoriesQuery += " where story_roomType = 3 && story_created_at between DATE_SUB(NOW(), interval 24 hour) and now()";
+                        getHotStoriesQuery += " where story_roomType = 3 && story_created_at between DATE_SUB(NOW(), interval 24 hour) and now()";
                     getHotStoriesQuery += " && S.mem_idx = M.mem_idx && S.story_blame < 10";
                     getHotStoriesQuery += " group by S.story_idx order by hit desc, story_created_at desc limit 30 offset ?";
                     break;
 
                 case 3:     // 일주일
                     if(roomType == 0)
-                    getHotStoriesQuery += " where story_created_at between DATE_FORMAT(DATE_SUB(NOW(), INTERVAL WEEKDAY(NOW()) day), '%Y-%m-%d') and now()";
+                        getHotStoriesQuery += " where story_created_at between DATE_FORMAT(DATE_SUB(NOW(), INTERVAL WEEKDAY(NOW()) day), '%Y-%m-%d') and now()";
                     else if(roomType == 1)
-                    getHotStoriesQuery += " where story_roomType = 1 && story_created_at between DATE_FORMAT(DATE_SUB(NOW(), INTERVAL WEEKDAY(NOW()) day), '%Y-%m-%d') and now()";
+                        getHotStoriesQuery += " where story_roomType = 1 && story_created_at between DATE_FORMAT(DATE_SUB(NOW(), INTERVAL WEEKDAY(NOW()) day), '%Y-%m-%d') and now()";
                     else if(roomType == 2)
-                    getHotStoriesQuery += " where story_roomType = 2 && story_created_at between DATE_FORMAT(DATE_SUB(NOW(), INTERVAL WEEKDAY(NOW()) day), '%Y-%m-%d') and now()";
+                        getHotStoriesQuery += " where story_roomType = 2 && story_created_at between DATE_FORMAT(DATE_SUB(NOW(), INTERVAL WEEKDAY(NOW()) day), '%Y-%m-%d') and now()";
                     else if(roomType == 3)
-                    getHotStoriesQuery += " where story_roomType = 3 && story_created_at between DATE_FORMAT(DATE_SUB(NOW(), INTERVAL WEEKDAY(NOW()) day), '%Y-%m-%d') and now()";
+                        getHotStoriesQuery += " where story_roomType = 3 && story_created_at between DATE_FORMAT(DATE_SUB(NOW(), INTERVAL WEEKDAY(NOW()) day), '%Y-%m-%d') and now()";
                     getHotStoriesQuery += " && S.mem_idx = M.mem_idx && S.story_blame < 10";
                     getHotStoriesQuery += " group by S.story_idx order by hit desc, story_created_at desc limit 30 offset ?";
                     break;
             }
-            
-            return this.jdbcTemplate.query(getHotStoriesQuery, 
-            (rs, rowNum) -> new GetAllFeedsRes(
-                rs.getInt("boardType"),
-                rs.getInt("roomType"),
-                rs.getInt("feedIdx"),
-                rs.getInt("mem_idx"),
-                rs.getString("mem_nickname"),
-                null,
-                rs.getString("title"),
-                rs.getString("image"),
-                rs.getInt("hit"),
-                rs.getInt("comment_cnt"),
-                rs.getInt("like_cnt"),
-                rs.getString("createAt")),
-                page);
-            
+
+            return this.jdbcTemplate.query(getHotStoriesQuery,
+                    (rs, rowNum) -> new GetAllFeedsRes(
+                            rs.getInt("boardType"),
+                            rs.getInt("roomType"),
+                            rs.getInt("feedIdx"),
+                            rs.getInt("mem_idx"),
+                            rs.getString("mem_nickname"),
+                            null,
+                            rs.getString("title"),
+                            rs.getString("image"),
+                            rs.getInt("hit"),
+                            rs.getInt("comment_cnt"),
+                            rs.getInt("like_cnt"),
+                            rs.getString("createAt")),
+                    page);
+
         } catch (Exception e) {
             e.printStackTrace();
             throw new BaseException(BaseResponseStatus.GET_REVIEW_FAIL);
@@ -759,58 +664,58 @@ public class FeedsDao {
             String getHotDiariesQuery = "select 2 as boardType, D.diary_idx as feedIdx, diary_roomType as roomType, D.mem_idx, M.mem_nickname, diary_title as title, diary_image as image,";
             getHotDiariesQuery += " diary_hit as hit, diary_created_at as createAt, if(D.diary_idx = Cmt.diary_idx, comment_cnt, 0) as comment_cnt, if(D.diary_idx = LikeCnt.diary_idx, like_cnt, 0) as like_cnt";
             getHotDiariesQuery += " from Diary_feed D, Member M, (select diary_idx, count(*) as comment_cnt from Diary_comment group by diary_idx) Cmt, (select diary_idx, count(*) as like_cnt from Diary_feed_like group by diary_idx) LikeCnt";
-            
+
             switch(filter) {
                 case 1:     // 1시간(default)
-                if(roomType == 0)
-                getHotDiariesQuery += " where diary_created_at between DATE_SUB(NOW(), interval 1 hour) and now()";
-                else if(roomType == 1)
-                getHotDiariesQuery += " where diary_roomType = 1 && diary_created_at between DATE_SUB(NOW(), interval 1 hour) and now()";
-                else if(roomType == 2)
-                getHotDiariesQuery += " where diary_roomType = 2 && diary_created_at between DATE_SUB(NOW(), interval 1 hour) and now()";
-                getHotDiariesQuery += " && D.mem_idx = M.mem_idx && D.diary_blame < 10";
-                getHotDiariesQuery += " group by D.diary_idx order by hit desc, diary_created_at desc limit 30 offset ?";
+                    if(roomType == 0)
+                        getHotDiariesQuery += " where diary_created_at between DATE_SUB(NOW(), interval 1 hour) and now()";
+                    else if(roomType == 1)
+                        getHotDiariesQuery += " where diary_roomType = 1 && diary_created_at between DATE_SUB(NOW(), interval 1 hour) and now()";
+                    else if(roomType == 2)
+                        getHotDiariesQuery += " where diary_roomType = 2 && diary_created_at between DATE_SUB(NOW(), interval 1 hour) and now()";
+                    getHotDiariesQuery += " && D.mem_idx = M.mem_idx && D.diary_blame < 10";
+                    getHotDiariesQuery += " group by D.diary_idx order by hit desc, diary_created_at desc limit 30 offset ?";
                     break;
 
                 case 2:     // 24시간
-                if(roomType == 0)
-                getHotDiariesQuery += " where diary_created_at between DATE_SUB(NOW(), interval 24 hour) and now()";
-                else if(roomType == 1)
-                getHotDiariesQuery += " where diary_roomType = 1 && diary_created_at between DATE_SUB(NOW(), interval 24 hour) and now()";
-                else if(roomType == 2)
-                getHotDiariesQuery += " where diary_roomType = 2 && diary_created_at between DATE_SUB(NOW(), interval 24 hour) and now()";
-                getHotDiariesQuery += " && D.mem_idx = M.mem_idx && D.diary_blame < 10";
-                getHotDiariesQuery += " group by D.diary_idx order by hit desc, diary_created_at desc limit 30 offset ?";
+                    if(roomType == 0)
+                        getHotDiariesQuery += " where diary_created_at between DATE_SUB(NOW(), interval 24 hour) and now()";
+                    else if(roomType == 1)
+                        getHotDiariesQuery += " where diary_roomType = 1 && diary_created_at between DATE_SUB(NOW(), interval 24 hour) and now()";
+                    else if(roomType == 2)
+                        getHotDiariesQuery += " where diary_roomType = 2 && diary_created_at between DATE_SUB(NOW(), interval 24 hour) and now()";
+                    getHotDiariesQuery += " && D.mem_idx = M.mem_idx && D.diary_blame < 10";
+                    getHotDiariesQuery += " group by D.diary_idx order by hit desc, diary_created_at desc limit 30 offset ?";
                     break;
 
                 case 3:     // 일주일
-                if(roomType == 0)
-                getHotDiariesQuery += " where diary_created_at between DATE_FORMAT(DATE_SUB(NOW(), INTERVAL WEEKDAY(NOW()) day), '%Y-%m-%d') and now()";
-                else if(roomType == 1)
-                getHotDiariesQuery += " where diary_roomType = 1 && diary_created_at between DATE_FORMAT(DATE_SUB(NOW(), INTERVAL WEEKDAY(NOW()) day), '%Y-%m-%d') and now()";
-                else if(roomType == 2)
-                getHotDiariesQuery += " where diary_roomType = 2 && diary_created_at between DATE_FORMAT(DATE_SUB(NOW(), INTERVAL WEEKDAY(NOW()) day), '%Y-%m-%d') and now()";
-                getHotDiariesQuery += " && D.mem_idx = M.mem_idx && D.diary_blame < 10";
-                getHotDiariesQuery += " group by D.diary_idx order by hit desc, diary_created_at desc limit 30 offset ?";
+                    if(roomType == 0)
+                        getHotDiariesQuery += " where diary_created_at between DATE_FORMAT(DATE_SUB(NOW(), INTERVAL WEEKDAY(NOW()) day), '%Y-%m-%d') and now()";
+                    else if(roomType == 1)
+                        getHotDiariesQuery += " where diary_roomType = 1 && diary_created_at between DATE_FORMAT(DATE_SUB(NOW(), INTERVAL WEEKDAY(NOW()) day), '%Y-%m-%d') and now()";
+                    else if(roomType == 2)
+                        getHotDiariesQuery += " where diary_roomType = 2 && diary_created_at between DATE_FORMAT(DATE_SUB(NOW(), INTERVAL WEEKDAY(NOW()) day), '%Y-%m-%d') and now()";
+                    getHotDiariesQuery += " && D.mem_idx = M.mem_idx && D.diary_blame < 10";
+                    getHotDiariesQuery += " group by D.diary_idx order by hit desc, diary_created_at desc limit 30 offset ?";
                     break;
             }
-            
-            return this.jdbcTemplate.query(getHotDiariesQuery, 
-            (rs, rowNum) -> new GetAllFeedsRes(
-                rs.getInt("boardType"),
-                rs.getInt("roomType"),
-                rs.getInt("feedIdx"),
-                rs.getInt("mem_idx"),
-                rs.getString("mem_nickname"),
-                null,
-                rs.getString("title"),
-                rs.getString("image"),
-                rs.getInt("hit"),
-                rs.getInt("comment_cnt"),
-                rs.getInt("like_cnt"),
-                rs.getString("createAt")),
-                page);
-            
+
+            return this.jdbcTemplate.query(getHotDiariesQuery,
+                    (rs, rowNum) -> new GetAllFeedsRes(
+                            rs.getInt("boardType"),
+                            rs.getInt("roomType"),
+                            rs.getInt("feedIdx"),
+                            rs.getInt("mem_idx"),
+                            rs.getString("mem_nickname"),
+                            null,
+                            rs.getString("title"),
+                            rs.getString("image"),
+                            rs.getInt("hit"),
+                            rs.getInt("comment_cnt"),
+                            rs.getInt("like_cnt"),
+                            rs.getString("createAt")),
+                    page);
+
         } catch (Exception e) {
             e.printStackTrace();
             throw new BaseException(BaseResponseStatus.GET_REVIEW_FAIL);
@@ -825,45 +730,44 @@ public class FeedsDao {
 
             switch(filter) {
                 case 1:     // 1시간(default)
-                getHotReviewsQuery += " where review_created_at between DATE_SUB(NOW(), interval 1 hour) and now()";
-                getHotReviewsQuery += " && R.sell_mem_idx = A.mem_idx && R.buy_mem_idx = B.mem_idx && R.review_blame < 10";
-                getHotReviewsQuery += " group by R.review_idx order by hit desc, review_created_at desc limit 30 offset ?";
+                    getHotReviewsQuery += " where review_created_at between DATE_SUB(NOW(), interval 1 hour) and now()";
+                    getHotReviewsQuery += " && R.sell_mem_idx = A.mem_idx && R.buy_mem_idx = B.mem_idx && R.review_blame < 10";
+                    getHotReviewsQuery += " group by R.review_idx order by hit desc, review_created_at desc limit 30 offset ?";
                     break;
 
                 case 2:     // 24시간
-                getHotReviewsQuery += " where review_created_at between DATE_SUB(NOW(), interval 24 hour) and now()";
-                getHotReviewsQuery += " && R.sell_mem_idx = A.mem_idx && R.buy_mem_idx = B.mem_idx && R.review_blame < 10";
-                getHotReviewsQuery += " group by R.review_idx order by hit desc, review_created_at desc limit 30 offset ?";
+                    getHotReviewsQuery += " where review_created_at between DATE_SUB(NOW(), interval 24 hour) and now()";
+                    getHotReviewsQuery += " && R.sell_mem_idx = A.mem_idx && R.buy_mem_idx = B.mem_idx && R.review_blame < 10";
+                    getHotReviewsQuery += " group by R.review_idx order by hit desc, review_created_at desc limit 30 offset ?";
                     break;
 
                 case 3:     // 일주일
-                getHotReviewsQuery += " where review_created_at between DATE_FORMAT(DATE_SUB(NOW(), INTERVAL WEEKDAY(NOW()) day), '%Y-%m-%d') and now()";
-                getHotReviewsQuery += " && R.sell_mem_idx = A.mem_idx && R.buy_mem_idx = B.mem_idx && R.review_blame < 10";
-                getHotReviewsQuery += " group by R.review_idx order by hit desc, review_created_at desc limit 30 offset ?";
+                    getHotReviewsQuery += " where review_created_at between DATE_FORMAT(DATE_SUB(NOW(), INTERVAL WEEKDAY(NOW()) day), '%Y-%m-%d') and now()";
+                    getHotReviewsQuery += " && R.sell_mem_idx = A.mem_idx && R.buy_mem_idx = B.mem_idx && R.review_blame < 10";
+                    getHotReviewsQuery += " group by R.review_idx order by hit desc, review_created_at desc limit 30 offset ?";
                     break;
             }
-            
-            return this.jdbcTemplate.query(getHotReviewsQuery, 
-            (rs, rowNum) -> new GetAllFeedsRes(
-                rs.getInt("boardType"),
-                rs.getInt("roomType"),
-                rs.getInt("feedIdx"),
-                rs.getInt("buy_mem_idx"),
-                rs.getString("mem_nickname"),
-                null,
-                rs.getString("title"),
-                rs.getString("image"),
-                rs.getInt("hit"),
-                rs.getInt("comment_cnt"),
-                rs.getInt("like_cnt"),
-                rs.getString("createAt")),
-                page);
-            
+
+            return this.jdbcTemplate.query(getHotReviewsQuery,
+                    (rs, rowNum) -> new GetAllFeedsRes(
+                            rs.getInt("boardType"),
+                            rs.getInt("roomType"),
+                            rs.getInt("feedIdx"),
+                            rs.getInt("buy_mem_idx"),
+                            rs.getString("mem_nickname"),
+                            null,
+                            rs.getString("title"),
+                            rs.getString("image"),
+                            rs.getInt("hit"),
+                            rs.getInt("comment_cnt"),
+                            rs.getInt("like_cnt"),
+                            rs.getString("createAt")),
+                    page);
+
         } catch (Exception e) {
             e.printStackTrace();
             throw new BaseException(BaseResponseStatus.GET_REVIEW_FAIL);
         }
->>>>>>> c982a63d96fc7dc0fa353610f444f76f3f40d905
     }
 
     //게시글 신고하기

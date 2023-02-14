@@ -48,13 +48,13 @@ public class ReviewDao {
             } else {
                 Object[] createReviewsParams = new Object[] {postReviewReq.getSellerIdx(), postReviewReq.getBuyerIdx(), postReviewReq.getGoods(), postReviewReq.getContent(), img.get(0).getUploadFilePath(), currentTime};
                 this.jdbcTemplate.update(createReviewsQuery, createReviewsParams);  // 장터 후기 저장
-    
+
                 String laseInsertQuery = "select last_insert_id()"; // 가장 마지막에 삽입된 id 값 가져온다
                 reviewIdx = this.jdbcTemplate.queryForObject(laseInsertQuery, int.class);
                 createReviewsImage(img, reviewIdx);
             }
 
-            
+
 
             return reviewIdx;        // 생성된 장터 후기 인덱스
         } catch (Exception e) {
@@ -80,7 +80,7 @@ public class ReviewDao {
         // String editReviewsQuery = "update Market_review set review_goods = ?, review_content = ?, review_image = ? where review_idx = ?";
         // this.jdbcTemplate.update(editReviewsQuery, editReviewsParams);// Object[] editReviewsParams = new Object[] {patchReviewsReq.getGoods(), patchReviewsReq.getContent(), patchReviewsReq.getImgCnt(), patchReviewsReq.getReviewIdx()};
 
-        
+
 
         // 이미지 수정(삭제 후 추가)
         String editReviewsQuery = "delete from Image_url where content_category = 3 && content_idx = ?";
@@ -109,14 +109,14 @@ public class ReviewDao {
     // 이미지 조회
     public List<Image> getReviewsImage(int reviewIdx) {
         String getReviewsImageQuery = "select * from Image_url where content_category = 3 && content_idx = ?";
-        
-        return this.jdbcTemplate.query(getReviewsImageQuery, 
-        (rs, rowNum) -> new Image(
-            rs.getString("image_url"), 
-            rs.getString("image_url"),
-            rs.getInt("content_category"), 
-            rs.getInt("content_idx")), 
-            reviewIdx);
+
+        return this.jdbcTemplate.query(getReviewsImageQuery,
+                (rs, rowNum) -> new Image(
+                        rs.getString("image_url"),
+                        rs.getString("image_url"),
+                        rs.getInt("content_category"),
+                        rs.getInt("content_idx")),
+                reviewIdx);
     }
 
     // 장터 후기 삭제
@@ -138,36 +138,36 @@ public class ReviewDao {
         try {
             String getReviewQuery = "update Market_review set review_hit = review_hit + 1 where review_idx = ?";
             this.jdbcTemplate.update(getReviewQuery, reviewIdx);
-    
+
             getReviewQuery = "select review_idx, sell_mem_idx, A.mem_nickname as seller_nick, buy_mem_idx, B.mem_nickname as buyer_nick, B.mem_profile_url, review_goods, review_content, review_hit, review_created_at, comment_cnt, like_cnt, islike";
             getReviewQuery += " from Market_review , Member A, Member B, (select count(*) as comment_cnt from Market_review_comment where review_idx = ?) RC, ";
             getReviewQuery += " (select count(*) as like_cnt from Market_review_like where market_re_idx = ? && Market_review_like.mrl_status = 1) RL, (select count(*) as islike from Market_review_like where market_re_idx = ? && mrl_status = 1 && mem_idx = ?) RisLike";
             getReviewQuery += " where review_idx = ? && sell_mem_idx = A.mem_idx && buy_mem_idx = B.mem_idx && Market_review.review_blame < 10";
-        
-            return this.jdbcTemplate.queryForObject(getReviewQuery, 
-            (rs, rowNum) -> new Review(
-                rs.getInt("review_idx"),
-                rs.getInt("buy_mem_idx"),
-                rs.getInt("sell_mem_idx"),
-                rs.getString("buyer_nick"),
-                rs.getString("seller_nick"),
-                rs.getString("mem_profile_url"),
-                rs.getString("review_goods"),
-                rs.getString("review_content"),
-                rs.getInt("review_hit"),
-                rs.getInt("comment_cnt"),
-                rs.getInt("like_cnt"),
-                rs.getString("review_created_at"),
-                rs.getInt("islIke")), 
-                reviewIdx, reviewIdx, reviewIdx, memIdx, reviewIdx);
+
+            return this.jdbcTemplate.queryForObject(getReviewQuery,
+                    (rs, rowNum) -> new Review(
+                            rs.getInt("review_idx"),
+                            rs.getInt("buy_mem_idx"),
+                            rs.getInt("sell_mem_idx"),
+                            rs.getString("buyer_nick"),
+                            rs.getString("seller_nick"),
+                            rs.getString("mem_profile_url"),
+                            rs.getString("review_goods"),
+                            rs.getString("review_content"),
+                            rs.getInt("review_hit"),
+                            rs.getInt("comment_cnt"),
+                            rs.getInt("like_cnt"),
+                            rs.getString("review_created_at"),
+                            rs.getInt("islIke")),
+                    reviewIdx, reviewIdx, reviewIdx, memIdx, reviewIdx);
         } catch (Exception e) {
             e.printStackTrace();
             throw new BaseException(BaseResponseStatus.GET_REVIEW_FAIL);
         }
 
     }
-    
-    
+
+
     // 장터후기 전체 조회
     public List<GetAllReviewsRes> getAllReviews(int page) {
         String getAllReviewQuery = "select Market_review.review_idx, sell_mem_idx, A.mem_nickname as seller_nick, buy_mem_idx, B.mem_nickname as buyer_nick, B.mem_profile_url, ";
@@ -176,36 +176,21 @@ public class ReviewDao {
         getAllReviewQuery += " left join (select review_idx, count(*) as comment_cnt from Market_review_comment group by review_idx) as MRC on Market_review.review_idx = MRC.review_idx, Member A, Member B";
         getAllReviewQuery += " where Market_review.sell_mem_idx = A.mem_idx && Market_review.buy_mem_idx = B.mem_idx";
         getAllReviewQuery += " order by review_created_at desc limit 20 offset ?";
-    
-        return this.jdbcTemplate.query(getAllReviewQuery, 
-        (rs, rowNum) -> new GetAllReviewsRes(
-<<<<<<< HEAD
-                rs.getInt("review_idx"),
-                rs.getInt("buy_mem_idx"),
-                rs.getInt("sell_mem_idx"),
-                rs.getString("buyer_nick"),
-                rs.getString("seller_nick"),
-                rs.getString("mem_profile_url"),
-                rs.getString("review_goods"),
-                rs.getInt("review_hit"),
-                rs.getInt("comment_cnt"),
-                rs.getInt("likeCnt"),
-                rs.getString("review_created_at"),
-                rs.getString("review_image")));
-=======
-            rs.getInt("review_idx"),
-            rs.getInt("buy_mem_idx"),
-            rs.getInt("sell_mem_idx"),
-            rs.getString("buyer_nick"),
-            rs.getString("seller_nick"),
-            rs.getString("mem_profile_url"),
-            rs.getString("review_goods"),
-            rs.getInt("review_hit"),
-            rs.getInt("comment_cnt"),
-            rs.getInt("likeCnt"),
-            rs.getString("review_created_at"),
-            rs.getString("review_image")),
-            page);
->>>>>>> c982a63d96fc7dc0fa353610f444f76f3f40d905
+
+        return this.jdbcTemplate.query(getAllReviewQuery,
+                (rs, rowNum) -> new GetAllReviewsRes(
+                        rs.getInt("review_idx"),
+                        rs.getInt("buy_mem_idx"),
+                        rs.getInt("sell_mem_idx"),
+                        rs.getString("buyer_nick"),
+                        rs.getString("seller_nick"),
+                        rs.getString("mem_profile_url"),
+                        rs.getString("review_goods"),
+                        rs.getInt("review_hit"),
+                        rs.getInt("comment_cnt"),
+                        rs.getInt("likeCnt"),
+                        rs.getString("review_created_at"),
+                        rs.getString("review_image")),
+                page);
     }
 }
