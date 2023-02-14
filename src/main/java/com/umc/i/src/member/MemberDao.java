@@ -26,8 +26,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
-import static com.umc.i.config.BaseResponseStatus.POST_MEMBER_WITHDRAW;
-import static com.umc.i.config.BaseResponseStatus.POST_NEMBER_BLOCK_DOUBLE;
+import static com.umc.i.config.BaseResponseStatus.*;
 
 @Repository
 @Slf4j
@@ -79,7 +78,7 @@ public class MemberDao {
             Object[] uploadNickParams = new Object[]{memIdx,patchMemReq.getNick()};
             this.jdbcTemplate.update(uploadNickQuery,uploadNickParams);
         }
-        
+
     }
     // 닉네임 변경횟수
     public int editNickNum(int memIdx){

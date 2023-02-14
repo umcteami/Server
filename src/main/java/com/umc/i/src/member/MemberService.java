@@ -298,7 +298,7 @@ public class MemberService {
                 if(editNickNum > 2){
                     return PATCH_MEMBER_NICKNUM_OVER;
                 }
-    
+
                 int checkNick = memberDao.checkNick(patchMemReq.getNick());
                 if(checkNick != 0){return PATCH_MEMBER_NICK_DOUBLE;}
             }
