@@ -118,13 +118,14 @@ public class MemberController {
     @ResponseBody
     @PostMapping("/join/auth")
     // 본인인증
-    public BaseResponse<PostAuthRes> sendAuth(@RequestBody PostAuthReq postJoinAuthReq) throws MessagingException, UnsupportedEncodingException {
+    public BaseResponse<PostAuthRes> checkType(@RequestParam(name = "find", defaultValue = "0") int isFind, @RequestBody PostAuthReq postJoinAuthReq) throws MessagingException, UnsupportedEncodingException {
+
         switch(postJoinAuthReq.getType()) {
             case 1: //메일 인증
                 if(postJoinAuthReq.getAuth() == null) return new BaseResponse<>(BaseResponseStatus.POST_MEMBER_EMPTY_EMAIL);
                 if(!isRegexEmail(postJoinAuthReq.getAuth())) return new BaseResponse<>(BaseResponseStatus.POST_MEMBER_INVALID_EMAIL);
                 try {
-                    PostAuthRes postAuthRes = memberService.sendEmail(postJoinAuthReq.getAuth());
+                    PostAuthRes postAuthRes = memberService.sendEmail(postJoinAuthReq.getAuth(), isFind);
                     if(postAuthRes == null) return new BaseResponse<>(BaseResponseStatus.POST_MEMBER_EXISTS_EMAIL);
                     return new BaseResponse<>(postAuthRes);
                 } catch (BaseException e) {
@@ -134,7 +135,7 @@ public class MemberController {
                 if(postJoinAuthReq.getAuth() == null) return new BaseResponse<>(BaseResponseStatus.POST_MEMBER_EMPTY_PHONE);
                 if(!isRegexPhone(postJoinAuthReq.getAuth())) return new BaseResponse<>(BaseResponseStatus.POST_MEMBER_INVALID_PHONE);
                 try {
-                    PostAuthRes postAuthRes = memberService.send_msg(postJoinAuthReq.getAuth());
+                    PostAuthRes postAuthRes = memberService.send_msg(postJoinAuthReq.getAuth(), isFind);
                     if(postAuthRes == null) return new BaseResponse<>(BaseResponseStatus.POST_MEMBER_EXISTS_PHONE);
                     return new BaseResponse<>(postAuthRes);
                 } catch (BaseException e) {
