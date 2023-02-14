@@ -4,10 +4,12 @@ import com.umc.i.config.BaseException;
 import com.umc.i.config.BaseResponse;
 import com.umc.i.config.BaseResponseStatus;
 import com.umc.i.config.Constant;
+import com.umc.i.src.feeds.model.get.GetAllDiaryRes;
 import com.umc.i.src.feeds.model.get.GetAllFeedsRes;
 import com.umc.i.src.market.feed.model.GetMarketFeedReq;
 import com.umc.i.src.market.feed.model.GetMarketFeedRes;
 import com.umc.i.src.review.model.get.GetAllReviewsRes;
+import com.umc.i.src.search.model.Keyword;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,6 +43,8 @@ public class SearchController {
         if (!isSearchTargetValid(search_target)) {
             return new BaseResponse<>(BaseResponseStatus.SEARCH_TARGET_INVALID);
         }
+
+        searchService.updateSearchKeywordCnt(search_keyword);
 
         List<GetMarketFeedRes> feedRes = null;
         switch (search_target) {
@@ -79,7 +83,7 @@ public class SearchController {
         if (!isSearchKeywordValid(search_keyword)) {
             return new BaseResponse<>(BaseResponseStatus.SEARCH_KEYWORD_NULL_EXCEPTION);
         }
-
+        searchService.updateSearchKeywordCnt(search_keyword);
         try {
             List<GetAllReviewsRes> feedRes = searchService.searchAllReviewFeedByKeywordByContentInLatest(search_keyword, page);
             return new BaseResponse<>(feedRes);
@@ -103,8 +107,8 @@ public class SearchController {
         if (!isSearchTargetValid(search_target)) {
             return new BaseResponse<>(BaseResponseStatus.SEARCH_TARGET_INVALID);
         }
-
-        List<GetAllFeedsRes> feedRes = null;
+        searchService.updateSearchKeywordCnt(search_keyword);
+        List<GetAllDiaryRes> feedRes = null;
         switch (search_target) {
             case "title":
                 if (category == null) {
@@ -182,7 +186,7 @@ public class SearchController {
         if (!isSearchTargetValid(search_target)) {
             return new BaseResponse<>(BaseResponseStatus.SEARCH_TARGET_INVALID);
         }
-
+        searchService.updateSearchKeywordCnt(search_keyword);
         List<GetAllFeedsRes> feedRes = null;
         switch (search_target) {
             case "title":
@@ -256,7 +260,7 @@ public class SearchController {
         if (!isSearchTargetValid(search_target)) {
             return new BaseResponse<>(BaseResponseStatus.SEARCH_TARGET_INVALID);
         }
-
+        searchService.updateSearchKeywordCnt(search_keyword);
         List<GetAllFeedsRes> feedRes = null;
         switch (search_target) {
             case "title":
@@ -290,7 +294,7 @@ public class SearchController {
 
     @GetMapping("search/bestkeyword")
     public BaseResponse bestSearchKeyword() {
-        List<String> keyword = searchService.bestSearchKeyword();
+        List<Keyword> keyword = searchService.bestSearchKeyword();
         return new BaseResponse<>(keyword);
     }
 

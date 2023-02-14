@@ -1,8 +1,10 @@
 package com.umc.i.src.search;
 
+import com.umc.i.src.feeds.model.get.GetAllDiaryRes;
 import com.umc.i.src.feeds.model.get.GetAllFeedsRes;
 import com.umc.i.src.market.feed.model.GetMarketFeedRes;
 import com.umc.i.src.review.model.get.GetAllReviewsRes;
+import com.umc.i.src.search.model.Keyword;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -76,32 +78,32 @@ public class SearchServiceImpl implements SearchService {
     }
 
     @Override
-    public List<GetAllFeedsRes> searchAllDairyFeedByKeywordByTitleInLatest(String search_keyword, int page) {
+    public List<GetAllDiaryRes> searchAllDairyFeedByKeywordByTitleInLatest(String search_keyword, int page) {
         return searchDao.searchAllDairyFeedByKeywordByTitleInLatest(search_keyword, page);
     }
 
     @Override
-    public List<GetAllFeedsRes> searchCategoryDairyFeedByKeywordByTitleInLatest(String categoryIdx, String search_keyword, int page) {
+    public List<GetAllDiaryRes> searchCategoryDairyFeedByKeywordByTitleInLatest(String categoryIdx, String search_keyword, int page) {
         return searchDao.searchCategoryDairyFeedByKeywordByTitleInLatest(categoryIdx, search_keyword, page);
     }
 
     @Override
-    public List<GetAllFeedsRes> searchAllDairyFeedByKeywordByTitleContentInLatest(String search_keyword, int page) {
+    public List<GetAllDiaryRes> searchAllDairyFeedByKeywordByTitleContentInLatest(String search_keyword, int page) {
         return searchDao.searchAllDairyFeedByKeywordByTitleContentInLatest(search_keyword, page);
     }
 
     @Override
-    public List<GetAllFeedsRes> searchCategoryDairyFeedByKeywordByTitleContentInLatest(String categoryIdx, String search_keyword, int page) {
+    public List<GetAllDiaryRes> searchCategoryDairyFeedByKeywordByTitleContentInLatest(String categoryIdx, String search_keyword, int page) {
         return searchDao.searchCategoryDairyFeedByKeywordByTitleContentInLatest(categoryIdx, search_keyword, page);
     }
 
     @Override
-    public List<GetAllFeedsRes> searchAllDairyFeedByKeywordByMemberNicknameInLatest(String search_keyword, int page) {
+    public List<GetAllDiaryRes> searchAllDairyFeedByKeywordByMemberNicknameInLatest(String search_keyword, int page) {
         return searchDao.searchAllDairyFeedByKeywordByMemberNicknameInLatest(search_keyword, page);
     }
 
     @Override
-    public List<GetAllFeedsRes> searchCategoryDairyFeedByKeywordByMemberNicknameInLatest(String categoryIdx, String search_keyword, int page) {
+    public List<GetAllDiaryRes> searchCategoryDairyFeedByKeywordByMemberNicknameInLatest(String categoryIdx, String search_keyword, int page) {
         return searchDao.searchCategoryDairyFeedByKeywordByMemberNicknameInLatest(categoryIdx, search_keyword, page);
     }
 
@@ -151,8 +153,12 @@ public class SearchServiceImpl implements SearchService {
     }
 
     @Override
-    public List<String> bestSearchKeyword() {
-        // TODO Auto-generated method stub
-        return null;
+    public List<Keyword> bestSearchKeyword() {
+        return searchDao.bestSearchKeyword();
+    }
+
+    @Override
+    public void updateSearchKeywordCnt(String search_keyword) {
+        searchDao.updateSearchKeywordCnt(search_keyword);
     }
 }
