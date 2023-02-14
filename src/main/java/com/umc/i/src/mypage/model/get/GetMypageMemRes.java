@@ -6,7 +6,6 @@ import lombok.*;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@RequiredArgsConstructor
 public class GetMypageMemRes {
     @NonNull
     private String nick;
@@ -19,4 +18,11 @@ public class GetMypageMemRes {
     private Integer marketCount;
     @NonNull
     private String alarm;
+    
+    public GetMypageMemRes(String nick, String intro, String profile, String alarm) {
+        this.nick = nick;
+        this.intro = intro;
+        this.profile = profile;
+        this.alarm = alarm;
+    }
 }

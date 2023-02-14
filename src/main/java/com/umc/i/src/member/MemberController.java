@@ -119,6 +119,7 @@ public class MemberController {
     @PostMapping("/join/auth")
     // 본인인증
     public BaseResponse<PostAuthRes> checkType(@RequestParam(name = "find", defaultValue = "0") int isFind, @RequestBody PostAuthReq postJoinAuthReq) throws MessagingException, UnsupportedEncodingException {
+
         switch(postJoinAuthReq.getType()) {
             case 1: //메일 인증
                 if(postJoinAuthReq.getAuth() == null) return new BaseResponse<>(BaseResponseStatus.POST_MEMBER_EMPTY_EMAIL);
@@ -146,9 +147,7 @@ public class MemberController {
 
 
     @GetMapping("/join/auth")
-    public BaseResponse<PostAuthNumberRes> checkAuthNumber(@RequestBody PostAuthNumberReq postAuthNumberReq) {
-        int authIdx = postAuthNumberReq.getAuthIdx();
-
+    public BaseResponse<PostAuthNumberRes> checkAuthNumber(@RequestParam int authIdx) {
         PostAuthNumberReq res = memberService.getSignAuthNumberObject(authIdx);
 
         if (res == null) {
@@ -194,9 +193,9 @@ public class MemberController {
     // 이메일 찾기
     @ResponseBody
     @GetMapping("/find/email")
-    public BaseResponse findEmail(@RequestBody GetMemberEmailReq getMemberEmailReq) throws BaseException {
+    public BaseResponse findEmail(@RequestParam(name = "phone") String phone) throws BaseException {
         try {
-            return new BaseResponse<>(memberProvider.findEmail(getMemberEmailReq.getPhone()));
+            return new BaseResponse<>(memberProvider.findEmail(phone));
         } catch(BaseException e) {
             return new BaseResponse<>(e.getStatus());
         }

@@ -82,19 +82,20 @@ public class MypageDao {
                                 rs.getInt("roomType"),
                                 rs.getInt("idx"),
                                 rs.getString("title"),
+                                rs.getString("countImg"),
                                 rs.getInt("hit"),
                                 rs.getInt("likeCount"),
                                 rs.getInt("commentCount"),
                                 rs.getString("createAt")
                         );
-                        //이미지 없을 경우
-                        if(rs.getInt("countImg") != 0){
-                            String getDiaryImgQuery = "select image_url from Image_url where content_category = ? and content_idx = ? and image_order = 0";
-                            String diaryImg = this.jdbcTemplate.queryForObject(getDiaryImgQuery,String.class,getDiaryWriteRes.getBoarIdx(),getDiaryWriteRes.getComuIdx());
-                            getDiaryWriteRes.setFeedImg(diaryImg);
-                        }else{
-                            getDiaryWriteRes.setFeedImg(null);
-                        }
+                        // //이미지 없을 경우
+                        // if(rs.getInt("countImg") != 0){
+                        //     String getDiaryImgQuery = "select image_url from Image_url where content_category = ? and content_idx = ? and image_order = 0";
+                        //     String diaryImg = this.jdbcTemplate.queryForObject(getDiaryImgQuery,String.class,getDiaryWriteRes.getBoarIdx(),getDiaryWriteRes.getComuIdx());
+                        //     getDiaryWriteRes.setFeedImg(diaryImg);
+                        // }else{
+                        //     getDiaryWriteRes.setFeedImg(null);
+                        // }
 
                         return getDiaryWriteRes;
                     },
@@ -111,25 +112,25 @@ public class MypageDao {
         try{
             String getAllWriteQuery = "";
             if(like){
-                getAllWriteQuery = "select board_idx, review_idx as idx,null as roomType,concat(sell_mem_idx,'님과 ',review_goods,'을 거래했습니다') as title,review_image as countImg,review_hit as hit,review_created_at as createAt\n" +
+                getAllWriteQuery = "select board_idx, review_idx as idx,null as roomType,concat(sell_mem_idx,'님의 ',review_goods) as title,review_image as countImg,review_hit as hit,review_created_at as createAt\n" +
                         ",(select count(*) from Market_review_like where Mr.review_idx = market_re_idx) as likeCount\n" +
                         ",(select count(*) from Market_review_comment Mrc where Mr.review_idx = Mrc.review_idx) as commentCount\n" +
                         "from Market_review Mr join Market_review_like Mrl on Mr.review_idx = Mrl.market_re_idx\n" +
-                        "where buy_mem_idx = ?\n" +
+                        "where Mrl.mem_idx = ? group by Mrl.mrl_idx\n" +
                         "union\n" +
                         "select board_idx, S.story_idx as idx,story_roomType as roomType,story_title as title,story_image as countImg,story_hit as hit,story_created_at as createAt\n" +
                         ",(select count(*) from Story_feed_like SFL where S.story_idx = SFL.story_idx) as likeCount\n" +
                         ",(select count(*) from Story_feed_comment Sfc where S.story_idx = Sfc.story_idx) as commentCount\n" +
                         "from Story_feed S join Story_feed_like l on S.story_idx = l.story_idx\n" +
-                        "where S.mem_idx =?\n" +
+                        "where l.mem_idx = ? group by l.sfl_idx\n" +
                         "union\n" +
                         "select board_idx, D.diary_idx as idx,diary_roomType as roomType,diary_title as title,diary_image as countImg,diary_hit as hit,diary_created_at as createAt\n" +
                         ",(select count(*) from Diary_feed_like Dfl where D.diary_idx = Dfl.diary_idx) as likeCount\n" +
                         ",(select count(*) from Diary_comment Dc where D.diary_idx = Dc.diary_idx) as commentCount\n" +
                         "from Diary_feed D join Diary_feed_like l on D.diary_idx = l.diary_idx\n" +
-                        "where D.mem_idx = ? order by createAt desc limit ?,?";
+                        "where l.mem_idx = ? group by l.dfl_idx order by createAt desc limit ?,?";
             }else{
-                getAllWriteQuery = "select board_idx, review_idx as idx,null as roomType,concat(sell_mem_idx,'님과 ',review_goods,'을 거래했습니다') as title,review_image as countImg,review_hit as hit,review_created_at as createAt\n" +
+                getAllWriteQuery = "select board_idx, review_idx as idx,null as roomType,concat(sell_mem_idx,'님의 ',review_goods) as title,review_image as countImg,review_hit as hit,review_created_at as createAt\n" +
                         ",(select count(*) from Market_review_like where Mr.review_idx = market_re_idx) as likeCount\n" +
                         ",(select count(*) from Market_review_comment Mrc where Mr.review_idx = Mrc.review_idx) as commentCount\n" +
                         "from Market_review Mr\n" +
@@ -155,19 +156,20 @@ public class MypageDao {
                                 rs.getInt("roomType"),
                                 rs.getInt("idx"),
                                 rs.getString("title"),
+                                rs.getString("countImg"),
                                 rs.getInt("hit"),
                                 rs.getInt("likeCount"),
                                 rs.getInt("commentCount"),
                                 rs.getString("createAt")
                         );
-                        //이미지 없을 경우
-                        if (rs.getInt("countImg") != 0) {
-                            String getDiaryImgQuery = "select image_url from Image_url where content_category = ? and content_idx = ? and image_order = 0";
-                            String img = this.jdbcTemplate.queryForObject(getDiaryImgQuery, String.class, getComuWriteRes.getBoarIdx(), getComuWriteRes.getComuIdx());
-                            getComuWriteRes.setFeedImg(img);
-                        } else {
-                            getComuWriteRes.setFeedImg(null);
-                        }
+                        // //이미지 없을 경우
+                        // if (rs.getInt("countImg") != 0) {
+                        //     String getDiaryImgQuery = "select image_url from Image_url where content_category = ? and content_idx = ? and image_order = 0";
+                        //     String img = this.jdbcTemplate.queryForObject(getDiaryImgQuery, String.class, getComuWriteRes.getBoarIdx(), getComuWriteRes.getComuIdx());
+                        //     getComuWriteRes.setFeedImg(img);
+                        // } else {
+                        //     getComuWriteRes.setFeedImg(null);
+                        // }
                         return getComuWriteRes;
                     }, memIdx, memIdx, memIdx,startPoint,page);
         }catch (EmptyResultDataAccessException e) {
@@ -179,8 +181,8 @@ public class MypageDao {
     //이야기방 장터 후기 대상 조회
     public List<GetComuWriteRes> getRSWrite(int memIdx,int page) throws BaseException {
         try {
-            String getRSWriteQuery = "select board_idx, review_idx as idx,null as roomType,concat(sell_mem_idx,'님과 ',review_goods,'을 거래했습니다') as title,review_image as countImg,review_hit as hit,review_created_at as createAt\n" +
-                    ",(select count(*) from Market_review_like where Mr.review_idx = market_re_idx and mrl_staus = 1) as likeCount\n" +
+            String getRSWriteQuery = "select board_idx, review_idx as idx,null as roomType,concat(sell_mem_idx,'님의 ',review_goods) as title,review_image as countImg,review_hit as hit,review_created_at as createAt\n" +
+                    ",(select count(*) from Market_review_like where Mr.review_idx = market_re_idx and mrl_status = 1) as likeCount\n" +
                     ",(select count(*) from Market_review_comment Mrc where Mr.review_idx = Mrc.review_idx) as commentCount\n" +
                     "from Market_review Mr\n" +
                     "where buy_mem_idx = ?\n" +
@@ -198,19 +200,20 @@ public class MypageDao {
                                 rs.getInt("roomType"),
                                 rs.getInt("idx"),
                                 rs.getString("title"),
+                                rs.getString("countImg"),
                                 rs.getInt("hit"),
                                 rs.getInt("likeCount"),
                                 rs.getInt("commentCount"),
                                 rs.getString("createAt")
                         );
-                        //이미지 없을 경우
-                        if (rs.getInt("countImg") != 0) {
-                            String getDiaryImgQuery = "select image_url from Image_url where content_category = ? and content_idx = ? and image_order = 0";
-                            String img = this.jdbcTemplate.queryForObject(getDiaryImgQuery, String.class, getComuWriteRes.getBoarIdx(), getComuWriteRes.getComuIdx());
-                            getComuWriteRes.setFeedImg(img);
-                        } else {
-                            getComuWriteRes.setFeedImg(null);
-                        }
+                        // //이미지 없을 경우
+                        // if (rs.getInt("countImg") != 0) {
+                        //     String getDiaryImgQuery = "select image_url from Image_url where content_category = ? and content_idx = ? and image_order = 0";
+                        //     String img = this.jdbcTemplate.queryForObject(getDiaryImgQuery, String.class, getComuWriteRes.getBoarIdx(), getComuWriteRes.getComuIdx());
+                        //     getComuWriteRes.setFeedImg(img);
+                        // } else {
+                        //     getComuWriteRes.setFeedImg(null);
+                        // }
                         return getComuWriteRes;
                     }, memIdx, memIdx,startPoint,page);
         }catch (EmptyResultDataAccessException e) {
@@ -267,7 +270,7 @@ public class MypageDao {
                     "    join Member M on M.mem_idx = Sfc.mem_idx\n" +
                     "where Sfc.mem_idx = ?\n" +
                     "union all\n" +
-                    "select board_idx,mr.review_idx as comuIdx,concat(sell_mem_idx,'님과 ',review_goods,'을 거래했습니다') as title,m.mem_nickname as writenick,review_created_at as feedCreateAt,review_hit as hit,market_re_cmt_content as coment,market_re_cmt_create_at as comentCreateAt\n" +
+                    "select board_idx,mr.review_idx as comuIdx,concat(sell_mem_idx,'님의 ',review_goods) as title,m.mem_nickname as writenick,review_created_at as feedCreateAt,review_hit as hit,market_re_cmt_content as coment,market_re_cmt_create_at as comentCreateAt\n" +
                     "from Market_review as mr join Market_review_comment as mrc on mr.review_idx = mrc.review_idx left join Member m\n" +
                     "                                                                                                       on buy_mem_idx = m.mem_idx\n" +
                     "where mrc.mem_idx = ?\n" +
@@ -327,7 +330,7 @@ public class MypageDao {
     }
     //나눔장터 - 찜한 게시글 개수
     public Integer getWantMarketCount(int memIdx){
-        String getWantMarketCountQuery = "select count(*) from Market m join Market_like Ml on m.market_idx = Ml.market_idx where Ml.mem_idx = ? and ml_status = 1";
+        String getWantMarketCountQuery = "select count(*) from Market m join Market_like Ml on m.market_idx = Ml.market_idx where Ml.mem_idx = ? and ml_status = 1 group by m.market_idx";
         return this.jdbcTemplate.queryForObject(getWantMarketCountQuery,Integer.class,memIdx);
     }
     //나눔장터 - 찜한 게시글 조회
@@ -336,7 +339,7 @@ public class MypageDao {
             String getWantFeedQuery = "select board_idx,m.market_idx,market_price,TIMEDIFF(market_created_at,CURRENT_TIMESTAMP()) as createAt ,market_hit,market_soldout,market_image,market_title\n" +
                     "from Market m join Market_like ml\n" +
                     "        on ml.market_idx = m.market_idx\n" +
-                    "where ml.mem_idx = ? and ml_status = 1 limit ?,?";
+                    "where ml.mem_idx = ? and ml_status = 1 group by m.market_idx limit ?,?";
             String getWantCountQuery = "select count(*) from Market_like where market_idx = ?";
             int startPoint = page-10;
             return this.jdbcTemplate.query(getWantFeedQuery,

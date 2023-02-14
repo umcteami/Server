@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Websocket Chat</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <!-- CSS -->
+    <link rel="stylesheet" href="/webjars/bootstrap/4.3.1/dist/css/bootstrap.min.css">
+    <style>
+        [v-cloak] {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<div class="container" id="app" v-cloak>
+    <div class="row">
+        <div class="col-md-12">
+            <h3>채팅방 리스트</h3>
+        </div>
+    </div>
+    <div class="input-group">
+        <div class="input-group-prepend">
+            <label class="input-group-text">방제목</label>
+        </div>
+        <input type="text" class="form-control" v-model="memIdx1" v-on:keyup.enter="createRoom">
+        <input type="text" class="form-control" v-model="memIdx2" v-on:keyup.enter="createRoom">
+
+        <div class="input-group-append">
+            <button class="btn btn-primary" type="button" @click="createRoom">채팅방 개설</button>
+        </div>
+    </div>
+    <ul class="list-group">
+        <li class="list-group-item list-group-item-action" v-for="item in chatrooms" v-bind:key="item.roomIdx" v-on:click="enterRoom(item.roomIdx)">
+            {{item.roomIdx}}
+        </li>
+    </ul>
+</div>
+<!-- JavaScript -->
+<script src="/webjars/vue/2.5.16/dist/vue.min.js"></script>
+<script src="/webjars/axios/0.17.1/dist/axios.min.js"></script>
+<script>
+    var vm = new Vue({
+        el: '#app',
+        data: {
+            memIdx1 : 33,
+            memIdx2 : 10,
+            chatrooms: [
+            ]
+        },
+        created() {
+            this.findAllRoom();
+        },
+        methods: {
+            findAllRoom: function() {
+                axios.get('/chat/rooms/'+this.memIdx1).then(response => { this.chatrooms = response.data.result;
+                console.log(response.data);});
+            },
+            createRoom: function() {
+                if(0 === this.memIdx1) {
+                    alert("방 제목을 입력해 주십시요.");
+                    return;
+                } else {
+                    var params = new FormData();
+                    params.append("memIdx1", this.memIdx1);
+                    params.append("memIdx2",this.memIdx2);
+                    const config = {
+                        headers: {
+                            "content-type": "multipart/form-data",
+                        }
+                    };
+                    axios.post('/chat/room', params, config)
+                        .then(
+                            response => {
+                                alert(response.data.roomIdx+"방 개설에 성공하였습니다.")
+                                this.room_name = '';
+                                this.findAllRoom();
+                            }
+                        )
+                        .catch( response => { alert("채팅방 개설에 실패하였습니다."); } );
+                }
+            },
+            enterRoom: function(roomIdx) {
+                var sender = prompt('대화명을 입력해 주세요.'); //memIdx1 인지 2인지
+                if(sender != "") {
+                    localStorage.setItem('wschat.sender',sender);
+                    localStorage.setItem('wschat.roomIdx',roomIdx);
+                    location.href="/chat/room/enter/"+roomIdx;
+                }
+            }
+        }
+    });
+</script>
+</body>
+</html>
