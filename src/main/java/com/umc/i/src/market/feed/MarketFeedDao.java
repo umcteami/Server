@@ -357,7 +357,7 @@ public class MarketFeedDao implements MarketFeedRepository {
         try {
             List<GetMarketFeedRes> result = jdbcTemplate.query(query,
                     marketFeedByCategoryRowMapper(),
-                    page * 9, Constant.FEED_PER_PAGE, userIdx);
+                    page * Constant.HOT_MARKET_FEED_PER_PAGE, Constant.HOT_MARKET_FEED_PER_PAGE, userIdx);
             return result;
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -408,7 +408,7 @@ public class MarketFeedDao implements MarketFeedRepository {
         try {
             List<GetMarketFeedRes> result = jdbcTemplate.query(query,
                     marketFeedByCategoryRowMapper(),
-                    categoryIdx, page * Constant.FEED_PER_PAGE, Constant.FEED_PER_PAGE, userIdx);
+                    categoryIdx, page * Constant.HOT_MARKET_FEED_PER_PAGE, Constant.HOT_MARKET_FEED_PER_PAGE, userIdx);
             return result;
         } catch (Exception e) {
             log.error(e.getMessage());

@@ -31,5 +31,6 @@ public class Constant {
     public static String[] BOOLEANS = {"true", "false", "0", "1"};
     public static String[] MARKET_SOLDOUT = {"(0, 1)", "0"};
     public static int FEED_PER_PAGE = 9;
+    public static int HOT_MARKET_FEED_PER_PAGE = 6;
 }
 
