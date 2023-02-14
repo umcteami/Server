@@ -70,8 +70,10 @@ public class ChatDao {
     }
     //하나의 채팅방 보기+ 이미지(미완)
     public List<GetChatRoomRes> getChatRoomIdx(int roomIdx,int memIdx) throws BaseException {
-        String findRoomIdxQuery = "select C.chat_idx,mem_send_idx,chat_content,chat_time,chat_read,chat_image,if(C.mem_send_idx != ?,mem_profile_url,null) as profile,if(C.mem_send_idx != ?,mem_nickname,null) as nick \n" +
-"from Chatting C join Member M on C.mem_send_idx = M.mem_idx where room_idx = ?";
+        String findRoomIdxQuery = "select mem_send_idx,chat_content,chat_time,chat_read,chat_image,\n" +
+                "       if(C.mem_send_idx != ?,(select mem_profile_url from Member where Member.mem_idx = C.mem_send_idx),null) as profile,\n" +
+                "       if(C.mem_send_idx != ?,(select mem_nickname from Member where Member.mem_idx = C.mem_send_idx),null) as nick\n" +
+                "from Chatting C where room_idx = ?";
         String findChatImgsQuery = "select image_url from Image_url join Chatting C on content_idx = C.chat_idx and content_category = 5 where C.chat_idx = ?";
 
 

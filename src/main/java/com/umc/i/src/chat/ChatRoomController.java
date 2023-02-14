@@ -65,6 +65,7 @@ public class ChatRoomController {
         }catch(BaseException e){
             return new BaseResponse<>(BaseResponseStatus.CHATTING_BLAME_NOTABLE);
         } catch (Exception e){
+            e.printStackTrace();
             return new BaseResponse<>(BaseResponseStatus.INTERNET_ERROR);
         }
     }
